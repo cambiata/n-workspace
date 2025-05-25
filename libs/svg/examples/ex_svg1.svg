@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="50" height="20" viewBox="0 0 50 20">
+    <rect x="0" y="0" width="50" height="20" fill="white"/>
+    <rect x="0" y="0" width="20" height="20" fill="tomato"/>
+    <line x1="0" y1="0" x2="50" y2="15" stroke="dodgerblue" stroke-width="1"/>
+</svg>

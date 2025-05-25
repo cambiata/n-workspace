@@ -1,0 +1,14 @@
+[workspace]
+members = [
+    "libs/graphics",
+    "libs/core",
+    "libs/render",
+    "libs/fonts",
+    "libs/svg",
+    "libs/utils",
+    "libs/grid",
+    "libs/dev",
+]
+
+[workspace.dependencies]
+thiserror = "2.0.12"

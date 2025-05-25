@@ -1,0 +1,8 @@
+[package]
+name = "svg"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+xmlwriter = "0.1.0"
+graphics = { path = "../graphics" }
