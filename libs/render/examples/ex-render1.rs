@@ -6,13 +6,13 @@ fn main() {
     let items = vec![
         vec![
             GridItemType::Rectangles(vec![(0.0, 0.0, 5.0, 5.0)], vec![Color::Blue]),
-            GridItemType::Rectangles(vec![(0.0, 3.0, 20.0, 5.0)], vec![Color::Red]),
+            GridItemType::Rectangles(vec![(0.0, 3.0, 20.0, 5.0)], vec![Color::Tomato]),
             GridItemType::Rectangles(vec![(0.0, 0.0, 5.0, 5.0)], vec![Color::Orange]),
         ],
         vec![
-            GridItemType::Rectangles(vec![(0.0, 0.0, 10.0, 5.0), (0.0, 5.0, 10.0, 5.0)], vec![Color::Green, Color::Yellow]),
+            GridItemType::Rectangles(vec![(0.0, 0.0, 10.0, 5.0), (0.0, 5.0, 10.0, 5.0)], vec![Color::Green, Color::Lime]),
             // GridItemType::Empty,
-            GridItemType::Rectangles(vec![(0.0, 3.0, 15.0, 5.0)], vec![Color::Purple]),
+            GridItemType::Rectangles(vec![(0.0, 3.0, 5.0, 5.0)], vec![Color::Purple]),
             GridItemType::Rectangles(vec![(-10.0, 0.0, 15.0, 5.0)], vec![Color::DodgerBlue]),
         ],
     ];

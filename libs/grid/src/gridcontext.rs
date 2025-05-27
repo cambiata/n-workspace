@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::fmt::Debug;
 
 use crate::griditem::{GridColumn, GridItem, GridItemType, GridRow};
-use graphics::rectangle::{rectangles_overlap_x, widest_of_rectangles, Rectangle};
+use graphics::rectangle::rectangles_overlap_x;
 
 #[derive(Debug)]
 pub struct GridContext<T>
@@ -13,7 +13,6 @@ where
     pub cols: RefCell<Vec<GridColumn>>,
     pub cols_overlaps: RefCell<Vec<f32>>,
     pub rows: RefCell<Vec<GridRow>>,
-    // pub xxx: RefCell<BTreeMap<ItemId, usize>>,
 }
 
 impl<T> GridContext<T>
@@ -26,7 +25,6 @@ where
             cols: RefCell::new(Vec::new()),
             cols_overlaps: RefCell::new(Vec::new()),
             rows: RefCell::new(Vec::new()),
-            // xxx: RefCell::new(BTreeMap::new()),
         };
         Box::leak(Box::new(cx))
     }
@@ -77,20 +75,18 @@ where
         for _ in 0..colcount {
             self.cols_overlaps.borrow_mut().push(0.0);
         }
-        self.cols_overlaps.borrow_mut().push(0.0); // one extra for the last column
-
-        dbg!(&rowcount, &colcount);
+        self.cols_overlaps.borrow_mut().push(0.0); // one extra for the last column?
     }
 
     pub fn calculate_minimal_col_spacing(&self) {
-        let cols: Vec<usize> = (0..self.cols.borrow().len()).collect();
+        let colindexes: Vec<usize> = (0..self.cols.borrow().len()).collect();
         let self_items = self.items.borrow();
         let self_rows = self.rows.borrow();
         let mut self_cols_overlaps = self.cols_overlaps.borrow_mut();
 
         // let mut current_left_col_x = 0.0;
         // let mut current_right_col_x = 0.0;
-        for colidx in cols.windows(2) {
+        for colidx in colindexes.windows(2) {
             let left_colidx = colidx[0];
             let right_colidx = colidx[1];
 
