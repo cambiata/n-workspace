@@ -83,6 +83,47 @@ where
     }
 
     pub fn calculate_minimal_col_spacing(&self) {
+        let cols: Vec<usize> = (0..self.cols.borrow().len()).collect();
+        let self_items = self.items.borrow();
+        let self_rows = self.rows.borrow();
+        let mut self_cols_overlaps = self.cols_overlaps.borrow_mut();
+
+        // let mut current_left_col_x = 0.0;
+        // let mut current_right_col_x = 0.0;
+        for colidx in cols.windows(2) {
+            let left_colidx = colidx[0];
+            let right_colidx = colidx[1];
+
+            // current_left_col_x += cols_overlaps[left_colidx];
+            // current_right_col_x += cols_overlaps[right_colidx];
+
+            for (rowidx, row) in self_rows.iter().enumerate() {
+                println!("Rowidx {rowidx} --------------------------------------");
+                let left_item = &self_items[row.item_ids[left_colidx]];
+                let right_item = &self_items[row.item_ids[right_colidx]];
+                match (&left_item.gitype, &right_item.gitype) {
+                    (GridItemType::Rectangles(ref left_rects, _), GridItemType::Rectangles(ref right_rects, _)) => {
+                        let overlap_x = rectangles_overlap_x(left_rects, right_rects);
+                        dbg!(overlap_x);
+
+                        if overlap_x > self_cols_overlaps[right_colidx] {
+                            self_cols_overlaps[right_colidx] = overlap_x;
+                        }
+                    }
+                    (GridItemType::Empty, _) => {
+                        println!("Left item is Empty");
+                    }
+                    (_, GridItemType::Empty) => {
+                        println!("Right item is Empty");
+                    }
+                }
+            }
+        }
+        dbg!(self_cols_overlaps);
+    }
+
+    /*
+    pub fn calculate_minimal_col_spacing(&self) {
         for rowidx in 0..self.rows.borrow().len() {
             self.calculate_minimal_col_spacing_for_row(rowidx);
         }
@@ -141,4 +182,5 @@ where
         }
         //dbg!(&rowidx, &cols_overlaps);
     }
+    */
 }

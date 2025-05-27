@@ -5,16 +5,15 @@ use render::gridrender::render_gridcontext_with_color;
 fn main() {
     let items = vec![
         vec![
-            GridItemType::Rectangles(vec![(0.0, 0.0, 5.0, 10.0)], vec![Color::Blue]),
-            // GridItemType::Empty,
-            GridItemType::Rectangles(vec![(0.0, 0.0, 20.0, 10.0)], vec![Color::Red]),
-            GridItemType::Rectangles(vec![(0.0, 0.0, 15.0, 10.0)], vec![Color::Orange]),
+            GridItemType::Rectangles(vec![(0.0, 0.0, 5.0, 5.0)], vec![Color::Blue]),
+            GridItemType::Rectangles(vec![(0.0, 3.0, 20.0, 5.0)], vec![Color::Red]),
+            GridItemType::Rectangles(vec![(0.0, 0.0, 5.0, 5.0)], vec![Color::Orange]),
         ],
         vec![
-            GridItemType::Rectangles(vec![(0.0, 0.0, 10.0, 10.0)], vec![Color::Green]),
-            GridItemType::Empty,
-            // GridItemType::Rectangles(vec![(5.0, 0.0, 5.0, 10.0)], vec![Color::Gray]),
-            GridItemType::Rectangles(vec![(-5.0, 0.0, 15.0, 10.0)], vec![Color::Purple]),
+            GridItemType::Rectangles(vec![(0.0, 0.0, 10.0, 5.0), (0.0, 5.0, 10.0, 5.0)], vec![Color::Green, Color::Yellow]),
+            // GridItemType::Empty,
+            GridItemType::Rectangles(vec![(0.0, 3.0, 15.0, 5.0)], vec![Color::Purple]),
+            GridItemType::Rectangles(vec![(-10.0, 0.0, 15.0, 5.0)], vec![Color::DodgerBlue]),
         ],
     ];
 

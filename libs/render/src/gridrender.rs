@@ -25,7 +25,6 @@ pub fn render_gridcontext_with_color(cx: &'static GridContext<Color>) {
             match item.gitype {
                 GridItemType::Rectangles(ref rects, ref colors) => {
                     for (rect, color) in rects.iter().zip(colors.iter()) {
-                        // println!("col {:?} movex {:?} movey {:?} - Rendering rectangle {:?} with color {:?}", colidx, move_x, move_y, rect, color);
                         graphic_items.push(GraphicItem::Rect(rect.0 + move_x, rect.1 + move_y, rect.2, rect.3, Stroke::None, Fill::Solid(*color), None));
                     }
                 }
@@ -41,7 +40,7 @@ pub fn render_gridcontext_with_color(cx: &'static GridContext<Color>) {
     let mut move_x = 0.0;
     for (_colidx, overlap) in cx_cols_overlaps.iter().enumerate() {
         move_x = move_x + *overlap;
-        dbg!(overlap, move_x);
+        // dbg!(overlap, move_x);
 
         graphic_items.push(GraphicItem::Line(move_x, 0.0, move_x, move_y, Stroke::Solid(0.5, Color::RGBA(0, 0, 0, 0.5)), None));
     }
@@ -50,5 +49,5 @@ pub fn render_gridcontext_with_color(cx: &'static GridContext<Color>) {
 
     let svg = SvgBuilder::new();
     let svg_string = svg.build(graphic_items, None);
-    fs::write("out/grid_test.svg", svg_string).unwrap();
+    fs::write("out/ex-render1.svg", svg_string).unwrap();
 }
