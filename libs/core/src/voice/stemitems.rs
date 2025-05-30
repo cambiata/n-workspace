@@ -1,7 +1,7 @@
 use crate::{
     context::CoreContext,
     direction::DirectionUD,
-    duration::{Duration, SumDuration},
+    duration::{NoteDuration, SumDuration},
     note::{self, NoteItem},
     ItemId,
 };
@@ -49,7 +49,12 @@ mod tests {
 }
 */
 
-pub fn create_stem_items_from_notes_in_voice(cx: &CoreContext, note_ids: &Vec<ItemId>, notes_duration: SumDuration, pattern_values: Vec<Duration>) -> Result<Vec<ItemId>, Box<dyn std::error::Error>> {
+pub fn create_stem_items_from_notes_in_voice(
+    cx: &CoreContext,
+    note_ids: &Vec<ItemId>,
+    notes_duration: SumDuration,
+    pattern_values: Vec<NoteDuration>,
+) -> Result<Vec<ItemId>, Box<dyn std::error::Error>> {
     let groups = create_groups_of_notes(cx, note_ids, notes_duration, pattern_values);
 
     let mut ids: Vec<ItemId> = Vec::new();
@@ -139,7 +144,7 @@ pub fn create_stem_items_from_notes_in_voice(cx: &CoreContext, note_ids: &Vec<It
     Ok(ids)
 }
 
-pub fn create_groups_of_notes(cx: &CoreContext, note_ids: &Vec<ItemId>, notes_duration: SumDuration, pattern_values: Vec<Duration>) -> Vec<Vec<NoteItem>> {
+pub fn create_groups_of_notes(cx: &CoreContext, note_ids: &Vec<ItemId>, notes_duration: SumDuration, pattern_values: Vec<NoteDuration>) -> Vec<Vec<NoteItem>> {
     let mut cycles: Vec<(usize, usize)> = Vec::new();
     let mut position = 0;
     let mut step = 0;

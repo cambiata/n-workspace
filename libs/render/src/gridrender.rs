@@ -1,5 +1,3 @@
-use std::fs;
-
 use graphics::{
     color::Color,
     fill::Fill,

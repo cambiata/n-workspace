@@ -7,6 +7,7 @@ pub struct PathBuilder {
     pub segments: Vec<PathSegment>,
 }
 
+#[allow(unused)]
 impl PathBuilder {
     pub fn get_segments(&self) -> Vec<PathSegment> {
         self.segments.clone()

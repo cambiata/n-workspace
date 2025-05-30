@@ -1,4 +1,4 @@
-use crate::{duration::Duration, head::HeadItem, ItemId};
+use crate::{duration::NoteDuration, head::HeadItem, ItemId};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum NoteType {
@@ -11,7 +11,7 @@ pub enum NoteType {
 pub struct NoteItem {
     pub id: ItemId,
     pub position: usize,
-    pub duration: Duration,
+    pub duration: NoteDuration,
     pub ntype: NoteType,
 }
 
@@ -20,7 +20,7 @@ impl NoteItem {
         match self.ntype {
             NoteType::Heads(_) => {
                 //
-                Duration::is_beamable(self.duration)
+                NoteDuration::is_beamable(self.duration)
             }
             _ => false,
         }

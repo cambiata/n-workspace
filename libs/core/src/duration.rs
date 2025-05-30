@@ -1,8 +1,10 @@
+use core::fmt;
+
 pub type SumDuration = usize;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 #[allow(dead_code)]
-pub enum Duration {
+pub enum NoteDuration {
     D1Dot = 144,
     D1 = 96,
     D2Dot = 72,
@@ -20,13 +22,13 @@ pub enum Duration {
     D32 = 3,
 }
 
-impl Duration {
+impl NoteDuration {
     #[allow(dead_code)]
     pub fn is_beamable(self) -> bool {
         match self {
-            Duration::D8 | Duration::D16 | Duration::D32 => true,
-            Duration::D8Tri | Duration::D16Tri => true,
-            Duration::D8Dot | Duration::D16Dot => true,
+            NoteDuration::D8 | NoteDuration::D16 | NoteDuration::D32 => true,
+            NoteDuration::D8Tri | NoteDuration::D16Tri => true,
+            NoteDuration::D8Dot | NoteDuration::D16Dot => true,
             _ => false,
         }
     }
@@ -34,12 +36,12 @@ impl Duration {
     #[allow(dead_code)]
     pub fn has_stem(self) -> bool {
         match self {
-            Duration::D1 | Duration::D1Dot => false,
+            NoteDuration::D1 | NoteDuration::D1Dot => false,
             _ => true,
         }
     }
 
-    pub fn parse(s: &str) -> Result<Duration, Box<dyn std::error::Error>> {
+    pub fn parse(s: &str) -> Result<NoteDuration, Box<dyn std::error::Error>> {
         let s = s.trim();
         if !(s.starts_with('D') || s.starts_with("d")) {
             return Err("MustStartWithD".into());
@@ -47,34 +49,34 @@ impl Duration {
 
         let value2 = &s[1..];
         match value2 {
-            "1." => Ok(Duration::D1Dot),
-            "1" => Ok(Duration::D1),
+            "1." => Ok(NoteDuration::D1Dot),
+            "1" => Ok(NoteDuration::D1),
 
-            "2." => Ok(Duration::D2Dot),
-            "2" => Ok(Duration::D2),
-            "2Tri" => Ok(Duration::D2Tri),
+            "2." => Ok(NoteDuration::D2Dot),
+            "2" => Ok(NoteDuration::D2),
+            "2Tri" => Ok(NoteDuration::D2Tri),
 
-            "4." => Ok(Duration::D4Dot),
-            "4" => Ok(Duration::D4),
+            "4." => Ok(NoteDuration::D4Dot),
+            "4" => Ok(NoteDuration::D4),
 
-            "8." => Ok(Duration::D8Dot),
-            "4Tri" => Ok(Duration::D4Tri),
-            "8" => Ok(Duration::D8),
+            "8." => Ok(NoteDuration::D8Dot),
+            "4Tri" => Ok(NoteDuration::D4Tri),
+            "8" => Ok(NoteDuration::D8),
 
-            "16." => Ok(Duration::D16Dot),
-            "8Tri" => Ok(Duration::D8Tri),
-            "16" => Ok(Duration::D16),
-            "16Tri" => Ok(Duration::D16Tri),
+            "16." => Ok(NoteDuration::D16Dot),
+            "8Tri" => Ok(NoteDuration::D8Tri),
+            "16" => Ok(NoteDuration::D16),
+            "16Tri" => Ok(NoteDuration::D16Tri),
 
-            "32" => Ok(Duration::D32),
-            _ => Err("Invalid duration".into()),
+            "32" => Ok(NoteDuration::D32),
+            _ => Err(format!("Invalid duration string '{}'", value2).into()),
         }
     }
 }
 
-impl Default for Duration {
+impl Default for NoteDuration {
     fn default() -> Self {
-        Duration::D4
+        NoteDuration::D4
     }
 }
 
@@ -99,9 +101,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test() {
+    fn test() -> Result<(), Box<dyn std::error::Error>> {
         print!("Hello, world!");
-        let d: Duration = Duration::parse("D16Tri").unwrap();
-        assert!(d == Duration::D16Tri);
+        let d: NoteDuration = NoteDuration::parse("D16Tri")?;
+        assert!(d == NoteDuration::D16Tri);
+        Ok(())
     }
 }

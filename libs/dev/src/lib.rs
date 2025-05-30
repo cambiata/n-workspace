@@ -5,6 +5,7 @@ pub enum Test {
     TestC(usize),
 }
 
+#[allow(unused)]
 #[cfg(test)]
 mod tests2 {
     use std::error::Error;

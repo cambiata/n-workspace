@@ -1,7 +1,7 @@
 use core::accidental::Accidental;
 use core::clef::ClefSignature;
 use core::context::CoreContext;
-use core::duration::{Duration, SumDuration};
+use core::duration::{NoteDuration, SumDuration};
 use core::head::HeadItem;
 use core::note::{NoteItem, NoteType};
 use core::part::{complex::create_complexes_for_part, PartItem, PartType};
@@ -45,7 +45,7 @@ pub fn parse_notetype(_cx: &CoreContext, value: &str) -> Result<NoteType, Box<dy
     Ok(ntype)
 }
 
-pub fn parse_note(cx: &CoreContext, value: &str, position: usize, duration: Duration) -> Result<usize, Box<dyn std::error::Error>> {
+pub fn parse_note(cx: &CoreContext, value: &str, position: usize, duration: NoteDuration) -> Result<usize, Box<dyn std::error::Error>> {
     let value = value.trim();
     let ntype = parse_notetype(cx, value)?;
     let id = cx.notes.borrow().len();
@@ -57,11 +57,11 @@ pub fn parse_note(cx: &CoreContext, value: &str, position: usize, duration: Dura
 
 pub fn parse_notes(cx: &CoreContext, value: &str) -> Result<(Vec<usize>, SumDuration), Box<dyn std::error::Error>> {
     let mut sum_duration: SumDuration = 0;
-    let mut duration: Duration = Duration::D4;
+    let mut duration: NoteDuration = NoteDuration::D4;
     let mut ids: Vec<usize> = Vec::new();
     value.split(" ").filter(|s| !s.is_empty()).for_each(|s| {
         if s.starts_with("D") || s.starts_with("d") {
-            duration = Duration::parse(s).unwrap();
+            duration = NoteDuration::parse(s).unwrap();
         } else {
             let id = parse_note(cx, s, sum_duration, duration.clone()).unwrap();
             sum_duration += duration.clone() as usize;
@@ -78,7 +78,7 @@ pub fn parse_voicetype(cx: &CoreContext, value: &str) -> Result<VoiceType, Box<d
         VoiceType::Barpause
     } else {
         let (note_ids, sum_duration) = parse_notes(cx, value).expect("Could not parse notes");
-        let pattern_values = vec![Duration::D4];
+        let pattern_values = vec![NoteDuration::D4];
         let stemitem_ids = create_stem_items_from_notes_in_voice(cx, &note_ids, sum_duration, pattern_values).unwrap();
 
         VoiceType::NoteIds(note_ids, sum_duration, stemitem_ids)
@@ -224,7 +224,7 @@ mod tests {
     #[test]
     fn test_n() {
         let cx = CoreContext::new();
-        let _ = parse_note(&cx, "b1,-3", 0, Duration::D8).unwrap();
+        let _ = parse_note(&cx, "b1,-3", 0, NoteDuration::D8).unwrap();
         dbg!(&cx);
     }
 
