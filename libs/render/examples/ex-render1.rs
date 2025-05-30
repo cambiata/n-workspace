@@ -1,3 +1,5 @@
+use std::fs;
+
 use graphics::color::Color;
 use grid::{gridcontext::GridContext, griditem::GridItemType};
 use render::gridrender::render_gridcontext_with_color;
@@ -36,7 +38,7 @@ fn main() {
     let cx: &'static GridContext<Color> = GridContext::<Color>::new();
     cx.add_items(items);
     cx.calculate_minimal_col_spacing();
-    cx.set_durations(vec![0, 8, 10]);
+    cx.set_durations(vec![0, 8, 10]); //
 
-    render_gridcontext_with_color(cx);
+    fs::write("out/ex-render1.svg", render_gridcontext_with_color(cx)).unwrap();
 }

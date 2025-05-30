@@ -1,12 +1,12 @@
 use crate::{
-    context::Context,
+    context::CoreContext,
     direction::{DirectionUAD, DirectionUD},
     part::PartType,
 };
 
 use super::{stemitems::StemType, VoiceType};
 
-pub fn calculate_stemitem_directions(cx: &Context, ptype: &PartType) {
+pub fn calculate_stemitem_directions(cx: &CoreContext, ptype: &PartType) {
     let mut stemitems = cx.stemitems.borrow_mut();
 
     match ptype {

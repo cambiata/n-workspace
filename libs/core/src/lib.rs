@@ -12,4 +12,4 @@ pub mod voice;
 
 pub type ItemId = usize;
 
-pub type ScoreError = Box<dyn std::error::Error>;
+// pub type ScoreError = Box<dyn std::error::Error>;

@@ -1,8 +1,8 @@
 use crate::{sysitem::SysItemType, ItemId};
 
-use super::Context;
+use super::CoreContext;
 
-pub fn check_sysitems_parts_integrity(cx: &Context, sysitems: Vec<ItemId>) -> Result<(), Box<dyn std::error::Error>> {
+pub fn check_sysitems_parts_integrity(cx: &CoreContext, sysitems: Vec<ItemId>) -> Result<(), Box<dyn std::error::Error>> {
     let mut count: Option<u8> = None;
 
     for sysitemid in sysitems {

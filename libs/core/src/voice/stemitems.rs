@@ -1,9 +1,9 @@
 use crate::{
-    context::Context,
+    context::CoreContext,
     direction::DirectionUD,
     duration::{Duration, SumDuration},
     note::{self, NoteItem},
-    ItemId, ScoreError,
+    ItemId,
 };
 
 #[derive(Debug)]
@@ -49,7 +49,7 @@ mod tests {
 }
 */
 
-pub fn create_stem_items_from_notes_in_voice(cx: &Context, note_ids: &Vec<ItemId>, notes_duration: SumDuration, pattern_values: Vec<Duration>) -> Result<Vec<ItemId>, ScoreError> {
+pub fn create_stem_items_from_notes_in_voice(cx: &CoreContext, note_ids: &Vec<ItemId>, notes_duration: SumDuration, pattern_values: Vec<Duration>) -> Result<Vec<ItemId>, Box<dyn std::error::Error>> {
     let groups = create_groups_of_notes(cx, note_ids, notes_duration, pattern_values);
 
     let mut ids: Vec<ItemId> = Vec::new();
@@ -58,7 +58,7 @@ pub fn create_stem_items_from_notes_in_voice(cx: &Context, note_ids: &Vec<ItemId
     let mut position: usize = 0;
     let mut duration: usize = 0;
     for group in groups.iter() {
-        let t: Result<StemType, ScoreError> = match group.len() {
+        let t: Result<StemType, Box<dyn std::error::Error>> = match group.len() {
             // no group of zero notes
             0 => todo!("Should not happen"),
 
@@ -139,7 +139,7 @@ pub fn create_stem_items_from_notes_in_voice(cx: &Context, note_ids: &Vec<ItemId
     Ok(ids)
 }
 
-pub fn create_groups_of_notes(cx: &Context, note_ids: &Vec<ItemId>, notes_duration: SumDuration, pattern_values: Vec<Duration>) -> Vec<Vec<NoteItem>> {
+pub fn create_groups_of_notes(cx: &CoreContext, note_ids: &Vec<ItemId>, notes_duration: SumDuration, pattern_values: Vec<Duration>) -> Vec<Vec<NoteItem>> {
     let mut cycles: Vec<(usize, usize)> = Vec::new();
     let mut position = 0;
     let mut step = 0;

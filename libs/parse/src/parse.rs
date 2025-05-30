@@ -1,6 +1,6 @@
 use core::accidental::Accidental;
 use core::clef::ClefSignature;
-use core::context::Context;
+use core::context::CoreContext;
 use core::duration::{Duration, SumDuration};
 use core::head::HeadItem;
 use core::note::{NoteItem, NoteType};
@@ -9,10 +9,10 @@ use core::sysitem::{SysItem, SysItemType};
 use core::voice::stemdirections::calculate_stemitem_directions;
 use core::voice::stemitems::create_stem_items_from_notes_in_voice;
 use core::voice::{VoiceItem, VoiceType};
-use core::{ItemId, ScoreError};
+use core::ItemId;
 use std::cmp::max;
 
-pub fn parse_head(_cx: &Context, value: &str) -> Result<HeadItem, ScoreError> {
+pub fn parse_head(_cx: &CoreContext, value: &str) -> Result<HeadItem, Box<dyn std::error::Error>> {
     let value = value.trim();
     let level: i8 = value.chars().filter(|c| c.is_numeric() || *c == '-').collect::<String>().parse()?;
 
@@ -21,15 +21,19 @@ pub fn parse_head(_cx: &Context, value: &str) -> Result<HeadItem, ScoreError> {
     Ok(info)
 }
 
-pub fn parse_heads(cx: &Context, value: &str) -> Result<Vec<HeadItem>, ScoreError> {
+pub fn parse_heads(cx: &CoreContext, value: &str) -> Result<Vec<HeadItem>, Box<dyn std::error::Error>> {
     let mut s_and_level = value.split(',').map(|s| (s.trim(), level_from_str(s))).collect::<Vec<(&str, i8)>>();
     s_and_level.sort_by_key(|item| item.1); // sort by level
 
-    let infos = s_and_level.iter().map(|item| item.0).map(|s| parse_head(cx, s)).collect::<Result<Vec<HeadItem>, ScoreError>>()?;
+    let infos = s_and_level
+        .iter()
+        .map(|item| item.0)
+        .map(|s| parse_head(cx, s))
+        .collect::<Result<Vec<HeadItem>, Box<dyn std::error::Error>>>()?;
     Ok(infos)
 }
 
-pub fn parse_notetype(_cx: &Context, value: &str) -> Result<NoteType, ScoreError> {
+pub fn parse_notetype(_cx: &CoreContext, value: &str) -> Result<NoteType, Box<dyn std::error::Error>> {
     let value = value.trim();
     let ntype = match value {
         "r" => NoteType::Rest,
@@ -41,7 +45,7 @@ pub fn parse_notetype(_cx: &Context, value: &str) -> Result<NoteType, ScoreError
     Ok(ntype)
 }
 
-pub fn parse_note(cx: &Context, value: &str, position: usize, duration: Duration) -> Result<usize, ScoreError> {
+pub fn parse_note(cx: &CoreContext, value: &str, position: usize, duration: Duration) -> Result<usize, Box<dyn std::error::Error>> {
     let value = value.trim();
     let ntype = parse_notetype(cx, value)?;
     let id = cx.notes.borrow().len();
@@ -51,7 +55,7 @@ pub fn parse_note(cx: &Context, value: &str, position: usize, duration: Duration
     Ok(id)
 }
 
-pub fn parse_notes(cx: &Context, value: &str) -> Result<(Vec<usize>, SumDuration), ScoreError> {
+pub fn parse_notes(cx: &CoreContext, value: &str) -> Result<(Vec<usize>, SumDuration), Box<dyn std::error::Error>> {
     let mut sum_duration: SumDuration = 0;
     let mut duration: Duration = Duration::D4;
     let mut ids: Vec<usize> = Vec::new();
@@ -68,7 +72,7 @@ pub fn parse_notes(cx: &Context, value: &str) -> Result<(Vec<usize>, SumDuration
     Ok((ids, sum_duration))
 }
 
-pub fn parse_voicetype(cx: &Context, value: &str) -> Result<VoiceType, ScoreError> {
+pub fn parse_voicetype(cx: &CoreContext, value: &str) -> Result<VoiceType, Box<dyn std::error::Error>> {
     let value = value.trim();
     let vtype = if value.starts_with("bp") {
         VoiceType::Barpause
@@ -82,9 +86,9 @@ pub fn parse_voicetype(cx: &Context, value: &str) -> Result<VoiceType, ScoreErro
     Ok(vtype)
 }
 
-pub fn parse_voice(cx: &Context, value: &str) -> Result<VoiceItem, ScoreError> {
+pub fn parse_voice(cx: &CoreContext, value: &str) -> Result<VoiceItem, Box<dyn std::error::Error>> {
     let vtype = parse_voicetype(cx, value)?;
-    let duration = match &vtype {
+    let duration: usize = match &vtype {
         VoiceType::Barpause => 0,
         VoiceType::NoteIds(_, sum_duration, _) => *sum_duration,
     };
@@ -92,7 +96,7 @@ pub fn parse_voice(cx: &Context, value: &str) -> Result<VoiceItem, ScoreError> {
     Ok(item)
 }
 
-pub fn parse_parttype(cx: &Context, value: &str) -> Result<PartType, ScoreError> {
+pub fn parse_parttype(cx: &CoreContext, value: &str) -> Result<PartType, Box<dyn std::error::Error>> {
     let value = value.trim();
 
     let ptype: PartType = if value.starts_with("other-part") {
@@ -117,7 +121,7 @@ pub fn parse_parttype(cx: &Context, value: &str) -> Result<PartType, ScoreError>
     Ok(ptype)
 }
 
-pub fn parse_part(cx: &Context, value: &str) -> Result<(ItemId, SumDuration), ScoreError> {
+pub fn parse_part(cx: &CoreContext, value: &str) -> Result<(ItemId, SumDuration), Box<dyn std::error::Error>> {
     let mut value = value.trim();
     if value.starts_with("%") {
         value = value[1..].trim();
@@ -141,7 +145,7 @@ pub fn parse_part(cx: &Context, value: &str) -> Result<(ItemId, SumDuration), Sc
     Ok((id, duration))
 }
 
-pub fn parse_parts(cx: &Context, value: &str) -> Result<Vec<(ItemId, SumDuration)>, ScoreError> {
+pub fn parse_parts(cx: &CoreContext, value: &str) -> Result<Vec<(ItemId, SumDuration)>, Box<dyn std::error::Error>> {
     let mut value = value.trim();
     if value.starts_with("/") {
         value = value[1..].trim();
@@ -161,7 +165,7 @@ pub fn parse_parts(cx: &Context, value: &str) -> Result<Vec<(ItemId, SumDuration
     Ok(ids_and_durations)
 }
 
-pub fn parse_sysitemtype(_cx: &Context, value: &str) -> Result<SysItemType, ScoreError> {
+pub fn parse_sysitemtype(_cx: &CoreContext, value: &str) -> Result<SysItemType, Box<dyn std::error::Error>> {
     let mut value = value.trim();
     if value.starts_with("|") {
         value = value[1..].trim();
@@ -181,7 +185,7 @@ pub fn parse_sysitemtype(_cx: &Context, value: &str) -> Result<SysItemType, Scor
     Ok(t)
 }
 
-pub fn parse_sysitems(cx: &Context, value: &str) -> Result<Vec<ItemId>, ScoreError> {
+pub fn parse_sysitems(cx: &CoreContext, value: &str) -> Result<Vec<ItemId>, Box<dyn std::error::Error>> {
     let mut value = value.trim();
     if value.starts_with("|") {
         value = value[1..].trim();
@@ -219,14 +223,14 @@ mod tests {
 
     #[test]
     fn test_n() {
-        let cx = Context::new();
+        let cx = CoreContext::new();
         let _ = parse_note(&cx, "b1,-3", 0, Duration::D8).unwrap();
         dbg!(&cx);
     }
 
     #[test]
     fn test_ns() {
-        let cx = Context::new();
+        let cx = CoreContext::new();
         let ids = parse_notes(cx, "1,2 D8 2,-5").unwrap();
         dbg!(&ids);
         dbg!(&cx);
@@ -234,21 +238,21 @@ mod tests {
 
     #[test]
     fn test_v() {
-        let cx = Context::new();
+        let cx = CoreContext::new();
         let _ = parse_voice(cx, "1 2 3").unwrap();
         dbg!(&cx);
     }
 
     #[test]
     fn test_p() {
-        let cx = Context::new();
+        let cx = CoreContext::new();
         let _ = parse_part(cx, "11 % 22").unwrap();
         dbg!(&cx);
     }
 
     #[test]
     fn test_ps() {
-        let cx = Context::new();
+        let cx = CoreContext::new();
         // let _ = parse_parts(cx, "0 1 / 1 % 0 d8 0 1 d16 2").unwrap();
         let _ = parse_parts(cx, "0 D2 1 / 0 1 D8 2 % 0 D16 1 2").unwrap();
         // let _ = parse_parts(cx, "0 1 D8 2 % 0 D16 1 2").unwrap();
@@ -258,7 +262,7 @@ mod tests {
 
     #[test]
     fn test_s() {
-        let cx = Context::new();
+        let cx = CoreContext::new();
         // let _ = parse_sysitemtype(cx, "clef G F").unwrap();
         let _ = parse_sysitemtype(cx, "0 D2 1 / 0 1 D8 2 % 0 D16 1 2").unwrap();
         // dbg!(&cx);
@@ -266,7 +270,7 @@ mod tests {
 
     #[test]
     fn test_ss() {
-        let cx = Context::new();
+        let cx = CoreContext::new();
         let ids = parse_sysitems(cx, "|clef G | 0 / 0,3 1 2 % 0 1b 2 3 |bl | 0 / 1").unwrap();
         let _check = check_sysitems_parts_integrity(cx, ids);
         dbg!(&cx);
@@ -274,7 +278,7 @@ mod tests {
 
     #[test]
     fn test_maj03() {
-        let cx = Context::new();
+        let cx = CoreContext::new();
         let _ = parse_sysitems(cx, "|clef G | D4. -2,-3 D8 -4 % D16 2 3 4 5 D8 3 4 / D2. 0  |bl | 0 / 1").unwrap();
         // let _ = parse_sysitems(cx, "0 % 0").unwrap();
         // let _check = check_sysitems_parts_integrity(cx, ids);

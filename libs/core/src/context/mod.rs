@@ -12,9 +12,8 @@ use crate::{
 };
 
 #[derive(Debug)]
-pub struct Context {
+pub struct CoreContext {
     pub notes: RefCell<Vec<NoteItem>>,
-    // pub notes_positions: RefCell<BTreeMap<ItemId, usize>>,
     pub map_noteid_complexid: RefCell<BTreeMap<ItemId, ItemId>>,
     pub parts: RefCell<Vec<PartItem>>,
     pub sysitems: RefCell<Vec<SysItem>>,
@@ -22,11 +21,10 @@ pub struct Context {
     pub stemitems: RefCell<Vec<StemItem>>,
 }
 
-impl Context {
-    pub fn new() -> &'static Context {
-        let cx = Context {
+impl CoreContext {
+    pub fn new() -> &'static CoreContext {
+        let cx = CoreContext {
             notes: RefCell::new(Vec::new()),
-            // notes_positions: RefCell::new(BTreeMap::new()),
             map_noteid_complexid: RefCell::new(BTreeMap::new()),
             parts: RefCell::new(Vec::new()),
             sysitems: RefCell::new(Vec::new()),

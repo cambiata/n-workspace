@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use crate::{
-    context::Context,
+    context::CoreContext,
     note::{NoteItem, NoteType},
     voice::VoiceType,
     ItemId,
@@ -42,7 +42,7 @@ mod tests {
 }
     */
 
-pub fn create_complexes_for_part(cx: &Context, ptype: &PartType, part_id: ItemId) {
+pub fn create_complexes_for_part(cx: &CoreContext, ptype: &PartType, part_id: ItemId) {
     match ptype {
         PartType::OneVoice(ref voice_item) => {
             //
@@ -78,7 +78,7 @@ pub fn create_complexes_for_part(cx: &Context, ptype: &PartType, part_id: ItemId
     // dbg!(&cx.complexes);
 }
 
-pub fn create_complexes_for_one_voice(cx: &Context, note_ids: &Vec<ItemId>, part_duration: usize, is_upper_voice: bool, part_id: ItemId) {
+pub fn create_complexes_for_one_voice(cx: &CoreContext, note_ids: &Vec<ItemId>, part_duration: usize, is_upper_voice: bool, part_id: ItemId) {
     let notes = cx.notes.borrow();
     // let notes_positions = cx.notes_positions.borrow();
 
@@ -127,7 +127,7 @@ pub fn create_complexes_for_one_voice(cx: &Context, note_ids: &Vec<ItemId>, part
     }
 }
 
-pub fn create_complexes_for_two_voices(cx: &Context, note_ids_upper: &Vec<ItemId>, note_ids_lower: &Vec<ItemId>, part_duration: usize, part_id: ItemId) {
+pub fn create_complexes_for_two_voices(cx: &CoreContext, note_ids_upper: &Vec<ItemId>, note_ids_lower: &Vec<ItemId>, part_duration: usize, part_id: ItemId) {
     let notes = cx.notes.borrow();
     let mut map: BTreeMap<usize, Vec<Option<ItemId>>> = BTreeMap::new();
 

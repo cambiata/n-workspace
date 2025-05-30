@@ -1,4 +1,4 @@
-use std::{fmt::Debug, fs};
+use std::fs;
 
 use graphics::{
     color::Color,
@@ -9,8 +9,13 @@ use graphics::{
 use grid::{gridcontext::GridContext, griditem::GridItemType};
 use svg::svg_renderer::SvgBuilder;
 
+// #[derive(Debug)]
+// pub enum RenderOutput {
+//     Svg(String),
+// }
+
 #[allow(dead_code)]
-pub fn render_gridcontext_with_color(cx: &'static GridContext<Color>) {
+pub fn render_gridcontext_with_color(cx: &'static GridContext<Color>) -> String {
     let mut graphic_items = GraphicItems::new();
 
     let cx_rows = &cx.rows.borrow();
@@ -48,5 +53,6 @@ pub fn render_gridcontext_with_color(cx: &'static GridContext<Color>) {
 
     let svg = SvgBuilder::new();
     let svg_string = svg.build(graphic_items, None);
-    fs::write("out/ex-render1.svg", svg_string).unwrap();
+
+    svg_string
 }
