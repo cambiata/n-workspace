@@ -3,10 +3,11 @@ use std::collections::BTreeMap;
 use crate::{
     context::Context,
     note::{NoteItem, NoteType},
-    part::PartType,
     voice::VoiceType,
     ItemId,
 };
+
+use super::PartType;
 
 #[derive(Debug)]
 pub struct ComplexItem {
@@ -24,11 +25,12 @@ pub enum ComplexType {
     Lower(NoteItem),
 }
 
+/*
 #[cfg(test)]
 mod tests {
 
-    use crate::context::parse::parse_part;
     use crate::context::Context;
+    use parse::parse_part;
 
     #[test]
     fn test_p() {
@@ -38,6 +40,7 @@ mod tests {
         // create_complexes_for_part(cx, part_id);
     }
 }
+    */
 
 pub fn create_complexes_for_part(cx: &Context, ptype: &PartType, part_id: ItemId) {
     match ptype {

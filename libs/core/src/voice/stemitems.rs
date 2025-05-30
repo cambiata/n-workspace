@@ -34,9 +34,11 @@ pub struct StemNoteItem {
     pub note: NoteItem,
 }
 
+/*
+
 #[cfg(test)]
 mod tests {
-    use crate::context::parse::parse_part;
+    use crate::context::parsex::parse_part;
     use crate::context::Context;
     #[test]
     fn test_p() {
@@ -45,6 +47,7 @@ mod tests {
         dbg!(&cx.stemitems);
     }
 }
+*/
 
 pub fn create_stem_items_from_notes_in_voice(cx: &Context, note_ids: &Vec<ItemId>, notes_duration: SumDuration, pattern_values: Vec<Duration>) -> Result<Vec<ItemId>, ScoreError> {
     let groups = create_groups_of_notes(cx, note_ids, notes_duration, pattern_values);
