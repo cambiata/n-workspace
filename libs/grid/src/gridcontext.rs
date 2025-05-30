@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::fmt::Debug;
 
 use crate::griditem::{GridColumn, GridItem, GridItemType, GridRow};
-use graphics::rectangle::rectangles_overlap_x;
+use graphics::rectangle::{rectangles_overlap_x, Rectangle};
 
 #[derive(Debug)]
 pub struct GridContext<T>
@@ -12,9 +12,11 @@ where
     pub items: RefCell<Vec<GridItem<T>>>,
     pub cols: RefCell<Vec<GridColumn>>,
     pub cols_overlaps: RefCell<Vec<f32>>,
+    pub cols_durations: RefCell<Vec<usize>>,
     pub rows: RefCell<Vec<GridRow>>,
 }
 
+#[allow(unused_variables)]
 impl<T> GridContext<T>
 where
     T: Debug + Copy + Clone,
@@ -24,6 +26,7 @@ where
             items: RefCell::new(Vec::new()),
             cols: RefCell::new(Vec::new()),
             cols_overlaps: RefCell::new(Vec::new()),
+            cols_durations: RefCell::new(Vec::new()),
             rows: RefCell::new(Vec::new()),
         };
         Box::leak(Box::new(cx))
@@ -78,43 +81,94 @@ where
         self.cols_overlaps.borrow_mut().push(0.0); // one extra for the last column?
     }
 
+    pub fn set_durations(&self, durations: Vec<usize>) {
+        let mut cx_cols_durations = self.cols_durations.borrow_mut();
+        cx_cols_durations.clear();
+        cx_cols_durations.extend(durations);
+        dbg!(cx_cols_durations);
+    }
+
     pub fn calculate_minimal_col_spacing(&self) {
         let colindexes: Vec<usize> = (0..self.cols.borrow().len()).collect();
         let self_items = self.items.borrow();
         let self_rows = self.rows.borrow();
         let mut self_cols_overlaps = self.cols_overlaps.borrow_mut();
+        let mut prev_rect_data: Vec<PrevRectData> = vec![None; self.rows.borrow().len()];
 
-        // let mut current_left_col_x = 0.0;
-        // let mut current_right_col_x = 0.0;
+        // pass one: calculate overlaps for each column pair
         for colidx in colindexes.windows(2) {
             let left_colidx = colidx[0];
             let right_colidx = colidx[1];
-
-            // current_left_col_x += cols_overlaps[left_colidx];
-            // current_right_col_x += cols_overlaps[right_colidx];
-
             for (rowidx, row) in self_rows.iter().enumerate() {
-                println!("Rowidx {rowidx} --------------------------------------");
+                println!("colidx {left_colidx}-{right_colidx}, Rowidx {rowidx} --------");
                 let left_item = &self_items[row.item_ids[left_colidx]];
                 let right_item = &self_items[row.item_ids[right_colidx]];
                 match (&left_item.gitype, &right_item.gitype) {
                     (GridItemType::Rectangles(ref left_rects, _), GridItemType::Rectangles(ref right_rects, _)) => {
+                        // println!("- Both items are Rectangles");
                         let overlap_x = rectangles_overlap_x(left_rects, right_rects);
-                        dbg!(overlap_x);
+                        // dbg!(overlap_x);
 
                         if overlap_x > self_cols_overlaps[right_colidx] {
                             self_cols_overlaps[right_colidx] = overlap_x;
                         }
+                        // Store the right rectangles for later use
+                        prev_rect_data[rowidx] = Some((right_colidx, right_rects.clone()));
                     }
-                    (GridItemType::Empty, _) => {
-                        println!("Left item is Empty");
+                    (GridItemType::Empty, GridItemType::Rectangles(ref right_rects, _)) => {
+                        // println!("- (Empty, Rectangles) - Right item is Rectangles");
+                        if let Some((prev_colidx, prev_rects)) = &prev_rect_data[rowidx] {
+                            // println!("- Compare right_rects column {right_colidx} with previous rectangles at column {prev_colidx}");
+
+                            let sum_cols_overlaps = ((prev_colidx + 1)..=right_colidx).map(|i| self_cols_overlaps[i]).sum::<f32>();
+                            let overlap_x = rectangles_overlap_x(prev_rects, right_rects);
+                            let factor = (overlap_x - sum_cols_overlaps).max(0.0);
+                            if factor > 0.0 {
+                                self_cols_overlaps[right_colidx] = self_cols_overlaps[right_colidx] + factor;
+                            }
+                        } else {
+                            // println!("- No previous rectangles to compare with");
+                        }
                     }
-                    (_, GridItemType::Empty) => {
-                        println!("Right item is Empty");
+                    (GridItemType::Rectangles(ref left_rects, _), GridItemType::Empty) => {
+                        // println!("- (Rectangles, Empty) - Left item is Rectangles");
+                        // println!("- Store left_rects for later use");
+                        prev_rect_data[rowidx] = Some((left_colidx, left_rects.clone()));
                     }
+                    (GridItemType::Empty, GridItemType::Empty) => {
+                        println!("- Both items are empty, no overlap to calculate");
+                    }
+                }
+                // dbg!(&prev_rect_data);
+            }
+        }
+
+        // calculate last column's width
+        let last_colidx = self.cols.borrow().len() - 1;
+        let mut max_w: f32 = 0.0;
+        for rowidx in 0..self_rows.len() {
+            println!("Row {rowidx} - Last column {last_colidx} --------");
+            let item_id = &self_rows[rowidx].item_ids[last_colidx];
+            let item = &self_items[*item_id];
+
+            match &item.gitype {
+                GridItemType::Rectangles(ref rects, _) => {
+                    dbg!(rects);
+                    for rect in rects.iter() {
+                        max_w = max_w.max(rect.2 + rect.0);
+                    }
+
+                    // Ensure the last column has enough space for the widest rectangle
+                    if self_cols_overlaps[last_colidx + 1] < max_w {
+                        self_cols_overlaps[last_colidx + 1] = max_w;
+                    }
+                }
+                GridItemType::Empty => {
+                    // No action needed for empty items
                 }
             }
         }
-        dbg!(self_cols_overlaps);
     }
 }
+
+type PrevRectData = Option<(usize, Vec<Rectangle>)>;

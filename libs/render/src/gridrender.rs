@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fmt::Debug, fs};
 
 use graphics::{
     color::Color,
@@ -17,6 +17,7 @@ pub fn render_gridcontext_with_color(cx: &'static GridContext<Color>) {
     let cx_cols_overlaps = &cx.cols_overlaps.borrow();
 
     let mut move_y = 0.0;
+
     for row in cx_rows.iter() {
         let mut move_x = 0.0;
         for (colidx, item_id) in row.item_ids.iter().enumerate() {
@@ -29,20 +30,18 @@ pub fn render_gridcontext_with_color(cx: &'static GridContext<Color>) {
                     }
                 }
                 GridItemType::Empty => {
-                    println!("Rendering empty item");
-                    graphic_items.push(GraphicItem::Rect(move_x - 1., move_y, 2., 2., Stroke::None, Fill::Solid(Color::Orange), None));
+                    // println!("Rendering empty item");
+                    graphic_items.push(GraphicItem::Rect(move_x, move_y, 1., 1., Stroke::None, Fill::Solid(Color::Orange), None));
                 }
             }
         }
-        move_y += 20.0;
+        move_y += 10.0;
     }
 
     let mut move_x = 0.0;
     for (_colidx, overlap) in cx_cols_overlaps.iter().enumerate() {
         move_x = move_x + *overlap;
-        // dbg!(overlap, move_x);
-
-        graphic_items.push(GraphicItem::Line(move_x, 0.0, move_x, move_y, Stroke::Solid(0.5, Color::RGBA(0, 0, 0, 0.5)), None));
+        graphic_items.push(GraphicItem::Line(move_x - 0.1, 0.0, move_x, move_y, Stroke::Solid(0.2, Color::RGBA(0, 0, 0, 0.2)), None));
     }
 
     // let graphic_items = items_scale(graphic_items, 3.0, 3.0);

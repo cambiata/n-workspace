@@ -8,8 +8,6 @@ pub struct GridItem<T> {
     pub gitype: GridItemType<T>,
 }
 
-// pub type Rectangle = (f32, f32, f32, f32);
-
 #[derive(Debug)]
 pub enum GridItemType<T> {
     Empty,

@@ -8,6 +8,7 @@ members = [
     "libs/utils",
     "libs/grid",
     "libs/dev",
+    "libs/parse",
 ]
 
 [workspace.dependencies]
