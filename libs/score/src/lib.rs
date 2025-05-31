@@ -28,7 +28,7 @@ pub fn build_score(cx: &CoreContext) -> Result<(), Box<dyn std::error::Error>> {
                     // }
                     for complex_id in complexids.get(part_id).expect("Part ID not found in map") {
                         let complex = &cx.complexes.borrow()[*complex_id as usize];
-                        dbg!(complex);
+                        dbg!(&complex);
                     }
                 }
             }
