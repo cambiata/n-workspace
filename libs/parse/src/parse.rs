@@ -4,6 +4,7 @@ use core::context::CoreContext;
 use core::duration::{NoteDuration, SumDuration};
 use core::head::HeadItem;
 use core::note::{NoteItem, NoteType};
+use core::part::complex::ComplexInfo;
 use core::part::{complex::create_complexes_for_part, PartItem, PartType};
 use core::sysitem::{SysItem, SysItemType};
 use core::voice::stemdirections::calculate_stemitem_directions;
@@ -11,6 +12,7 @@ use core::voice::stemitems::create_stem_items_from_notes_in_voice;
 use core::voice::{VoiceItem, VoiceType};
 use core::ItemId;
 use std::cmp::max;
+use std::vec;
 
 pub fn parse_head(_cx: &CoreContext, value: &str) -> Result<HeadItem, Box<dyn std::error::Error>> {
     let value = value.trim();
@@ -121,7 +123,7 @@ pub fn parse_parttype(cx: &CoreContext, value: &str) -> Result<PartType, Box<dyn
     Ok(ptype)
 }
 
-pub fn parse_part(cx: &CoreContext, value: &str) -> Result<(ItemId, SumDuration), Box<dyn std::error::Error>> {
+pub fn parse_part(cx: &CoreContext, value: &str) -> Result<ItemId, Box<dyn std::error::Error>> {
     let mut value = value.trim();
     if value.starts_with("%") {
         value = value[1..].trim();
@@ -137,15 +139,14 @@ pub fn parse_part(cx: &CoreContext, value: &str) -> Result<(ItemId, SumDuration)
     let id = cx.parts.borrow().len();
 
     calculate_stemitem_directions(cx, &ptype);
-    create_complexes_for_part(cx, &ptype, id);
-
-    let info = PartItem { id, duration, ptype };
+    let complexids = create_complexes_for_part(cx, &ptype, id);
+    let info = PartItem { id, duration, ptype, complexids };
     cx.parts.borrow_mut().push(info);
 
-    Ok((id, duration))
+    Ok(id)
 }
 
-pub fn parse_parts(cx: &CoreContext, value: &str) -> Result<Vec<(ItemId, SumDuration)>, Box<dyn std::error::Error>> {
+pub fn parse_parts(cx: &CoreContext, value: &str) -> Result<Vec<ItemId>, Box<dyn std::error::Error>> {
     let mut value = value.trim();
     if value.starts_with("/") {
         value = value[1..].trim();
@@ -153,16 +154,16 @@ pub fn parse_parts(cx: &CoreContext, value: &str) -> Result<Vec<(ItemId, SumDura
 
     let segments = value.split("/").collect::<Vec<_>>();
 
-    let ids_and_durations: Vec<(ItemId, SumDuration)> = segments
+    let ids: Vec<ItemId> = segments
         .iter()
         .map(|s| {
             let s = s.trim();
-            let id_and_duration = parse_part(cx, s).expect("Could not parse parts");
-            id_and_duration
+            let id = parse_part(cx, s).expect("Could not parse parts");
+            id
         })
         .collect::<Vec<_>>();
 
-    Ok(ids_and_durations)
+    Ok(ids)
 }
 
 pub fn parse_sysitemtype(_cx: &CoreContext, value: &str) -> Result<SysItemType, Box<dyn std::error::Error>> {
@@ -170,19 +171,35 @@ pub fn parse_sysitemtype(_cx: &CoreContext, value: &str) -> Result<SysItemType, 
     if value.starts_with("|") {
         value = value[1..].trim();
     }
-
     let t = if value.starts_with("clef") {
         let segments = value.split(" ").filter(|s| !s.is_empty()).skip(1).map(|s| ClefSignature::find(s)).collect::<Vec<_>>();
         SysItemType::Clefs(segments)
     } else if value.starts_with("bl") {
         SysItemType::Other
     } else {
-        let ids_and_durations = parse_parts(_cx, value)?;
-        let max_duration = ids_and_durations.iter().map(|(_, d)| *d).max().unwrap();
-        let ids = ids_and_durations.iter().map(|(id, _)| *id).collect::<Vec<_>>();
-        SysItemType::Parts(ids, max_duration)
+        let parts_ids = parse_parts(_cx, value)?;
+        let parts_complexes_infos = parts_ids.iter().map(|part_id| get_complex_infos_for_part(_cx, *part_id).unwrap()).collect::<Vec<_>>();
+        let max_duration = parts_complexes_infos.iter().map(|pci| pci.last().unwrap()).map(|pci| pci.2 + pci.1).max().unwrap();
+        SysItemType::Parts(parts_ids, max_duration, parts_complexes_infos)
     };
     Ok(t)
+}
+
+fn get_complex_infos_for_part(cx: &CoreContext, part_id: usize) -> Result<Vec<ComplexInfo>, Box<dyn std::error::Error>> {
+    let parts = cx.parts.borrow();
+    let part = &parts[part_id];
+    let complexids = &part.complexids;
+    let complexes = cx.complexes.borrow();
+
+    let complex_infos: Vec<ComplexInfo> = complexids
+        .iter()
+        .map(|&complex_id| {
+            let complex = &complexes[complex_id];
+            (complex_id, complex.position, complex.duration)
+        })
+        .collect();
+
+    Ok(complex_infos)
 }
 
 pub fn parse_sysitems(cx: &CoreContext, value: &str) -> Result<Vec<ItemId>, Box<dyn std::error::Error>> {
@@ -202,7 +219,11 @@ pub fn parse_sysitems(cx: &CoreContext, value: &str) -> Result<Vec<ItemId>, Box<
             let s = s.trim();
             let id = cx.sysitems.borrow().len();
             let stype = parse_sysitemtype(cx, s).expect("Could not parse sysitemtype");
-            let s = SysItem { id, stype };
+            let s = SysItem {
+                id,
+                stype,
+                // complexes_durations: vec![],
+            };
             cx.sysitems.borrow_mut().push(s);
             id
         })

@@ -34,16 +34,16 @@ pub enum ComplexHeadOffsets {
     UpperLowerX(f32, f32),
 }
 
-pub fn create_complexes_for_part(cx: &CoreContext, ptype: &PartType, part_id: ItemId) {
+pub type ComplexInfo = (usize, usize, usize);
+
+pub fn create_complexes_for_part(cx: &CoreContext, ptype: &PartType, part_id: ItemId) -> Vec<usize> {
     match ptype {
         PartType::OneVoice(ref voice_item) => {
             //
             match voice_item.vtype {
-                VoiceType::NoteIds(ref note_ids, duration, _) => {
-                    create_complexes_for_one_voice(cx, note_ids, duration, true, part_id);
-                }
+                VoiceType::NoteIds(ref note_ids, duration, _) => create_complexes_for_one_voice(cx, note_ids, duration, true, part_id),
                 _ => {
-                    todo!();
+                    todo!()
                 }
             }
         }
@@ -53,14 +53,10 @@ pub fn create_complexes_for_part(cx: &CoreContext, ptype: &PartType, part_id: It
                 //----------------------------------------------
                 // for both upper and lower music voices
                 (VoiceType::NoteIds(ref note_ids_upper, duration_upper, _), VoiceType::NoteIds(ref note_ids_lower, duration_lower, _)) => {
-                    create_complexes_for_two_voices(cx, note_ids_upper, note_ids_lower, *duration_upper.max(duration_lower), part_id);
+                    create_complexes_for_two_voices(cx, note_ids_upper, note_ids_lower, *duration_upper.max(duration_lower), part_id)
                 }
-                (VoiceType::Barpause, VoiceType::NoteIds(ref note_ids_lower, duration, _)) => {
-                    create_complexes_for_one_voice(cx, note_ids_lower, *duration, false, part_id);
-                }
-                (VoiceType::NoteIds(ref note_ids_upper, duration, _), VoiceType::Barpause) => {
-                    create_complexes_for_one_voice(cx, note_ids_upper, *duration, true, part_id);
-                }
+                (VoiceType::Barpause, VoiceType::NoteIds(ref note_ids_lower, duration, _)) => create_complexes_for_one_voice(cx, note_ids_lower, *duration, false, part_id),
+                (VoiceType::NoteIds(ref note_ids_upper, duration, _), VoiceType::Barpause) => create_complexes_for_one_voice(cx, note_ids_upper, *duration, true, part_id),
 
                 _ => todo!("Invalid voice type"),
             }
@@ -70,7 +66,7 @@ pub fn create_complexes_for_part(cx: &CoreContext, ptype: &PartType, part_id: It
     // dbg!(&cx.complexes);
 }
 
-pub fn create_complexes_for_one_voice(cx: &CoreContext, note_ids: &Vec<ItemId>, part_duration: usize, is_upper_voice: bool, part_id: ItemId) {
+pub fn create_complexes_for_one_voice(cx: &CoreContext, note_ids: &Vec<ItemId>, part_duration: usize, is_upper_voice: bool, part_id: ItemId) -> Vec<usize> {
     let notes = cx.notes.borrow();
     // let notes_positions = cx.notes_positions.borrow();
 
@@ -95,6 +91,8 @@ pub fn create_complexes_for_one_voice(cx: &CoreContext, note_ids: &Vec<ItemId>, 
     });
 
     let mut partid_complexids: Vec<usize> = vec![];
+    // let mut partid_complexpositions: Vec<usize> = vec![];
+    // let mut partid_complexdurations: Vec<usize> = vec![];
     for note_id in note_ids {
         // let note_position = notes_positions.get(&note_id).unwrap();
 
@@ -116,16 +114,20 @@ pub fn create_complexes_for_one_voice(cx: &CoreContext, note_ids: &Vec<ItemId>, 
             ctype: ctype,
             offsets: ComplexHeadOffsets::None,
         };
-        cx.complexes.borrow_mut().push(complex);
         cx.map_noteid_complexid.borrow_mut().insert(*note_id, id as ItemId);
         partid_complexids.push(id);
+        // partid_complexpositions.push(complex.position);
+        // partid_complexdurations.push(complex.duration);
+
+        cx.complexes.borrow_mut().push(complex);
     }
 
     // store partid_complexids in context
-    cx.map_partid_complexids.borrow_mut().insert(part_id, partid_complexids);
+    // cx.map_partid_complexids.borrow_mut().insert(part_id, partid_complexids);
+    partid_complexids
 }
 
-pub fn create_complexes_for_two_voices(cx: &CoreContext, note_ids_upper: &Vec<ItemId>, note_ids_lower: &Vec<ItemId>, part_duration: usize, part_id: ItemId) {
+pub fn create_complexes_for_two_voices(cx: &CoreContext, note_ids_upper: &Vec<ItemId>, note_ids_lower: &Vec<ItemId>, part_duration: usize, part_id: ItemId) -> Vec<usize> {
     let notes = cx.notes.borrow();
     let mut map: BTreeMap<usize, Vec<Option<ItemId>>> = BTreeMap::new();
 
@@ -179,6 +181,9 @@ pub fn create_complexes_for_two_voices(cx: &CoreContext, note_ids_upper: &Vec<It
     //----------------------------------------------------------------------
     // create complex types
     let mut partid_complexids: Vec<usize> = vec![];
+    // let mut partid_complexpositions: Vec<usize> = vec![];
+    // let mut partid_complexdurations: Vec<usize> = vec![];
+
     for (position, note_ids) in &map {
         let ctype = match note_ids.as_slice() {
             [Some(note_upper_id), Some(note_lower_id)] => {
@@ -222,16 +227,20 @@ pub fn create_complexes_for_two_voices(cx: &CoreContext, note_ids_upper: &Vec<It
             offsets,
         };
 
-        cx.complexes.borrow_mut().push(complex);
         for note_id in note_ids {
             if let Some(note_id) = note_id {
                 cx.map_noteid_complexid.borrow_mut().insert(*note_id, id as ItemId);
             }
         }
         partid_complexids.push(id);
+        // partid_complexpositions.push(complex.position);
+        // partid_complexdurations.push(complex.duration);
+
+        cx.complexes.borrow_mut().push(complex);
     }
     // store partid_complexids in context
-    cx.map_partid_complexids.borrow_mut().insert(part_id, partid_complexids);
+    // cx.map_partid_complexids.borrow_mut().insert(part_id, partid_complexids);
+    partid_complexids
 }
 
 fn calculate_head_offsets(ctype: &ComplexType) -> ComplexHeadOffsets {

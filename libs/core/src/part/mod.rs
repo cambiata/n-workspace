@@ -14,4 +14,5 @@ pub struct PartItem {
     pub id: ItemId,
     pub duration: SumDuration,
     pub ptype: PartType,
+    pub complexids: Vec<usize>,
 }

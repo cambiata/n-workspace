@@ -1,8 +1,8 @@
-use crate::{clef::ClefSignature, duration::SumDuration, ItemId};
+use crate::{clef::ClefSignature, duration::SumDuration, part::complex::ComplexInfo, ItemId};
 
 #[derive(Debug)]
 pub enum SysItemType {
-    Parts(Vec<ItemId>, SumDuration),
+    Parts(Vec<ItemId>, SumDuration, Vec<Vec<ComplexInfo>>),
     Clefs(Vec<ClefSignature>),
     Barline,
     Other,
@@ -12,4 +12,5 @@ pub enum SysItemType {
 pub struct SysItem {
     pub id: ItemId,
     pub stype: SysItemType,
+    // pub complexes_durations: Vec<usize>,
 }

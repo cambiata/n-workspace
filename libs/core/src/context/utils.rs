@@ -10,7 +10,7 @@ pub fn check_sysitems_parts_integrity(cx: &CoreContext, sysitems: Vec<ItemId>) -
         let sysitem = sysitems.get(sysitemid as usize).unwrap();
 
         match sysitem.stype {
-            SysItemType::Parts(ref parts, _) => {
+            SysItemType::Parts(ref parts, _, _) => {
                 count = match count {
                     Some(c) => {
                         if c != parts.len() as u8 {

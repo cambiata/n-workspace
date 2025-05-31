@@ -18,7 +18,8 @@ pub struct CoreContext {
     pub sysitems: RefCell<Vec<SysItem>>,
     pub complexes: RefCell<Vec<ComplexItem>>,
     pub stemitems: RefCell<Vec<StemItem>>,
-    pub map_partid_complexids: RefCell<BTreeMap<ItemId, Vec<ItemId>>>,
+    // pub map_partid_complexids: RefCell<BTreeMap<ItemId, Vec<ItemId>>>,
+    // pub map_sysitemid_complexdurations: RefCell<BTreeSet<ItemId>>,
 }
 
 impl CoreContext {
@@ -30,7 +31,8 @@ impl CoreContext {
             sysitems: RefCell::new(Vec::new()),
             complexes: RefCell::new(Vec::new()),
             stemitems: RefCell::new(Vec::new()),
-            map_partid_complexids: RefCell::new(BTreeMap::new()),
+            // map_partid_complexids: RefCell::new(BTreeMap::new()),
+            // map_sysitemid_complexdurations: RefCell::new(BTreeSet::new()),
         };
         Box::leak(Box::new(cx))
     }

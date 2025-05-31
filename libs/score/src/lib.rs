@@ -7,30 +7,16 @@ pub fn build_score(cx: &CoreContext) -> Result<(), Box<dyn std::error::Error>> {
 
     let sysitems = cx.sysitems.borrow();
     let _parts = cx.parts.borrow();
-    let complexids = cx.map_partid_complexids.borrow();
+    // let complexids = cx.map_partid_complexids.borrow();
 
     for (sysidx, sysitem) in sysitems.iter().enumerate() {
         println!("SysItem: {:?}", sysitem);
         match &sysitem.stype {
-            SysItemType::Parts(part_ids, _sum_duration) => {
-                for part_id in part_ids {
-                    // let _part = &parts[*part_id as usize];
-                    // match &part.ptype {
-                    //     core::part::PartType::OneVoice(_voice) => {
-                    //         println!("Simple part found in system {}", sysidx);
-                    //     }
-                    //     core::part::PartType::TwoVoice(_upper_voice, _lower_voice) => {
-                    //         println!("Complex part found in system {}", sysidx);
-                    //     }
-                    //     core::part::PartType::OtherPart => {
-                    //         todo!();
-                    //     }
-                    // }
-                    for complex_id in complexids.get(part_id).expect("Part ID not found in map") {
-                        let complex = &cx.complexes.borrow()[*complex_id as usize];
-                        dbg!(&complex);
-                    }
-                }
+            SysItemType::Parts(_part_ids, _sum_duration, _complexes_infos) => {
+                // for part_id in part_ids {
+                //     let _part = &parts[*part_id as usize];
+                //     dbg!(&_part);
+                // }
             }
             SysItemType::Clefs(_clefs) => {
                 println!("Clef found in system {}", sysidx);
