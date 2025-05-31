@@ -16,7 +16,7 @@ pub struct ComplexItem {
     pub position: usize,
     pub duration: usize,
     pub ctype: ComplexType,
-    pub offsets: ComplexNoteOffsets,
+    pub offsets: ComplexHeadOffsets,
 }
 
 #[derive(Debug)]
@@ -27,7 +27,7 @@ pub enum ComplexType {
 }
 
 #[derive(Debug)]
-pub enum ComplexNoteOffsets {
+pub enum ComplexHeadOffsets {
     None,
     UpperX(f32),
     LowerX(f32),
@@ -114,7 +114,7 @@ pub fn create_complexes_for_one_voice(cx: &CoreContext, note_ids: &Vec<ItemId>, 
             position: note.position,
             duration: *map_durations.get(&note.position).unwrap(),
             ctype: ctype,
-            offsets: ComplexNoteOffsets::None,
+            offsets: ComplexHeadOffsets::None,
         };
         cx.complexes.borrow_mut().push(complex);
         cx.map_noteid_complexid.borrow_mut().insert(*note_id, id as ItemId);
@@ -209,7 +209,7 @@ pub fn create_complexes_for_two_voices(cx: &CoreContext, note_ids_upper: &Vec<It
         };
 
         // calculate head offsets to avoid collisions
-        let offsets = calculate_offsets(&ctype);
+        let offsets = calculate_head_offsets(&ctype);
 
         // store complex in context
         let id = cx.complexes.borrow().len();
@@ -234,13 +234,13 @@ pub fn create_complexes_for_two_voices(cx: &CoreContext, note_ids_upper: &Vec<It
     cx.map_partid_complexids.borrow_mut().insert(part_id, partid_complexids);
 }
 
-fn calculate_offsets(ctype: &ComplexType) -> ComplexNoteOffsets {
+fn calculate_head_offsets(ctype: &ComplexType) -> ComplexHeadOffsets {
     match ctype {
         ComplexType::UpperAndLower(_, _, level_diff) => match level_diff {
-            _ if *level_diff <= 0 => ComplexNoteOffsets::UpperX(-10.0),
-            _ if *level_diff == 1 => ComplexNoteOffsets::LowerX(5.0),
-            _ => ComplexNoteOffsets::None,
+            _ if *level_diff <= 0 => ComplexHeadOffsets::UpperX(-10.0),
+            _ if *level_diff == 1 => ComplexHeadOffsets::LowerX(5.0),
+            _ => ComplexHeadOffsets::None,
         },
-        _ => ComplexNoteOffsets::None,
+        _ => ComplexHeadOffsets::None,
     }
 }
