@@ -12,6 +12,7 @@ use core::voice::stemitems::create_stem_items_from_notes_in_voice;
 use core::voice::{VoiceItem, VoiceType};
 use core::ItemId;
 use std::cmp::max;
+use std::collections::BTreeSet;
 use std::vec;
 
 pub fn parse_head(_cx: &CoreContext, value: &str) -> Result<HeadItem, Box<dyn std::error::Error>> {
@@ -178,9 +179,22 @@ pub fn parse_sysitemtype(_cx: &CoreContext, value: &str) -> Result<SysItemType, 
         SysItemType::Other
     } else {
         let parts_ids = parse_parts(_cx, value)?;
+
         let parts_complexes_infos = parts_ids.iter().map(|part_id| get_complex_infos_for_part(_cx, *part_id).unwrap()).collect::<Vec<_>>();
+
         let max_duration = parts_complexes_infos.iter().map(|pci| pci.last().unwrap()).map(|pci| pci.2 + pci.1).max().unwrap();
-        SysItemType::Parts(parts_ids, max_duration, parts_complexes_infos)
+
+        let mut sysitem_positions: BTreeSet<usize> = parts_complexes_infos.iter().flat_map(|pci| pci.iter().map(|c| c.1)).collect();
+        sysitem_positions.insert(max_duration);
+
+        let sysitem_positions: Vec<usize> = sysitem_positions.into_iter().collect();
+        let system_positions: Vec<usize> = sysitem_positions.into_iter().collect();
+
+        let system_durations = system_positions.windows(2).map(|w| w[1] - w[0]).collect::<Vec<_>>();
+
+        let positions_durations: Vec<(usize, usize)> = system_positions.iter().zip(system_durations.iter()).map(|(pos, dur)| (*pos, *dur)).collect::<Vec<_>>();
+
+        SysItemType::Parts(parts_ids, max_duration, parts_complexes_infos, positions_durations)
     };
     Ok(t)
 }
