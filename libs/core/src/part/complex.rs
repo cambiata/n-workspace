@@ -16,6 +16,7 @@ pub struct ComplexItem {
     pub position: usize,
     pub duration: usize,
     pub ctype: ComplexType,
+    pub offsets: ComplexNoteOffsets,
 }
 
 #[derive(Debug)]
@@ -23,6 +24,14 @@ pub enum ComplexType {
     UpperAndLower(NoteItem, NoteItem, i8),
     Upper(NoteItem),
     Lower(NoteItem),
+}
+
+#[derive(Debug)]
+pub enum ComplexNoteOffsets {
+    None,
+    UpperX(f32),
+    LowerX(f32),
+    UpperLowerX(f32, f32),
 }
 
 pub fn create_complexes_for_part(cx: &CoreContext, ptype: &PartType, part_id: ItemId) {
@@ -105,6 +114,7 @@ pub fn create_complexes_for_one_voice(cx: &CoreContext, note_ids: &Vec<ItemId>, 
             position: note.position,
             duration: *map_durations.get(&note.position).unwrap(),
             ctype: ctype,
+            offsets: ComplexNoteOffsets::None,
         };
         cx.complexes.borrow_mut().push(complex);
         cx.map_noteid_complexid.borrow_mut().insert(*note_id, id as ItemId);
@@ -175,7 +185,7 @@ pub fn create_complexes_for_two_voices(cx: &CoreContext, note_ids_upper: &Vec<It
                 let note_upper = notes.get(*note_upper_id).unwrap();
                 let note_lower = notes.get(*note_lower_id).unwrap();
 
-                // check for note head collisions...
+                // store value for check for note head collisions...
                 let level_diff: i8 = match (&note_upper.ntype, &note_lower.ntype) {
                     (NoteType::Heads(heads_upper), NoteType::Heads(heads_lower)) => {
                         // dbg!("Check for note head collisions...", &heads_upper, &heads_lower);
@@ -198,6 +208,9 @@ pub fn create_complexes_for_two_voices(cx: &CoreContext, note_ids_upper: &Vec<It
             _ => todo!("Invalid notes"),
         };
 
+        // calculate head offsets to avoid collisions
+        let offsets = calculate_offsets(&ctype);
+
         // store complex in context
         let id = cx.complexes.borrow().len();
         let complex = ComplexItem {
@@ -206,6 +219,7 @@ pub fn create_complexes_for_two_voices(cx: &CoreContext, note_ids_upper: &Vec<It
             position: *position,
             duration: *map_durations.get(position).unwrap(),
             ctype: ctype,
+            offsets,
         };
 
         cx.complexes.borrow_mut().push(complex);
@@ -218,4 +232,15 @@ pub fn create_complexes_for_two_voices(cx: &CoreContext, note_ids_upper: &Vec<It
     }
     // store partid_complexids in context
     cx.map_partid_complexids.borrow_mut().insert(part_id, partid_complexids);
+}
+
+fn calculate_offsets(ctype: &ComplexType) -> ComplexNoteOffsets {
+    match ctype {
+        ComplexType::UpperAndLower(_, _, level_diff) => match level_diff {
+            _ if *level_diff <= 0 => ComplexNoteOffsets::UpperX(-10.0),
+            _ if *level_diff == 1 => ComplexNoteOffsets::LowerX(5.0),
+            _ => ComplexNoteOffsets::None,
+        },
+        _ => ComplexNoteOffsets::None,
+    }
 }
