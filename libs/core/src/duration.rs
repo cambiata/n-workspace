@@ -1,5 +1,3 @@
-use core::fmt;
-
 pub type SumDuration = usize;
 
 #[derive(Debug, Copy, Clone, PartialEq)]

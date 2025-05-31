@@ -25,23 +25,6 @@ pub enum ComplexType {
     Lower(NoteItem),
 }
 
-/*
-#[cfg(test)]
-mod tests {
-
-    use crate::context::Context;
-    use parse::parse_part;
-
-    #[test]
-    fn test_p() {
-        let cx = Context::new();
-        let _ = parse_part(cx, "d8 2 2 0 % d2 3 d4 3").unwrap();
-        dbg!(&cx.stemitems);
-        // create_complexes_for_part(cx, part_id);
-    }
-}
-    */
-
 pub fn create_complexes_for_part(cx: &CoreContext, ptype: &PartType, part_id: ItemId) {
     match ptype {
         PartType::OneVoice(ref voice_item) => {
@@ -102,6 +85,7 @@ pub fn create_complexes_for_one_voice(cx: &CoreContext, note_ids: &Vec<ItemId>, 
         map_durations.insert(start, duration);
     });
 
+    let mut partid_complexids: Vec<usize> = vec![];
     for note_id in note_ids {
         // let note_position = notes_positions.get(&note_id).unwrap();
 
@@ -124,7 +108,11 @@ pub fn create_complexes_for_one_voice(cx: &CoreContext, note_ids: &Vec<ItemId>, 
         };
         cx.complexes.borrow_mut().push(complex);
         cx.map_noteid_complexid.borrow_mut().insert(*note_id, id as ItemId);
+        partid_complexids.push(id);
     }
+
+    // store partid_complexids in context
+    cx.map_partid_complexids.borrow_mut().insert(part_id, partid_complexids);
 }
 
 pub fn create_complexes_for_two_voices(cx: &CoreContext, note_ids_upper: &Vec<ItemId>, note_ids_lower: &Vec<ItemId>, part_duration: usize, part_id: ItemId) {
@@ -180,6 +168,7 @@ pub fn create_complexes_for_two_voices(cx: &CoreContext, note_ids_upper: &Vec<It
 
     //----------------------------------------------------------------------
     // create complex types
+    let mut partid_complexids: Vec<usize> = vec![];
     for (position, note_ids) in &map {
         let ctype = match note_ids.as_slice() {
             [Some(note_upper_id), Some(note_lower_id)] => {
@@ -225,5 +214,8 @@ pub fn create_complexes_for_two_voices(cx: &CoreContext, note_ids_upper: &Vec<It
                 cx.map_noteid_complexid.borrow_mut().insert(*note_id, id as ItemId);
             }
         }
+        partid_complexids.push(id);
     }
+    // store partid_complexids in context
+    cx.map_partid_complexids.borrow_mut().insert(part_id, partid_complexids);
 }
