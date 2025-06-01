@@ -27,8 +27,8 @@ pub fn render_gridcontext_with_color(cx: &'static GridContext<Color>) -> String 
             move_x += cx_cols_overlaps[colidx];
             let item = &cx.items.borrow()[*item_id];
             match item.gitype {
-                GridItemType::Rectangles(ref rects, ref colors) => {
-                    for (rect, color) in rects.iter().zip(colors.iter()) {
+                GridItemType::Rectangles(ref items) => {
+                    for (rect, color) in items.iter() {
                         graphic_items.push(GraphicItem::Rect(rect.0 + move_x, rect.1 + move_y, rect.2, rect.3, Stroke::None, Fill::Solid(*color), None));
                     }
                 }

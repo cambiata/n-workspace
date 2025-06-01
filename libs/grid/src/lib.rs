@@ -29,9 +29,9 @@ mod tests2 {
         // ];
 
         let items = vec![vec![
-            GridItemType::Rectangles(vec![(0.0, 0.0, 5.0, 10.0)], vec![TestEnum::Blue]),
-            GridItemType::Rectangles(vec![(0.0, 0.0, 10.0, 10.0)], vec![TestEnum::Red]),
-            GridItemType::Rectangles(vec![(0.0, 0.0, 5.0, 10.0)], vec![TestEnum::Orange]),
+            GridItemType::Rectangles(vec![((0.0, 0.0, 5.0, 10.0), TestEnum::Blue)]),
+            GridItemType::Rectangles(vec![((0.0, 0.0, 10.0, 10.0), TestEnum::Red)]),
+            GridItemType::Rectangles(vec![((0.0, 0.0, 5.0, 10.0), TestEnum::Orange)]),
         ]];
 
         cx.add_items(items);
