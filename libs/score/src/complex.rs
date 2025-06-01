@@ -11,11 +11,11 @@ use utils::f32_ext::{half::F32ExtHalf, round::F32ExtRound2};
 
 use crate::{
     constants::{ACCIDENTAL_HEIGHT, ACCIDENTAL_WIDTH, HEAD_WIDTH_BLACK, HEAD_WIDTH_WHITE, HEAD_WIDTH_WHOLE, REST_WIDTH, SPACE, SPACE2, SPACE_HALF},
-    scoreitem::{ScoreItem, ScoreRectangle, ScoreRectangles},
+    glyphitem::{GlyphItem, GlyphRectangle, GlyphsRectangles},
 };
 
-pub fn create_rectangles_complex(_cx: &CoreContext, _partidx: usize, _complex: &Complex) -> ScoreRectangles {
-    let mut rectangles: ScoreRectangles = Vec::new();
+pub fn create_rectangles_complex(_cx: &CoreContext, _partidx: usize, _complex: &Complex) -> GlyphsRectangles {
+    let mut rectangles: GlyphsRectangles = Vec::new();
 
     match _complex.ctype {
         ComplexType::Upper(ref note) => {
@@ -75,16 +75,16 @@ pub fn collect_accidentals(_cx: &CoreContext, _note: &NoteItem) -> Vec<(i8, Acci
     accidentals
 }
 
-fn create_rectangles_accidentals(accs: &[(i8, Accidental)]) -> ScoreRectangles {
-    let mut rectangles: ScoreRectangles = Vec::new();
+fn create_rectangles_accidentals(accs: &[(i8, Accidental)]) -> GlyphsRectangles {
+    let mut rectangles: GlyphsRectangles = Vec::new();
     for (accidx, (level, accidental)) in accs.iter().enumerate() {
         let x = (-ACCIDENTAL_WIDTH * (accidx as f32)) - ACCIDENTAL_WIDTH;
         let level_y: f32 = *level as f32 * SPACE_HALF;
         let rect: Rectangle = (x, (-ACCIDENTAL_HEIGHT.half() + level_y).r2(), ACCIDENTAL_WIDTH, ACCIDENTAL_HEIGHT);
         let item = match accidental {
-            Accidental::Sharp => ScoreItem::AccidentalSharp,
-            Accidental::Flat => ScoreItem::AccidentalFlat,
-            Accidental::Natural => ScoreItem::AccidentalNatural,
+            Accidental::Sharp => GlyphItem::AccidentalSharp,
+            Accidental::Flat => GlyphItem::AccidentalFlat,
+            Accidental::Natural => GlyphItem::AccidentalNatural,
             _ => continue, // Skip if no accidental
         };
         rectangles.push((rect, item));
@@ -92,8 +92,8 @@ fn create_rectangles_accidentals(accs: &[(i8, Accidental)]) -> ScoreRectangles {
     rectangles
 }
 
-pub fn create_rectangles_note(_note: &NoteItem) -> ScoreRectangles {
-    let mut rectangles: ScoreRectangles = Vec::new();
+pub fn create_rectangles_note(_note: &NoteItem) -> GlyphsRectangles {
+    let mut rectangles: GlyphsRectangles = Vec::new();
     match _note.ntype {
         NoteType::Heads(ref heads) => {
             for head in heads {
@@ -110,10 +110,10 @@ pub fn create_rectangles_note(_note: &NoteItem) -> ScoreRectangles {
     rectangles
 }
 
-fn create_rectangle_head(duration: &NoteDuration, head: &HeadItem) -> ScoreRectangle {
+fn create_rectangle_head(duration: &NoteDuration, head: &HeadItem) -> GlyphRectangle {
     let level_y: f32 = head.level as f32 * SPACE_HALF;
     let rect: Rectangle = (0., -SPACE_HALF + level_y, get_head_width(duration), SPACE);
-    let item: ScoreItem = ScoreItem::HeadBlack;
+    let item: GlyphItem = GlyphItem::HeadBlack;
     (rect, item)
 }
 
@@ -125,13 +125,13 @@ fn get_head_width(duration: &NoteDuration) -> f32 {
     }
 }
 
-fn create_rectangle_rest(duration: &NoteDuration) -> ScoreRectangle {
+fn create_rectangle_rest(duration: &NoteDuration) -> GlyphRectangle {
     let rect: Rectangle = (0., -SPACE, REST_WIDTH, SPACE2);
     match duration.get_rest_type() {
-        RestType::Quarter => (rect, ScoreItem::RestQuarter),
-        RestType::Half => (rect, ScoreItem::RestHalf),
-        RestType::Whole => (rect, ScoreItem::RestWhole),
-        RestType::Eighth => (rect, ScoreItem::RestEighth),
+        RestType::Quarter => (rect, GlyphItem::RestQuarter),
+        RestType::Half => (rect, GlyphItem::RestHalf),
+        RestType::Whole => (rect, GlyphItem::RestWhole),
+        RestType::Eighth => (rect, GlyphItem::RestEighth),
         _ => todo!("unimpemented rest type"),
     }
 }

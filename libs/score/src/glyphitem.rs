@@ -1,8 +1,10 @@
 use graphics::{color::Color, rectangle::Rectangle};
 
 #[derive(Debug)]
-pub enum ScoreItem {
+pub enum GlyphItem {
     BarlineNormal,
+    BarlineDouble,
+    BarlineFinal,
     //
     XRed,
     XBlue,
@@ -26,7 +28,13 @@ pub enum ScoreItem {
     AccidentalNatural,
     AccidentalDoubleSharp,
     AccidentalDoubleFlat,
+    //
+    ClefTreble,
+    ClefBass,
+    ClefAlto,
+    ClefTenor,
+    ClefPercussion,
 }
 
-pub type ScoreRectangle = (Rectangle, ScoreItem);
-pub type ScoreRectangles = Vec<ScoreRectangle>;
+pub type GlyphRectangle = (Rectangle, GlyphItem);
+pub type GlyphsRectangles = Vec<GlyphRectangle>;

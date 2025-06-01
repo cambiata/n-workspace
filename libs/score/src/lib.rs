@@ -1,6 +1,6 @@
 pub mod complex;
 pub mod constants;
-pub mod scoreitem;
+pub mod glyphitem;
 
 use core::{context::CoreContext, duration::SumDuration, part::complex::ComplexInfo, sysitem::SysItemType, ItemId};
 use std::collections::BTreeMap;
