@@ -7,15 +7,9 @@ use graphics::{
 use grid::{gridcontext::GridContext, griditem::GridItemType};
 use svg::svg_renderer::SvgBuilder;
 
-// #[derive(Debug)]
-// pub enum RenderOutput {
-//     Svg(String),
-// }
-
 #[allow(dead_code)]
 pub fn render_gridcontext_with_color(cx: &'static GridContext<Color>) -> String {
     let mut graphic_items = GraphicItems::new();
-
     let cx_rows = &cx.rows.borrow();
     let cx_cols_overlaps = &cx.cols_overlaps.borrow();
 
