@@ -7,7 +7,6 @@ members = [
     "libs/svg",
     "libs/utils",
     "libs/grid",
-    "libs/dev",
     "libs/parse",
     "libs/score",
 ]
