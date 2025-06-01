@@ -10,7 +10,7 @@ use crate::{
 use super::PartType;
 
 #[derive(Debug)]
-pub struct ComplexItem {
+pub struct Complex {
     pub id: usize,
     pub part_id: usize,
     pub position: usize,
@@ -106,7 +106,7 @@ pub fn create_complexes_for_one_voice(cx: &CoreContext, note_ids: &Vec<ItemId>, 
 
         ComplexType::Upper(notes.get(*note_id).unwrap().clone());
         let id = cx.complexes.borrow().len();
-        let complex = ComplexItem {
+        let complex = Complex {
             id,
             part_id,
             position: note.position,
@@ -218,7 +218,7 @@ pub fn create_complexes_for_two_voices(cx: &CoreContext, note_ids_upper: &Vec<It
 
         // store complex in context
         let id = cx.complexes.borrow().len();
-        let complex = ComplexItem {
+        let complex = Complex {
             id,
             part_id,
             position: *position,

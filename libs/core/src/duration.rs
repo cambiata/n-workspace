@@ -1,3 +1,5 @@
+use crate::head::{HeadType, RestType};
+
 pub type SumDuration = usize;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -68,6 +70,25 @@ impl NoteDuration {
 
             "32" => Ok(NoteDuration::D32),
             _ => Err(format!("Invalid duration string '{}'", value2).into()),
+        }
+    }
+
+    pub fn get_head_type(self) -> HeadType {
+        match self {
+            NoteDuration::D1 | NoteDuration::D1Dot => HeadType::Whole,
+            NoteDuration::D2 | NoteDuration::D2Dot | NoteDuration::D2Tri => HeadType::White,
+            _ => HeadType::Black,
+        }
+    }
+
+    pub fn get_rest_type(self) -> RestType {
+        match self {
+            NoteDuration::D1 | NoteDuration::D1Dot => RestType::Whole,
+            NoteDuration::D2 | NoteDuration::D2Dot | NoteDuration::D2Tri => RestType::Half,
+            NoteDuration::D4 | NoteDuration::D4Dot | NoteDuration::D4Tri => RestType::Quarter,
+            NoteDuration::D8 | NoteDuration::D8Dot | NoteDuration::D8Tri => RestType::Eighth,
+            NoteDuration::D16 | NoteDuration::D16Dot | NoteDuration::D16Tri => RestType::Sixteenth,
+            _ => todo!(),
         }
     }
 }

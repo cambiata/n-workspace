@@ -4,7 +4,7 @@ pub enum Accidental {
     DoubleSharp,
     Sharp,
     None,
-    Neutral,
+    Natural,
     Flat,
     DoubleFlat,
 }
@@ -15,7 +15,7 @@ impl Accidental {
             s if s.contains("##") => Self::DoubleSharp,
             s if s.contains("bb") => Self::DoubleFlat,
             s if s.contains("#") => Self::Sharp,
-            s if s.contains("n") => Self::Neutral,
+            s if s.contains("n") => Self::Natural,
             s if s.contains("b") => Self::Flat,
             _ => Self::None,
         }
@@ -26,7 +26,7 @@ impl Accidental {
             "##" => Ok(Accidental::DoubleSharp),
             "bb" => Ok(Accidental::DoubleFlat),
             "#" => Ok(Accidental::Sharp),
-            "n" => Ok(Accidental::Neutral),
+            "n" => Ok(Accidental::Natural),
             "b" => Ok(Accidental::Flat),
             "" => Ok(Accidental::None),
             _ => Err("Invalid accidental".into()),

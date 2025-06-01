@@ -4,7 +4,7 @@ use std::{cell::RefCell, collections::BTreeMap};
 
 use crate::{
     note::NoteItem,
-    part::{complex::ComplexItem, PartItem},
+    part::{complex::Complex, PartItem},
     sysitem::SysItem,
     voice::stemitems::StemItem,
     ItemId,
@@ -16,7 +16,7 @@ pub struct CoreContext {
     pub map_noteid_complexid: RefCell<BTreeMap<ItemId, ItemId>>,
     pub parts: RefCell<Vec<PartItem>>,
     pub sysitems: RefCell<Vec<SysItem>>,
-    pub complexes: RefCell<Vec<ComplexItem>>,
+    pub complexes: RefCell<Vec<Complex>>,
     pub stemitems: RefCell<Vec<StemItem>>,
 }
 
