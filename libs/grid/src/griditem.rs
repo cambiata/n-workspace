@@ -12,6 +12,7 @@ pub struct GridItem<T> {
 pub enum GridItemType<T> {
     Empty,
     Rectangles(Vec<Rectangle>, Vec<T>),
+    // Rectangles(Vec<(Rectangle, T)>),
 }
 
 #[derive(Debug)]

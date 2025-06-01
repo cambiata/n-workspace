@@ -1,11 +1,10 @@
-pub mod half;
-pub mod round;
+pub mod f32_ext;
 pub mod slice_ext;
 
 #[cfg(test)]
 mod tests {
-    use crate::half::F32Half;
-    use crate::round::F32Round2;
+    use crate::f32_ext::half::F32ExtHalf;
+    use crate::f32_ext::round::F32ExtRound2;
     use crate::slice_ext::SliceExt;
 
     #[test]

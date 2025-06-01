@@ -7,28 +7,7 @@ use core::{
     part::complex::{Complex, ComplexType},
 };
 use graphics::rectangle::Rectangle;
-use utils::half::F32Half;
-use utils::round::F32Round2;
-
-// pub trait Half {
-//     fn half(self) -> f32;
-// }
-
-// impl Half for f32 {
-//     fn half(self) -> f32 {
-//         (self / 2.0).round2()
-//     }
-// }
-
-// pub trait Round2 {
-//     fn round2(self) -> f32;
-// }
-
-// impl Round2 for f32 {
-//     fn round2(self) -> f32 {
-//         (self * 100.0).round() / 100.0
-//     }
-// }
+use utils::f32_ext::{half::F32ExtHalf, round::F32ExtRound2};
 
 use crate::{
     constants::{ACCIDENTAL_HEIGHT, ACCIDENTAL_WIDTH, HEAD_WIDTH_BLACK, HEAD_WIDTH_WHITE, HEAD_WIDTH_WHOLE, REST_WIDTH, SPACE, SPACE2, SPACE_HALF},
