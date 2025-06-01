@@ -13,9 +13,10 @@ use core::voice::{VoiceItem, VoiceType};
 use core::ItemId;
 use std::cmp::max;
 use std::collections::{BTreeMap, BTreeSet};
+use std::error::Error;
 use std::vec;
 
-pub fn parse_head(_cx: &CoreContext, value: &str) -> Result<HeadItem, Box<dyn std::error::Error>> {
+pub fn parse_head(_cx: &CoreContext, value: &str) -> Result<HeadItem, Box<dyn Error>> {
     let value = value.trim();
     let level: i8 = value.chars().filter(|c| c.is_numeric() || *c == '-').collect::<String>().parse()?;
 
@@ -24,19 +25,15 @@ pub fn parse_head(_cx: &CoreContext, value: &str) -> Result<HeadItem, Box<dyn st
     Ok(info)
 }
 
-pub fn parse_heads(cx: &CoreContext, value: &str) -> Result<Vec<HeadItem>, Box<dyn std::error::Error>> {
-    let mut s_and_level = value.split(',').map(|s| (s.trim(), level_from_str(s))).collect::<Vec<(&str, i8)>>();
-    s_and_level.sort_by_key(|item| item.1); // sort by level
+pub fn parse_heads(cx: &CoreContext, value: &str) -> Result<Vec<HeadItem>, Box<dyn Error>> {
+    let mut str_and_level = value.split(',').map(|s| (s.trim(), level_from_str(s))).collect::<Vec<(&str, i8)>>();
+    str_and_level.sort_by_key(|item| item.1); // sort by level
 
-    let infos = s_and_level
-        .iter()
-        .map(|item| item.0)
-        .map(|s| parse_head(cx, s))
-        .collect::<Result<Vec<HeadItem>, Box<dyn std::error::Error>>>()?;
-    Ok(infos)
+    let head_items = str_and_level.iter().map(|item| item.0).map(|s| parse_head(cx, s)).collect::<Result<Vec<HeadItem>, Box<dyn Error>>>()?;
+    Ok(head_items)
 }
 
-pub fn parse_notetype(_cx: &CoreContext, value: &str) -> Result<NoteType, Box<dyn std::error::Error>> {
+pub fn parse_notetype(_cx: &CoreContext, value: &str) -> Result<NoteType, Box<dyn Error>> {
     let value = value.trim();
     let ntype = match value {
         "r" => NoteType::Rest,
@@ -48,7 +45,7 @@ pub fn parse_notetype(_cx: &CoreContext, value: &str) -> Result<NoteType, Box<dy
     Ok(ntype)
 }
 
-pub fn parse_note(cx: &CoreContext, value: &str, position: usize, duration: NoteDuration) -> Result<usize, Box<dyn std::error::Error>> {
+pub fn parse_note(cx: &CoreContext, value: &str, position: usize, duration: NoteDuration) -> Result<usize, Box<dyn Error>> {
     let value = value.trim();
     let ntype = parse_notetype(cx, value)?;
     let id = cx.notes.borrow().len();
@@ -58,7 +55,7 @@ pub fn parse_note(cx: &CoreContext, value: &str, position: usize, duration: Note
     Ok(id)
 }
 
-pub fn parse_notes(cx: &CoreContext, value: &str) -> Result<(Vec<usize>, SumDuration), Box<dyn std::error::Error>> {
+pub fn parse_notes(cx: &CoreContext, value: &str) -> Result<(Vec<usize>, SumDuration), Box<dyn Error>> {
     let mut sum_duration: SumDuration = 0;
     let mut duration: NoteDuration = NoteDuration::D4;
     let mut ids: Vec<usize> = Vec::new();
@@ -75,7 +72,7 @@ pub fn parse_notes(cx: &CoreContext, value: &str) -> Result<(Vec<usize>, SumDura
     Ok((ids, sum_duration))
 }
 
-pub fn parse_voicetype(cx: &CoreContext, value: &str) -> Result<VoiceType, Box<dyn std::error::Error>> {
+pub fn parse_voicetype(cx: &CoreContext, value: &str) -> Result<VoiceType, Box<dyn Error>> {
     let value = value.trim();
     let vtype = if value.starts_with("bp") {
         VoiceType::Barpause
@@ -89,7 +86,7 @@ pub fn parse_voicetype(cx: &CoreContext, value: &str) -> Result<VoiceType, Box<d
     Ok(vtype)
 }
 
-pub fn parse_voice(cx: &CoreContext, value: &str) -> Result<VoiceItem, Box<dyn std::error::Error>> {
+pub fn parse_voice(cx: &CoreContext, value: &str) -> Result<VoiceItem, Box<dyn Error>> {
     let vtype = parse_voicetype(cx, value)?;
     let duration: usize = match &vtype {
         VoiceType::Barpause => 0,
@@ -99,7 +96,7 @@ pub fn parse_voice(cx: &CoreContext, value: &str) -> Result<VoiceItem, Box<dyn s
     Ok(item)
 }
 
-pub fn parse_parttype(cx: &CoreContext, value: &str) -> Result<PartType, Box<dyn std::error::Error>> {
+pub fn parse_parttype(cx: &CoreContext, value: &str) -> Result<PartType, Box<dyn Error>> {
     let value = value.trim();
 
     let ptype: PartType = if value.starts_with("other-part") {
@@ -124,7 +121,7 @@ pub fn parse_parttype(cx: &CoreContext, value: &str) -> Result<PartType, Box<dyn
     Ok(ptype)
 }
 
-pub fn parse_part(cx: &CoreContext, value: &str) -> Result<ItemId, Box<dyn std::error::Error>> {
+pub fn parse_part(cx: &CoreContext, value: &str) -> Result<ItemId, Box<dyn Error>> {
     let mut value = value.trim();
     if value.starts_with("%") {
         value = value[1..].trim();
@@ -147,7 +144,7 @@ pub fn parse_part(cx: &CoreContext, value: &str) -> Result<ItemId, Box<dyn std::
     Ok(id)
 }
 
-pub fn parse_parts(cx: &CoreContext, value: &str) -> Result<Vec<ItemId>, Box<dyn std::error::Error>> {
+pub fn parse_parts(cx: &CoreContext, value: &str) -> Result<Vec<ItemId>, Box<dyn Error>> {
     let mut value = value.trim();
     if value.starts_with("/") {
         value = value[1..].trim();
@@ -167,7 +164,7 @@ pub fn parse_parts(cx: &CoreContext, value: &str) -> Result<Vec<ItemId>, Box<dyn
     Ok(ids)
 }
 
-pub fn parse_sysitemtype(_cx: &CoreContext, value: &str) -> Result<SysItemType, Box<dyn std::error::Error>> {
+pub fn parse_sysitemtype(_cx: &CoreContext, value: &str) -> Result<SysItemType, Box<dyn Error>> {
     let mut value = value.trim();
     if value.starts_with("|") {
         value = value[1..].trim();
@@ -196,7 +193,7 @@ pub fn parse_sysitemtype(_cx: &CoreContext, value: &str) -> Result<SysItemType, 
     Ok(t)
 }
 
-fn get_complex_infos_for_part(cx: &CoreContext, part_id: usize) -> Result<Vec<ComplexInfo>, Box<dyn std::error::Error>> {
+fn get_complex_infos_for_part(cx: &CoreContext, part_id: usize) -> Result<Vec<ComplexInfo>, Box<dyn Error>> {
     let parts = cx.parts.borrow();
     let part = &parts[part_id];
     let complexids = &part.complexids;
@@ -212,7 +209,7 @@ fn get_complex_infos_for_part(cx: &CoreContext, part_id: usize) -> Result<Vec<Co
     Ok(complex_infos)
 }
 
-pub fn parse_sysitems(cx: &CoreContext, value: &str) -> Result<Vec<ItemId>, Box<dyn std::error::Error>> {
+pub fn parse_sysitems(cx: &CoreContext, value: &str) -> Result<Vec<ItemId>, Box<dyn Error>> {
     let mut value = value.trim();
     if value.starts_with("|") {
         value = value[1..].trim();
