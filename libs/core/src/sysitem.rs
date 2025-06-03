@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use crate::{barline::BarlineType, clef::ClefSignature, duration::SumDuration, part::complex::ComplexInfo, ItemId};
+use crate::{barline::BarlineType, clef::ClefSignature, complex::ComplexInfo, duration::SumDuration, ItemId};
 
 #[derive(Debug)]
 pub enum SysItemType {

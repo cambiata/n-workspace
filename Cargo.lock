@@ -13,6 +13,13 @@ name = "core"
 version = "0.1.0"
 
 [[package]]
+name = "core_parse"
+version = "0.1.0"
+dependencies = [
+ "core",
+]
+
+[[package]]
 name = "fonts"
 version = "0.1.0"
 dependencies = [
@@ -42,13 +49,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "parse"
-version = "0.1.0"
-dependencies = [
- "core",
-]
-
-[[package]]
 name = "render"
 version = "0.1.0"
 dependencies = [
@@ -72,9 +72,9 @@ name = "score"
 version = "0.1.0"
 dependencies = [
  "core",
+ "core_parse",
  "graphics",
  "grid",
- "parse",
  "utils",
 ]
 

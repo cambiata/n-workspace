@@ -1,6 +1,7 @@
 pub mod accidental;
 pub mod barline;
 pub mod clef;
+pub mod complex;
 pub mod context;
 pub mod direction;
 pub mod duration;

@@ -1,8 +1,8 @@
 use core::{
     barline::BarlineType,
     clef::ClefSignature,
+    complex::{Complex, ComplexInfo},
     duration::SumDuration,
-    part::complex::{Complex, ComplexInfo},
     sysitem::{SysItem, SysItemType},
     ItemId,
 };

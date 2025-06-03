@@ -1,5 +1,3 @@
-pub mod complex;
-
 use crate::{duration::SumDuration, voice::VoiceItem, ItemId};
 
 #[derive(Debug)]

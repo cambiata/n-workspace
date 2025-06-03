@@ -1,12 +1,12 @@
 [workspace]
 members = [
-    "libs/graphics",
     "libs/core",
-    "libs/render",
+    "libs/core_parse",
+    "libs/graphics",
     "libs/fonts",
+    "libs/render",
     "libs/svg",
     "libs/utils",
     "libs/grid",
-    "libs/parse",
     "libs/score",
 ]

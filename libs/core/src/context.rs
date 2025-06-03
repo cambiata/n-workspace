@@ -1,14 +1,6 @@
-pub mod utils;
-
 use std::{cell::RefCell, collections::BTreeMap};
 
-use crate::{
-    note::NoteItem,
-    part::{complex::Complex, PartItem},
-    sysitem::SysItem,
-    voice::stemitems::StemItem,
-    ItemId,
-};
+use crate::{complex::Complex, note::NoteItem, part::PartItem, sysitem::SysItem, voice::stemitems::StemItem, ItemId};
 
 #[derive(Debug)]
 pub struct CoreContext {

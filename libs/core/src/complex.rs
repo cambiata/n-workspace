@@ -3,11 +3,10 @@ use std::collections::BTreeMap;
 use crate::{
     context::CoreContext,
     note::{NoteItem, NoteType},
+    part::PartType,
     voice::VoiceType,
     ItemId,
 };
-
-use super::PartType;
 
 #[derive(Debug)]
 pub struct Complex {

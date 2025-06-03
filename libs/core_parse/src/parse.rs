@@ -1,12 +1,12 @@
 use core::accidental::Accidental;
 use core::barline::BarlineType;
 use core::clef::ClefSignature;
+use core::complex::{create_complexes_for_part, ComplexInfo};
 use core::context::CoreContext;
 use core::duration::{NoteDuration, SumDuration};
 use core::head::HeadItem;
 use core::note::{NoteItem, NoteType};
-use core::part::complex::ComplexInfo;
-use core::part::{complex::create_complexes_for_part, PartItem, PartType};
+use core::part::{PartItem, PartType};
 use core::sysitem::{SysItem, SysItemType};
 use core::voice::stemdirections::calculate_stemitem_directions;
 use core::voice::stemitems::create_stem_items_from_notes_in_voice;
@@ -249,7 +249,6 @@ pub fn level_from_str(s: &str) -> i8 {
 
 #[cfg(test)]
 mod tests {
-    use core::context::utils::check_sysitems_parts_integrity;
 
     use super::*;
 
@@ -298,14 +297,6 @@ mod tests {
         // let _ = parse_sysitemtype(cx, "clef G F").unwrap();
         let _ = parse_sysitemtype(cx, "0 D2 1 / 0 1 D8 2 % 0 D16 1 2").unwrap();
         // dbg!(&cx);
-    }
-
-    #[test]
-    fn test_ss() {
-        let cx = CoreContext::new();
-        let ids = parse_sysitems(cx, "|clef G | 0 / 0,3 1 2 % 0 1b 2 3 |bl | 0 / 1").unwrap();
-        let _check = check_sysitems_parts_integrity(cx, ids);
-        dbg!(&cx);
     }
 
     #[test]
