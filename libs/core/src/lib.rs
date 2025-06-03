@@ -1,4 +1,5 @@
 pub mod accidental;
+pub mod barline;
 pub mod clef;
 pub mod context;
 pub mod direction;

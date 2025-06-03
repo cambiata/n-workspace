@@ -1,12 +1,12 @@
 use std::collections::BTreeMap;
 
-use crate::{clef::ClefSignature, duration::SumDuration, part::complex::ComplexInfo, ItemId};
+use crate::{barline::BarlineType, clef::ClefSignature, duration::SumDuration, part::complex::ComplexInfo, ItemId};
 
 #[derive(Debug)]
 pub enum SysItemType {
     Parts(Vec<ItemId>, SumDuration, Vec<BTreeMap<usize, ComplexInfo>>, BTreeMap<usize, usize>),
     Clefs(Vec<ClefSignature>),
-    Barline,
+    Barline(BarlineType),
     Other,
 }
 
@@ -14,4 +14,5 @@ pub enum SysItemType {
 pub struct SysItem {
     pub id: ItemId,
     pub stype: SysItemType,
+    pub parts_count: usize,
 }

@@ -1,0 +1,160 @@
+use core::{
+    barline::BarlineType,
+    clef::ClefSignature,
+    duration::SumDuration,
+    part::complex::{Complex, ComplexInfo},
+    sysitem::{SysItem, SysItemType},
+    ItemId,
+};
+use std::{cell::RefCell, collections::BTreeMap};
+
+use grid::griditem::GridItemType;
+
+use crate::{
+    complex::create_glyphsrectangles_complex,
+    constants::{BARLINE_DOUBLE_WIDTH, BARLINE_FINAL_WIDTH, BARLINE_WIDTH, SPACE2, SPACE4},
+    glyphitem::{ComplexGlyphsRectangles, GlyphItem, GlyphRectangle, PartGlyphsRectangles, SysitemGlyphsRectangles},
+};
+
+#[derive(Debug)]
+pub struct ScoreContext {
+    pub grid_columns: RefCell<Vec<Vec<GridItemType<GlyphItem>>>>,
+    pub grid_column_sysitem_ids: RefCell<Vec<usize>>,
+}
+
+impl ScoreContext {
+    pub fn new() -> &'static ScoreContext {
+        let scx = ScoreContext {
+            grid_columns: RefCell::new(Vec::new()),
+            grid_column_sysitem_ids: RefCell::new(Vec::new()),
+        };
+        Box::leak(Box::new(scx))
+    }
+
+    pub fn build_sysitems(&self, sysitems: &[SysItem], complexes: &[Complex]) -> Result<(), Box<dyn std::error::Error>> {
+        let expected_parts_count = sysitems.iter().fold(0, |acc, sysitem| sysitem.parts_count.max(acc));
+        for (sysidx, sysitem) in sysitems.iter().enumerate() {
+            match &sysitem.stype {
+                SysItemType::Parts(_part_ids, _sum_duration, _complexes_infos, _positions_durations) => {
+                    self.build_sysitem_parts(complexes, sysitem.id, _part_ids, _sum_duration, _complexes_infos, _positions_durations, expected_parts_count)?;
+                }
+                SysItemType::Clefs(_clefs) => {
+                    println!("Clef found in sysitem {}", sysidx);
+                    self.build_sysitem_clefs(sysitem.id, _clefs, expected_parts_count)?;
+                }
+                SysItemType::Barline(_barline) => {
+                    println!("Barline found in sysitem {}", sysidx);
+                    self.build_sysitem_barline(sysitem.id, _barline, expected_parts_count)?;
+                }
+                SysItemType::Other => {
+                    println!("Other item found in sysitem {}", sysidx);
+                    todo!();
+                }
+            };
+        }
+
+        dbg!(self.grid_columns.borrow());
+
+        Ok(())
+    }
+
+    fn build_sysitem_barline(&self, sysitem_id: usize, btype: &BarlineType, expected_parts_count: usize) -> Result<(), Box<dyn std::error::Error>> {
+        let mut scx_grid_columns = self.grid_columns.borrow_mut();
+        let mut column_griditems: Vec<GridItemType<GlyphItem>> = Vec::new();
+
+        let rect = match btype {
+            BarlineType::Double => (0.0, -SPACE2, BARLINE_DOUBLE_WIDTH, SPACE4), // Placeholder rectangle for double barline
+            BarlineType::Final => (0.0, -SPACE2, BARLINE_FINAL_WIDTH, SPACE4),   // Placeholder rectangle for final barline
+            _ => (0.0, -SPACE2, BARLINE_WIDTH, SPACE4),                          // Placeholder rectangle for single barline
+        };
+        let glyph: GlyphItem = GlyphItem::Barline(btype.clone());
+        let item: GlyphRectangle = (rect, glyph.clone());
+        column_griditems.push(GridItemType::Rectangles(vec![item.clone()]));
+
+        // add missing barlines
+        while column_griditems.len() < expected_parts_count {
+            let glyph: GlyphItem = glyph.clone();
+            let rect = (0.0, -SPACE2, 1.0, SPACE4); // Placeholder rectangle
+            column_griditems.push(GridItemType::Rectangles(vec![(rect, glyph.clone())]));
+        }
+
+        self.grid_column_sysitem_ids.borrow_mut().push(sysitem_id);
+        scx_grid_columns.push(column_griditems);
+
+        Ok(())
+    }
+
+    fn build_sysitem_clefs(&self, sysitem_id: usize, _clefs: &[ClefSignature], expected_parts_count: usize) -> Result<(), Box<dyn std::error::Error>> {
+        let mut scx_grid_columns = self.grid_columns.borrow_mut();
+        let mut column_griditems: Vec<GridItemType<GlyphItem>> = Vec::new();
+
+        for clef in _clefs {
+            println!("Clef: {:?}", clef);
+            let glyph: GlyphItem = GlyphItem::Clef(clef.clone());
+            let rect = (0.0, -SPACE2, 1.0, SPACE4); // Placeholder rectangle
+
+            column_griditems.push(GridItemType::Rectangles(vec![(rect, glyph.clone())]));
+        }
+
+        // add missing clefs
+        while column_griditems.len() < expected_parts_count {
+            let glyph = match column_griditems.len() {
+                0 => GlyphItem::Clef(ClefSignature::Treble),
+                1 => GlyphItem::Clef(ClefSignature::Bass),
+                _ => GlyphItem::XBlue,
+            };
+
+            let rect = (0.0, -SPACE2, 1.0, SPACE4); // Placeholder rectangle
+
+            column_griditems.push(GridItemType::Rectangles(vec![(rect, glyph.clone())]));
+        }
+
+        self.grid_column_sysitem_ids.borrow_mut().push(sysitem_id);
+        scx_grid_columns.push(column_griditems);
+        Ok(())
+    }
+
+    pub fn build_sysitem_parts(
+        &self,
+        complexes: &[Complex],
+        sysitem_id: usize,
+        _parts_ids: &Vec<ItemId>,
+        _sum_duration: &SumDuration,
+        complexes_infos: &Vec<BTreeMap<usize, ComplexInfo>>,
+        positions_durations: &BTreeMap<usize, usize>,
+        expected_parts_count: usize,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        //-----------------------------
+        for (pos, dur) in positions_durations.iter() {
+            let mut column_griditems: Vec<GridItemType<GlyphItem>> = Vec::new();
+            for (partidx, _part_complexes) in complexes_infos.iter().enumerate() {
+                println!("- - Position: {}, Duration: {}", pos, dur);
+                if let Some(complex_info) = _part_complexes.get(pos) {
+                    println!("- - - Part {}: Complex Info: {:?}", partidx, complex_info);
+                    let complex_id = complex_info.0;
+                    let complex = &complexes[complex_id];
+                    let complex_rectangles: ComplexGlyphsRectangles = create_glyphsrectangles_complex(partidx, complex);
+                    // dbg!(&complex_rectangles);
+                    column_griditems.push(GridItemType::Rectangles(complex_rectangles));
+                } else {
+                    println!("- - - Part {}: No complex info at position {}", partidx, pos);
+                    column_griditems.push(GridItemType::Empty);
+                }
+            }
+            while column_griditems.len() < expected_parts_count {
+                column_griditems.push(GridItemType::Empty);
+            }
+            self.grid_column_sysitem_ids.borrow_mut().push(sysitem_id);
+            self.grid_columns.borrow_mut().push(column_griditems);
+        }
+
+        Ok(())
+    }
+}
+
+#[derive(Debug)]
+pub enum SysItemGlyphsRectangles {
+    // EmptyColumn,
+    OneColumn(PartGlyphsRectangles),
+    ManyColumns(SysitemGlyphsRectangles),
+}

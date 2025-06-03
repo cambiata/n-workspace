@@ -25,10 +25,10 @@ fn main() {
         ],
     ];
 
-    let cx: &'static GridContext<Color> = GridContext::<Color>::new();
-    cx.add_items(items);
-    cx.calculate_minimal_col_spacing();
-    cx.set_durations(vec![0, 8, 10]); //
+    let gcx: &'static GridContext<Color> = GridContext::<Color>::new();
+    gcx.add_items(items);
+    gcx.calculate_minimal_col_spacing();
+    gcx.set_durations(vec![0, 8, 10]); //
 
-    fs::write("libs/render/examples/ex-render1.svg", render_gridcontext_with_color(cx)).unwrap();
+    fs::write("libs/render/examples/ex-render1.svg", render_gridcontext_with_color(gcx)).unwrap();
 }

@@ -1,4 +1,5 @@
 use core::accidental::Accidental;
+use core::barline::BarlineType;
 use core::clef::ClefSignature;
 use core::context::CoreContext;
 use core::duration::{NoteDuration, SumDuration};
@@ -164,16 +165,17 @@ pub fn parse_parts(cx: &CoreContext, value: &str) -> Result<Vec<ItemId>, Box<dyn
     Ok(ids)
 }
 
-pub fn parse_sysitemtype(_cx: &CoreContext, value: &str) -> Result<SysItemType, Box<dyn Error>> {
+pub fn parse_sysitemtype(_cx: &CoreContext, value: &str) -> Result<(SysItemType, usize), Box<dyn Error>> {
     let mut value = value.trim();
     if value.starts_with("|") {
         value = value[1..].trim();
     }
-    let t = if value.starts_with("clef") {
+    let (t, parts_count) = if value.starts_with("clef") {
         let segments = value.split(" ").filter(|s| !s.is_empty()).skip(1).map(|s| ClefSignature::find(s)).collect::<Vec<_>>();
-        SysItemType::Clefs(segments)
+        let parts_count = segments.len();
+        (SysItemType::Clefs(segments), parts_count)
     } else if value.starts_with("bl") {
-        SysItemType::Barline
+        (SysItemType::Barline(BarlineType::Single), 1 as usize)
     } else {
         let parts_ids = parse_parts(_cx, value)?;
         let parts_complexes_infos = parts_ids.iter().map(|part_id| get_complex_infos_for_part(_cx, *part_id).unwrap()).collect::<Vec<_>>();
@@ -188,9 +190,11 @@ pub fn parse_sysitemtype(_cx: &CoreContext, value: &str) -> Result<SysItemType, 
 
         // create a BTreeMap from sysitem_positions and sysitem_durations
         let positions_durations: BTreeMap<usize, usize> = sysitem_positions.iter().zip(sysitem_durations.iter()).map(|(pos, dur)| (*pos, *dur)).collect();
-        SysItemType::Parts(parts_ids, max_duration, parts_complex_pos_map, positions_durations)
+        let parts_count = parts_ids.len();
+        (SysItemType::Parts(parts_ids, max_duration, parts_complex_pos_map, positions_durations), parts_count)
     };
-    Ok(t)
+
+    Ok((t, parts_count))
 }
 
 fn get_complex_infos_for_part(cx: &CoreContext, part_id: usize) -> Result<Vec<ComplexInfo>, Box<dyn Error>> {
@@ -225,11 +229,11 @@ pub fn parse_sysitems(cx: &CoreContext, value: &str) -> Result<Vec<ItemId>, Box<
         .map(|s| {
             let s = s.trim();
             let id = cx.sysitems.borrow().len();
-            let stype = parse_sysitemtype(cx, s).expect("Could not parse sysitemtype");
+            let (stype, parts_count) = parse_sysitemtype(cx, s).expect("Could not parse sysitemtype");
             let s = SysItem {
                 id,
                 stype,
-                // complexes_durations: vec![],
+                parts_count, // complexes_durations: vec![],
             };
             cx.sysitems.borrow_mut().push(s);
             id

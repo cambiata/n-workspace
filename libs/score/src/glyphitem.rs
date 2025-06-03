@@ -1,10 +1,10 @@
+use core::{accidental::Accidental, barline::BarlineType, clef::ClefSignature};
+
 use graphics::{color::Color, rectangle::Rectangle};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum GlyphItem {
-    BarlineNormal,
-    BarlineDouble,
-    BarlineFinal,
+    Barline(BarlineType),
     //
     XRed,
     XBlue,
@@ -16,6 +16,8 @@ pub enum GlyphItem {
     HeadWhite,
     HeadWhole,
     //
+    BarRest,
+    //
     RestBrevis,
     RestWhole,
     RestHalf,
@@ -23,18 +25,12 @@ pub enum GlyphItem {
     RestEighth,
     RestSixteenth,
     //
-    AccidentalSharp,
-    AccidentalFlat,
-    AccidentalNatural,
-    AccidentalDoubleSharp,
-    AccidentalDoubleFlat,
+    Accidental(Accidental),
     //
-    ClefTreble,
-    ClefBass,
-    ClefAlto,
-    ClefTenor,
-    ClefPercussion,
+    Clef(ClefSignature),
 }
 
 pub type GlyphRectangle = (Rectangle, GlyphItem);
-pub type GlyphsRectangles = Vec<GlyphRectangle>;
+pub type ComplexGlyphsRectangles = Vec<GlyphRectangle>;
+pub type PartGlyphsRectangles = Vec<ComplexGlyphsRectangles>;
+pub type SysitemGlyphsRectangles = Vec<PartGlyphsRectangles>;

@@ -8,3 +8,4 @@ graphics = { path = "../graphics" }
 core = { path = "../core" }
 parse = { path = "../parse" }
 utils = { path = "../utils" }
+grid = { path = "../grid" }

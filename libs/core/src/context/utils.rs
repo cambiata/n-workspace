@@ -32,7 +32,7 @@ pub fn check_sysitems_parts_integrity(cx: &CoreContext, sysitems: Vec<ItemId>) -
                     None => Some(clefs.len() as u8),
                 };
             }
-            SysItemType::Barline => {}
+            SysItemType::Barline(ref _barline) => {}
             SysItemType::Other => {}
         };
     }

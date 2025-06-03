@@ -1,61 +1,97 @@
 pub mod complex;
 pub mod constants;
 pub mod glyphitem;
+pub mod scorecontext;
 
-use core::{context::CoreContext, duration::SumDuration, part::complex::ComplexInfo, sysitem::SysItemType, ItemId};
-use std::collections::BTreeMap;
+// fn build_sysitem_barline(scx: &ScoreContext, sysitem_id: usize, btype: &BarlineType, expected_parts_count: usize) -> Result<(), Box<dyn std::error::Error>> {
+//     let mut scx_grid_columns = scx.grid_columns.borrow_mut();
+//     let mut column_griditems: Vec<GridItemType<GlyphItem>> = Vec::new();
 
-use complex::create_rectangles_complex;
+//     let rect = match btype {
+//         BarlineType::Double => (0.0, -SPACE2, BARLINE_DOUBLE_WIDTH, SPACE4), // Placeholder rectangle for double barline
+//         BarlineType::Final => (0.0, -SPACE2, BARLINE_FINAL_WIDTH, SPACE4),   // Placeholder rectangle for final barline
+//         _ => (0.0, -SPACE2, BARLINE_WIDTH, SPACE4),                          // Placeholder rectangle for single barline
+//     };
+//     let glyph: GlyphItem = GlyphItem::Barline(btype.clone());
+//     let item: GlyphRectangle = (rect, glyph.clone());
+//     column_griditems.push(GridItemType::Rectangles(vec![item.clone()]));
 
-pub fn build_sysitems(cx: &CoreContext) -> Result<(), Box<dyn std::error::Error>> {
-    let sysitems = cx.sysitems.borrow();
-    let _parts = cx.parts.borrow();
+//     // add missing barlines
+//     while column_griditems.len() < expected_parts_count {
+//         let glyph: GlyphItem = glyph.clone();
+//         let rect = (0.0, -SPACE2, 1.0, SPACE4); // Placeholder rectangle
+//         column_griditems.push(GridItemType::Rectangles(vec![(rect, glyph.clone())]));
+//     }
 
-    for (sysidx, sysitem) in sysitems.iter().enumerate() {
-        // println!("SysItem: {column_index} {:?}", sysitem);
-        match &sysitem.stype {
-            SysItemType::Parts(_part_ids, _sum_duration, _complexes_infos, _positions_durations) => {
-                let _x = build_sysitem_parts(cx, _part_ids, _sum_duration, _complexes_infos, _positions_durations);
-            }
+//     scx.grid_column_sysitem_ids.borrow_mut().push(sysitem_id);
+//     scx_grid_columns.push(column_griditems);
 
-            SysItemType::Clefs(_clefs) => {
-                println!("Clef found in sysitem {}", sysidx);
-            }
-            SysItemType::Barline => {
-                println!("Barline found in sysitem {}", sysidx);
-            }
-            SysItemType::Other => {
-                println!("Other item found in sysitem {}", sysidx);
-            }
-        }
-    }
-    Ok(())
-}
+//     Ok(())
+// }
 
-pub fn build_sysitem_parts(
-    cx: &CoreContext,
-    _parts_ids: &Vec<ItemId>,
-    _sum_duration: &SumDuration,
-    complexes_infos: &Vec<BTreeMap<usize, ComplexInfo>>,
-    positions_durations: &BTreeMap<usize, usize>,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let complexes = cx.complexes.borrow();
+// fn build_sysitem_clefs(scx: &ScoreContext, sysitem_id: usize, _clefs: &[ClefSignature], expected_parts_count: usize) -> Result<(), Box<dyn std::error::Error>> {
+//     let mut scx_grid_columns = scx.grid_columns.borrow_mut();
+//     let mut column_griditems: Vec<GridItemType<GlyphItem>> = Vec::new();
 
-    for (pos, dur) in positions_durations.iter() {
-        println!("- - Position: {}, Duration: {}", pos, dur);
-        for (partidx, _part_complexes) in complexes_infos.iter().enumerate() {
-            if let Some(complex_info) = _part_complexes.get(pos) {
-                println!("- - - Part {}: Complex Info: {:?}", partidx, complex_info);
-                let complex_id = complex_info.0;
-                let complex = &complexes[complex_id];
+//     for clef in _clefs {
+//         println!("Clef: {:?}", clef);
+//         let glyph: GlyphItem = GlyphItem::Clef(clef.clone());
+//         let rect = (0.0, -SPACE2, 1.0, SPACE4); // Placeholder rectangle
 
-                let complex_rectangles = create_rectangles_complex(cx, partidx, complex);
-                dbg!(complex_rectangles);
-            } else {
-                println!("- - - Part {}: No complex info at position {}", partidx, pos);
-            }
-        }
-    }
+//         column_griditems.push(GridItemType::Rectangles(vec![(rect, glyph.clone())]));
+//     }
 
-    Ok(())
-}
+//     // add missing clefs
+//     while column_griditems.len() < expected_parts_count {
+//         let glyph = match column_griditems.len() {
+//             0 => GlyphItem::Clef(ClefSignature::Treble),
+//             1 => GlyphItem::Clef(ClefSignature::Bass),
+//             _ => GlyphItem::XBlue,
+//         };
+
+//         let rect = (0.0, -SPACE2, 1.0, SPACE4); // Placeholder rectangle
+
+//         column_griditems.push(GridItemType::Rectangles(vec![(rect, glyph.clone())]));
+//     }
+
+//     scx.grid_column_sysitem_ids.borrow_mut().push(sysitem_id);
+//     scx_grid_columns.push(column_griditems);
+//     Ok(())
+// }
+
+// pub fn build_sysitem_parts(
+//     scx: &ScoreContext,
+//     complexes: &[Complex],
+//     sysitem_id: usize,
+//     _parts_ids: &Vec<ItemId>,
+//     _sum_duration: &SumDuration,
+//     complexes_infos: &Vec<BTreeMap<usize, ComplexInfo>>,
+//     positions_durations: &BTreeMap<usize, usize>,
+//     expected_parts_count: usize,
+// ) -> Result<(), Box<dyn std::error::Error>> {
+//     //-----------------------------
+//     for (pos, dur) in positions_durations.iter() {
+//         let mut column_griditems: Vec<GridItemType<GlyphItem>> = Vec::new();
+//         for (partidx, _part_complexes) in complexes_infos.iter().enumerate() {
+//             println!("- - Position: {}, Duration: {}", pos, dur);
+//             if let Some(complex_info) = _part_complexes.get(pos) {
+//                 println!("- - - Part {}: Complex Info: {:?}", partidx, complex_info);
+//                 let complex_id = complex_info.0;
+//                 let complex = &complexes[complex_id];
+//                 let complex_rectangles: ComplexGlyphsRectangles = create_glyphsrectangles_complex(partidx, complex);
+//                 // dbg!(&complex_rectangles);
+//                 column_griditems.push(GridItemType::Rectangles(complex_rectangles));
+//             } else {
+//                 println!("- - - Part {}: No complex info at position {}", partidx, pos);
+//                 column_griditems.push(GridItemType::Empty);
+//             }
+//         }
+//         while column_griditems.len() < expected_parts_count {
+//             column_griditems.push(GridItemType::Empty);
+//         }
+//         scx.grid_column_sysitem_ids.borrow_mut().push(sysitem_id);
+//         scx.grid_columns.borrow_mut().push(column_griditems);
+//     }
+
+//     Ok(())
+// }
