@@ -9,6 +9,7 @@ pub mod head;
 pub mod key;
 pub mod note;
 pub mod part;
+pub mod stems;
 pub mod sysitem;
 pub mod voice;
 

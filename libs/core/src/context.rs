@@ -1,6 +1,6 @@
 use std::{cell::RefCell, collections::BTreeMap};
 
-use crate::{complex::Complex, note::NoteItem, part::PartItem, sysitem::SysItem, voice::stemitems::StemItem, ItemId};
+use crate::{complex::Complex, note::NoteItem, part::PartItem, stems::stemitems::StemItem, sysitem::SysItem, ItemId};
 
 #[derive(Debug)]
 pub struct CoreContext {
