@@ -142,14 +142,12 @@ impl ScoreContext {
             self.grid_column_sysitem_ids.borrow_mut().push(sysitem_id);
             self.grid_columns.borrow_mut().push(column_griditems);
         }
-
         Ok(())
     }
 }
 
 #[derive(Debug)]
 pub enum SysItemGlyphsRectangles {
-    // EmptyColumn,
     OneColumn(PartGlyphsRectangles),
     ManyColumns(SysitemGlyphsRectangles),
 }
