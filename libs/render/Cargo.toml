@@ -7,3 +7,6 @@ edition = "2021"
 graphics = { path = "../graphics" }
 grid = { path = "../grid" }
 svg = { path = "../svg" }
+core = { path = "../core" }
+core_parse = { path = "../core_parse" }
+score = { path = "../score" }

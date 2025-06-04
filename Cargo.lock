@@ -52,8 +52,11 @@ dependencies = [
 name = "render"
 version = "0.1.0"
 dependencies = [
+ "core",
+ "core_parse",
  "graphics",
  "grid",
+ "score",
  "svg",
 ]
 

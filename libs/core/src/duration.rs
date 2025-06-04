@@ -1,4 +1,4 @@
-use crate::head::{HeadType, RestType};
+use crate::{head::HeadType, rest::RestType};
 
 pub type SumDuration = usize;
 

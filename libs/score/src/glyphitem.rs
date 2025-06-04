@@ -1,21 +1,20 @@
-use core::{accidental::Accidental, barline::BarlineType, clef::ClefSignature};
+use core::{
+    accidental::Accidental,
+    barline::BarlineType,
+    clef::ClefSignature,
+    head::{HeadType, HeadVariant},
+    rest::RestType,
+};
 
 use graphics::{color::Color, rectangle::Rectangle};
 
 #[derive(Debug, Clone)]
 pub enum GlyphItem {
+    XRect(Color),
+    //
     Barline(BarlineType),
-    //
-    XRed,
-    XBlue,
-    XGreen,
-    XOrange,
-    X(Color),
-    //
-    HeadBlack,
-    HeadWhite,
-    HeadWhole,
-    //
+    Notehead(HeadType, HeadVariant),
+    Rest(RestType),
     BarRest,
     //
     RestBrevis,
@@ -24,9 +23,8 @@ pub enum GlyphItem {
     RestQuarter,
     RestEighth,
     RestSixteenth,
-    //
+
     Accidental(Accidental),
-    //
     Clef(ClefSignature),
 }
 

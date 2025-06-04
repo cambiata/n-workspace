@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="67.299995" height="112" viewBox="0 0 67.299995 112">
+    <rect x="0" y="0" width="67.299995" height="112" fill="white"/>
+    <rect x="0.1" y="0" width="16" height="32" fill="lightgray"/>
+    <rect x="22.5" y="12" width="8" height="8" fill="dodgerblue"/>
+    <rect x="16.1" y="11.2" width="6.4" height="9.6" fill="purple"/>
+    <rect x="43.299995" y="4" width="8" height="8" fill="dodgerblue"/>
+    <rect x="43.299995" y="16" width="8" height="8" fill="dodgerblue"/>
+    <rect x="36.899994" y="3.1999998" width="6.4" height="9.6" fill="purple"/>
+    <rect x="30.499998" y="15.2" width="6.4" height="9.6" fill="purple"/>
+    <rect x="57.699997" y="12" width="8" height="8" fill="dodgerblue"/>
+    <rect x="51.299995" y="11.2" width="6.4" height="9.6" fill="purple"/>
+    <rect x="0.1" y="48" width="16" height="32" fill="lightgray"/>
+    <rect x="22.5" y="60" width="9.6" height="8" fill="dodgerblue"/>
+    <rect x="43.299995" y="64" width="1" height="1" fill="orange"/>
+    <rect x="57.699997" y="56" width="9.6" height="8" fill="dodgerblue"/>
+    <rect x="57.699997" y="68" width="9.6" height="8" fill="dodgerblue"/>
+    <rect x="51.299995" y="55.2" width="6.4" height="9.6" fill="purple"/>
+    <rect x="44.899998" y="67.2" width="6.4" height="9.6" fill="purple"/>
+    <line x1="0" y1="16" x2="0.1" y2="112" stroke="rgba(0,0,0,0.2)" stroke-width="0.2"/>
+    <line x1="22.4" y1="16" x2="22.5" y2="112" stroke="rgba(0,0,0,0.2)" stroke-width="0.2"/>
+    <line x1="43.199997" y1="16" x2="43.299995" y2="112" stroke="rgba(0,0,0,0.2)" stroke-width="0.2"/>
+    <line x1="57.6" y1="16" x2="57.699997" y2="112" stroke="rgba(0,0,0,0.2)" stroke-width="0.2"/>
+    <line x1="67.2" y1="16" x2="67.299995" y2="112" stroke="rgba(0,0,0,0.2)" stroke-width="0.2"/>
+</svg>

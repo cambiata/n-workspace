@@ -6,7 +6,7 @@ pub struct HeadItem {
     pub accidental: Accidental,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum HeadType {
     Black,
     White,
@@ -14,21 +14,10 @@ pub enum HeadType {
     Brevis,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum HeadVariant {
     Hidden,
     Normal,
     Slash,
     X,
-}
-
-pub enum RestType {
-    Brevis,
-    Whole,
-    Half,
-    Quarter,
-    Eighth,
-    Sixteenth,
-    ThirtySecond,
-    SixtyFourth,
 }

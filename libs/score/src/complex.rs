@@ -2,7 +2,7 @@ use core::{
     accidental::Accidental,
     complex::{Complex, ComplexType},
     duration::NoteDuration,
-    head::{HeadItem, HeadType, RestType},
+    head::{HeadItem, HeadType, HeadVariant},
     note::{NoteItem, NoteType},
 };
 use graphics::rectangle::Rectangle;
@@ -118,7 +118,8 @@ pub fn create_glyphsrectangles_note(_note: &NoteItem) -> ComplexGlyphsRectangles
 fn create_glyphrectangle_head(duration: &NoteDuration, head: &HeadItem) -> GlyphRectangle {
     let level_y: f32 = head.level as f32 * SPACE_HALF;
     let rect: Rectangle = (0., -SPACE_HALF + level_y, get_head_width(duration), SPACE);
-    let item: GlyphItem = GlyphItem::HeadBlack;
+    // dbg!(&rect);
+    let item: GlyphItem = GlyphItem::Notehead(duration.get_head_type(), HeadVariant::Normal);
     (rect, item)
 }
 
@@ -132,11 +133,5 @@ fn get_head_width(duration: &NoteDuration) -> f32 {
 
 fn create_glyphrectangle_rest(duration: &NoteDuration) -> GlyphRectangle {
     let rect: Rectangle = (0., -SPACE, REST_WIDTH, SPACE2);
-    match duration.get_rest_type() {
-        RestType::Quarter => (rect, GlyphItem::RestQuarter),
-        RestType::Half => (rect, GlyphItem::RestHalf),
-        RestType::Whole => (rect, GlyphItem::RestWhole),
-        RestType::Eighth => (rect, GlyphItem::RestEighth),
-        _ => todo!("unimpemented rest type"),
-    }
+    (rect, GlyphItem::Rest(duration.get_rest_type()))
 }

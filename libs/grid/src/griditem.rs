@@ -8,7 +8,7 @@ pub struct GridItem<T> {
     pub gitype: GridItemType<T>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum GridItemType<T> {
     Empty,
     Rectangles(Vec<(Rectangle, T)>),

@@ -8,11 +8,12 @@ use core::{
 };
 use std::{cell::RefCell, collections::BTreeMap};
 
+use graphics::color::Color;
 use grid::griditem::GridItemType;
 
 use crate::{
     complex::create_glyphsrectangles_complex,
-    constants::{BARLINE_DOUBLE_WIDTH, BARLINE_FINAL_WIDTH, BARLINE_WIDTH, SPACE2, SPACE4},
+    constants::{BARLINE_DOUBLE_WIDTH, BARLINE_FINAL_WIDTH, BARLINE_WIDTH, CLEF_WIDTH, SPACE2, SPACE4},
     glyphitem::{ComplexGlyphsRectangles, GlyphItem, GlyphRectangle, PartGlyphsRectangles, SysitemGlyphsRectangles},
 };
 
@@ -31,8 +32,13 @@ impl ScoreContext {
         Box::leak(Box::new(scx))
     }
 
+    // Vec<Vec<GridItemType<GlyphItem>>>
+
     pub fn build_sysitems(&self, sysitems: &[SysItem], complexes: &[Complex]) -> Result<(), Box<dyn std::error::Error>> {
+        // let x: Vec<Vec<GridItemType<GlyphItem>>> = Vec::new();
+        //
         let expected_parts_count = sysitems.iter().fold(0, |acc, sysitem| sysitem.parts_count.max(acc));
+
         for (sysidx, sysitem) in sysitems.iter().enumerate() {
             match &sysitem.stype {
                 SysItemType::Parts(_part_ids, _sum_duration, _complexes_infos, _positions_durations) => {
@@ -53,19 +59,17 @@ impl ScoreContext {
             };
         }
 
-        dbg!(self.grid_columns.borrow());
-
+        // Ok(self.grid_columns.borrow())
         Ok(())
     }
 
     fn build_sysitem_barline(&self, sysitem_id: usize, btype: &BarlineType, expected_parts_count: usize) -> Result<(), Box<dyn std::error::Error>> {
-        let mut scx_grid_columns = self.grid_columns.borrow_mut();
         let mut column_griditems: Vec<GridItemType<GlyphItem>> = Vec::new();
 
         let rect = match btype {
-            BarlineType::Double => (0.0, -SPACE2, BARLINE_DOUBLE_WIDTH, SPACE4), // Placeholder rectangle for double barline
-            BarlineType::Final => (0.0, -SPACE2, BARLINE_FINAL_WIDTH, SPACE4),   // Placeholder rectangle for final barline
-            _ => (0.0, -SPACE2, BARLINE_WIDTH, SPACE4),                          // Placeholder rectangle for single barline
+            BarlineType::Double => (0.0, -SPACE2, BARLINE_DOUBLE_WIDTH, SPACE4),
+            BarlineType::Final => (0.0, -SPACE2, BARLINE_FINAL_WIDTH, SPACE4),
+            _ => (0.0, -SPACE2, BARLINE_WIDTH, SPACE4),
         };
         let glyph: GlyphItem = GlyphItem::Barline(btype.clone());
         let item: GlyphRectangle = (rect, glyph.clone());
@@ -79,20 +83,17 @@ impl ScoreContext {
         }
 
         self.grid_column_sysitem_ids.borrow_mut().push(sysitem_id);
-        scx_grid_columns.push(column_griditems);
+        self.grid_columns.borrow_mut().push(column_griditems);
 
         Ok(())
     }
 
     fn build_sysitem_clefs(&self, sysitem_id: usize, _clefs: &[ClefSignature], expected_parts_count: usize) -> Result<(), Box<dyn std::error::Error>> {
-        let mut scx_grid_columns = self.grid_columns.borrow_mut();
         let mut column_griditems: Vec<GridItemType<GlyphItem>> = Vec::new();
-
         for clef in _clefs {
             println!("Clef: {:?}", clef);
             let glyph: GlyphItem = GlyphItem::Clef(clef.clone());
-            let rect = (0.0, -SPACE2, 1.0, SPACE4); // Placeholder rectangle
-
+            let rect = (0.0, -SPACE2, CLEF_WIDTH, SPACE4); // Placeholder rectangle
             column_griditems.push(GridItemType::Rectangles(vec![(rect, glyph.clone())]));
         }
 
@@ -101,7 +102,7 @@ impl ScoreContext {
             let glyph = match column_griditems.len() {
                 0 => GlyphItem::Clef(ClefSignature::Treble),
                 1 => GlyphItem::Clef(ClefSignature::Bass),
-                _ => GlyphItem::XBlue,
+                _ => GlyphItem::XRect(Color::Gray),
             };
 
             let rect = (0.0, -SPACE2, 1.0, SPACE4); // Placeholder rectangle
@@ -110,7 +111,7 @@ impl ScoreContext {
         }
 
         self.grid_column_sysitem_ids.borrow_mut().push(sysitem_id);
-        scx_grid_columns.push(column_griditems);
+        self.grid_columns.borrow_mut().push(column_griditems);
         Ok(())
     }
 

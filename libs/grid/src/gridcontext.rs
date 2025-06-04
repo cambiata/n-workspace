@@ -7,7 +7,7 @@ use graphics::rectangle::{rectangles_overlap_x, Rectangle};
 #[derive(Debug)]
 pub struct GridContext<T>
 where
-    T: Debug + Copy + Clone,
+    T: Debug + Clone,
 {
     pub items: RefCell<Vec<GridItem<T>>>,
     pub cols: RefCell<Vec<GridColumn>>,
@@ -19,7 +19,7 @@ where
 #[allow(unused_variables)]
 impl<T> GridContext<T>
 where
-    T: Debug + Copy + Clone,
+    T: Debug + Clone,
 {
     pub fn new() -> &'static GridContext<T> {
         let cx = GridContext {
@@ -158,7 +158,7 @@ where
             match &item.gitype {
                 GridItemType::Rectangles(ref items) => {
                     let rects = &items.iter().map(|(r, _)| *r).collect::<Vec<Rectangle>>();
-                    dbg!(rects);
+                    // dbg!(rects);
                     for rect in rects.iter() {
                         max_w = max_w.max(rect.2 + rect.0);
                     }
