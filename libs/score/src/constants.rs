@@ -9,9 +9,8 @@ pub const HEAD_WIDTH_WHITE: f32 = SPACE * 1.2;
 pub const HEAD_WIDTH_WHOLE: f32 = SPACE * 2.4;
 pub const REST_WIDTH: f32 = SPACE;
 pub const ACCIDENTAL_HEIGHT: f32 = SPACE * 1.2;
-pub const ACCIDENTAL_WIDTH: f32 = SPACE * 0.8;
+pub const ACCIDENTAL_WIDTH: f32 = SPACE * 0.6;
 pub const CLEF_WIDTH: f32 = SPACE2;
-
 pub const BARLINE_WIDTH: f32 = SPACE * 0.5;
 pub const BARLINE_DOUBLE_WIDTH: f32 = SPACE;
 pub const BARLINE_FINAL_WIDTH: f32 = SPACE * 1.5;

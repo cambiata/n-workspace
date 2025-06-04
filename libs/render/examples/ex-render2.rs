@@ -1,5 +1,4 @@
 // cargo watch -q -c --ignore '**/*.svg' -x "run -q --example ex-render2"
-
 use core::context::CoreContext;
 use std::fs;
 
@@ -10,7 +9,7 @@ use score::{glyphitem::GlyphItem, scorecontext::ScoreContext};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cx = CoreContext::new();
-    let _ = parse_sysitems(cx, "|clef G F| b0 #1,b-2 b0 / d2 0 #-1,b2").unwrap();
+    let _ = parse_sysitems(cx, "|clef G F| b0 #3,b-1 b0 / d2 0 #-1,b2").unwrap();
     let scx = ScoreContext::new();
     scx.build_sysitems(&cx.sysitems.borrow(), &cx.complexes.borrow())?;
 

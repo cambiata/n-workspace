@@ -100,7 +100,7 @@ where
             let left_colidx = colidx[0];
             let right_colidx = colidx[1];
             for (rowidx, row) in self_rows.iter().enumerate() {
-                println!("colidx {left_colidx}-{right_colidx}, Rowidx {rowidx} --------");
+                // println!("colidx {left_colidx}-{right_colidx}, Rowidx {rowidx} --------");
                 let left_item = &self_items[row.item_ids[left_colidx]];
                 let right_item = &self_items[row.item_ids[right_colidx]];
                 match (&left_item.gitype, &right_item.gitype) {
@@ -151,7 +151,7 @@ where
         let last_colidx = self.cols.borrow().len() - 1;
         let mut max_w: f32 = 0.0;
         for rowidx in 0..self_rows.len() {
-            println!("Row {rowidx} - Last column {last_colidx} --------");
+            // println!("Row {rowidx} - Last column {last_colidx} --------");
             let item_id = &self_rows[rowidx].item_ids[last_colidx];
             let item = &self_items[*item_id];
 

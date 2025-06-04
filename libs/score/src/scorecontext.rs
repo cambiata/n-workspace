@@ -45,11 +45,11 @@ impl ScoreContext {
                     self.build_sysitem_parts(complexes, sysitem.id, _part_ids, _sum_duration, _complexes_infos, _positions_durations, expected_parts_count)?;
                 }
                 SysItemType::Clefs(_clefs) => {
-                    println!("Clef found in sysitem {}", sysidx);
+                    // println!("Clef found in sysitem {}", sysidx);
                     self.build_sysitem_clefs(sysitem.id, _clefs, expected_parts_count)?;
                 }
                 SysItemType::Barline(_barline) => {
-                    println!("Barline found in sysitem {}", sysidx);
+                    // println!("Barline found in sysitem {}", sysidx);
                     self.build_sysitem_barline(sysitem.id, _barline, expected_parts_count)?;
                 }
                 SysItemType::Other => {
@@ -91,7 +91,7 @@ impl ScoreContext {
     fn build_sysitem_clefs(&self, sysitem_id: usize, _clefs: &[ClefSignature], expected_parts_count: usize) -> Result<(), Box<dyn std::error::Error>> {
         let mut column_griditems: Vec<GridItemType<GlyphItem>> = Vec::new();
         for clef in _clefs {
-            println!("Clef: {:?}", clef);
+            // println!("Clef: {:?}", clef);
             let glyph: GlyphItem = GlyphItem::Clef(clef.clone());
             let rect = (0.0, -SPACE2, CLEF_WIDTH, SPACE4); // Placeholder rectangle
             column_griditems.push(GridItemType::Rectangles(vec![(rect, glyph.clone())]));
@@ -126,19 +126,15 @@ impl ScoreContext {
         expected_parts_count: usize,
     ) -> Result<(), Box<dyn std::error::Error>> {
         //-----------------------------
-        for (pos, dur) in positions_durations.iter() {
+        for (pos, _duration) in positions_durations.iter() {
             let mut column_griditems: Vec<GridItemType<GlyphItem>> = Vec::new();
             for (partidx, _part_complexes) in complexes_infos.iter().enumerate() {
-                println!("- - Position: {}, Duration: {}", pos, dur);
                 if let Some(complex_info) = _part_complexes.get(pos) {
-                    println!("- - - Part {}: Complex Info: {:?}", partidx, complex_info);
                     let complex_id = complex_info.0;
                     let complex = &complexes[complex_id];
                     let complex_rectangles: ComplexGlyphsRectangles = create_glyphsrectangles_complex(partidx, complex);
-                    // dbg!(&complex_rectangles);
                     column_griditems.push(GridItemType::Rectangles(complex_rectangles));
                 } else {
-                    println!("- - - Part {}: No complex info at position {}", partidx, pos);
                     column_griditems.push(GridItemType::Empty);
                 }
             }
