@@ -35,8 +35,6 @@ impl ScoreContext {
     // Vec<Vec<GridItemType<GlyphItem>>>
 
     pub fn build_sysitems(&self, sysitems: &[SysItem], complexes: &[Complex]) -> Result<(), Box<dyn std::error::Error>> {
-        // let x: Vec<Vec<GridItemType<GlyphItem>>> = Vec::new();
-        //
         let expected_parts_count = sysitems.iter().fold(0, |acc, sysitem| sysitem.parts_count.max(acc));
 
         for (sysidx, sysitem) in sysitems.iter().enumerate() {
