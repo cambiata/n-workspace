@@ -1,5 +1,6 @@
 pub mod fontcontext;
 pub mod pathbuilder;
+pub mod utils;
 
 #[cfg(test)]
 mod tests {

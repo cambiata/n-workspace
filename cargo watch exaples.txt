@@ -1,1 +1,0 @@
-cargo watch -q -c --ignore '**/*.svg' -x "run -q --example ex-grid1"

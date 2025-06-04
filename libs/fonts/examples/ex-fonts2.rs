@@ -16,7 +16,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     let v_metrics = font.v_metrics(scale);
 
     // layout the glyphs
-    let glyphs: Vec<_> = font.layout(text, scale, point(0., 0. + v_metrics.ascent)).collect();
+    let glyphs: Vec<_> = font.layout(text, scale, point(0., v_metrics.ascent)).collect();
 
     // work out the layout size
     let glyphs_height = (v_metrics.ascent - v_metrics.descent).ceil() as u32;
