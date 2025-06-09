@@ -11,7 +11,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     let font = Font::try_from_bytes(font_data as &[u8]).expect("Error constructing Font");
 
     let scale = Scale::uniform(32.0);
-    let text = "ÅÄÖ 123 This is RustType rendered into a png!";
+    let text = "Hej";
     let colour = (255, 255, 255);
     let v_metrics = font.v_metrics(scale);
 

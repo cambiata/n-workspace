@@ -1,9 +1,10 @@
-use crate::accidental::Accidental;
+use crate::{accidental::Accidental, stems::stemitems::StemHeadPosition};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 pub struct HeadItem {
     pub level: i8,
     pub accidental: Accidental,
+    pub head_position: Option<StemHeadPosition>,
 }
 
 #[derive(Debug, Clone)]

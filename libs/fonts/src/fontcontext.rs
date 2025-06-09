@@ -1,8 +1,8 @@
-use graphics::graphicitem::GraphicItem;
+use graphics::{graphicitem::GraphicItem, path::PathSegment};
 use rusttype::Font;
 use std::cell::RefCell;
 
-use crate::utils::{get_dimensions, get_items};
+use crate::utils::{get_dimensions, get_items, get_segments};
 
 #[allow(unused)]
 #[derive(Debug)]
@@ -29,6 +29,10 @@ impl<'a> FontContext<'a> {
     pub fn get_music_string_items(&self, scale: f32, text: &str) -> Vec<GraphicItem> {
         let font = &self.music_font.borrow();
         get_items(font, scale, text)
+    }
+    pub fn get_music_string_segments(&self, scale: f32, text: &str) -> Vec<Vec<PathSegment>> {
+        let font = &self.music_font.borrow();
+        get_segments(font, scale, text)
     }
 
     pub fn get_sansserif_string_dimensions(&self, scale: f32, text: &str) -> (f32, f32) {

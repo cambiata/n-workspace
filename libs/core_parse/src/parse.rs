@@ -7,6 +7,7 @@ use core::duration::{NoteDuration, SumDuration};
 use core::head::HeadItem;
 use core::note::{NoteItem, NoteType};
 use core::part::{PartItem, PartType};
+use core::stems::headpositions::calculate_head_positions;
 use core::stems::stemdirections::calculate_stemitem_directions;
 use core::stems::stemitems::create_stem_items_from_notes_in_voice;
 use core::sysitem::{SysItem, SysItemType};
@@ -22,7 +23,11 @@ pub fn parse_head(_cx: &CoreContext, value: &str) -> Result<HeadItem, Box<dyn Er
     let level: i8 = value.chars().filter(|c| c.is_numeric() || *c == '-').collect::<String>().parse()?;
 
     let accidental: Accidental = Accidental::find(value);
-    let info: HeadItem = HeadItem { level: level, accidental: accidental };
+    let info: HeadItem = HeadItem {
+        level: level,
+        accidental: accidental,
+        head_position: None,
+    };
     Ok(info)
 }
 
@@ -139,6 +144,7 @@ pub fn parse_part(cx: &CoreContext, value: &str) -> Result<ItemId, Box<dyn Error
 
     calculate_stemitem_directions(cx, &ptype);
     let complexids = create_complexes_for_part(cx, &ptype, id);
+    let _ = calculate_head_positions(cx);
     let info = PartItem { id, duration, ptype, complexids };
     cx.parts.borrow_mut().push(info);
 

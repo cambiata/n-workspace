@@ -32,6 +32,14 @@ pub struct StemNoteItem {
     // pub position: usize,
     // pub duration: Duration,
     pub note: NoteItem,
+    pub head_positions: Option<Vec<StemHeadPosition>>,
+}
+
+#[derive(Debug, Clone)]
+pub enum StemHeadPosition {
+    Left,
+    Center,
+    Right,
 }
 
 /*
@@ -82,6 +90,7 @@ pub fn create_stem_items_from_notes_in_voice(
                             // position: note.position,
                             // duration: note.duration,
                             note: note.clone(),
+                            head_positions: None,
                         })),
                         false => Ok(StemType::NoteWithoutStem(StemNoteItem {
                             // note_id: note.id,
@@ -90,12 +99,14 @@ pub fn create_stem_items_from_notes_in_voice(
                             // position: note.position,
                             // duration: note.duration,
                             note: note.clone(),
+                            head_positions: None,
                         })),
                     },
                     _ => Ok(StemType::NotNote(StemNoteItem {
                         top_level: 0,
                         bottom_level: 0,
                         note: note.clone(),
+                        head_positions: None,
                     })),
                 }
             }
@@ -116,6 +127,7 @@ pub fn create_stem_items_from_notes_in_voice(
                                 // position: note.position,
                                 // duration: note.duration,
                                 note: note.clone(),
+                                head_positions: None,
                             };
                             infos.push(info);
                         }

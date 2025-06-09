@@ -9,7 +9,7 @@ use score::{glyphitem::GlyphItem, scorecontext::ScoreContext};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cx = CoreContext::new();
-    let _ = parse_sysitems(cx, "|clef G F| b0 #3,b-1 b0 / d2 0 #-1,b2").unwrap();
+    let _ = parse_sysitems(cx, "|clef G F| -3,3 #3,b-1 b0 / d2 0 #-1,b2").unwrap();
     let scx = ScoreContext::new();
     scx.build_sysitems(&cx.sysitems.borrow(), &cx.complexes.borrow())?;
 

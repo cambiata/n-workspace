@@ -1,5 +1,5 @@
-pub const SPACE: f32 = 8.0;
-//
+pub const SPACE: f32 = 10.0; // Default space size in pixels, used for layout and spacing in the score rendering
+                             //
 pub const SPACE2: f32 = SPACE * 2.0;
 pub const SPACE4: f32 = SPACE * 4.0;
 pub const SPACE6: f32 = SPACE * 6.0;
