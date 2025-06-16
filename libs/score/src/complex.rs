@@ -1,6 +1,5 @@
 use core::{
     accidental::Accidental,
-    complex::{Complex, ComplexType},
     duration::NoteDuration,
     head::{HeadItem, HeadType, HeadVariant},
     note::{NoteItem, NoteType},
@@ -14,50 +13,6 @@ use crate::{
     constants::{ACCIDENTAL_HEIGHT, ACCIDENTAL_WIDTH, HEAD_WIDTH_BLACK, HEAD_WIDTH_WHITE, HEAD_WIDTH_WHOLE, REST_WIDTH, SPACE, SPACE2, SPACE_HALF},
     glyphitem::{ComplexGlyphsRectangles, GlyphItem, GlyphRectangle},
 };
-
-// pub fn create_glyphsrectangles_complex(_partidx: usize, _complex: &Complex) -> ComplexGlyphsRectangles {
-//     let mut rectangles: ComplexGlyphsRectangles = Vec::new();
-
-//     match _complex.ctype {
-//         ComplexType::Upper(ref note) => {
-//             // note
-//             let note_rectangles = create_glyphsrectangles_note(note);
-//             rectangles.extend(note_rectangles);
-
-//             // accidentals
-//             let mut accidentals = collect_accidentals(note);
-//             sort_accidentals(&mut accidentals);
-//             let acc_rectangles = create_glyphsrectangles_accidentals(&accidentals);
-//             rectangles.extend(acc_rectangles);
-//         }
-//         ComplexType::Lower(ref note) => {
-//             // note
-//             let note_rectangles = create_glyphsrectangles_note(note);
-//             rectangles.extend(note_rectangles);
-
-//             // accidentals
-//             let mut accidentals = collect_accidentals(note);
-//             sort_accidentals(&mut accidentals);
-//             let acc_rectangles = create_glyphsrectangles_accidentals(&accidentals);
-//             rectangles.extend(acc_rectangles);
-//         }
-//         ComplexType::UpperAndLower(ref upper, ref lower, _diff) => {
-//             // note
-//             let mut note_rectangles = create_glyphsrectangles_note(upper);
-//             note_rectangles.extend(create_glyphsrectangles_note(lower));
-//             rectangles.extend(note_rectangles);
-
-//             // accidentals
-//             let mut accidentals = collect_accidentals(upper);
-//             accidentals.extend(collect_accidentals(lower));
-//             sort_accidentals(&mut accidentals);
-//             let acc_rectangles = create_glyphsrectangles_accidentals(&accidentals);
-//             rectangles.extend(acc_rectangles);
-//         }
-//     }
-
-//     rectangles
-// }
 
 pub fn sort_accidentals(accidentals: &mut Vec<(i8, Accidental)>) -> &mut Vec<(i8, Accidental)> {
     accidentals.sort_by(|a, b| a.0.cmp(&b.0));
@@ -118,21 +73,15 @@ pub fn create_glyphsrectangles_note(_note: &NoteItem, map_head_position: &BTreeM
 }
 
 fn create_glyphrectangle_head(duration: &NoteDuration, head: &HeadItem, map_head_position: &BTreeMap<usize, StemHeadPosition>) -> GlyphRectangle {
-    let head_x: f32 = match map_head_position.get(&head.id).cloned().unwrap_or(StemHeadPosition::Center) {
-        StemHeadPosition::Center => {
-            // Center position, no adjustment needed
-            0.
-        }
-        StemHeadPosition::Left => {
-            // Adjust for left position
-            -get_head_width(duration)
-        }
-        StemHeadPosition::Right => {
-            // Adjust for right position
-            get_head_width(duration)
+    let head_x: f32 = if !map_head_position.contains_key(&head.id) {
+        0.
+    } else {
+        match map_head_position.get(&head.id).cloned().unwrap_or(StemHeadPosition::Center) {
+            StemHeadPosition::Center => 0.,
+            StemHeadPosition::Left => -get_head_width(duration),
+            StemHeadPosition::Right => get_head_width(duration),
         }
     };
-    dbg!(&head_x);
 
     let level_y: f32 = head.level as f32 * SPACE_HALF;
     let rect: Rectangle = (head_x, -SPACE_HALF + level_y, get_head_width(duration), SPACE);

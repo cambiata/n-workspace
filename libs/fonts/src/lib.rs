@@ -1,5 +1,5 @@
 pub mod fontcontext;
-pub mod glyphs;
+pub mod music_glyphs;
 pub mod pathbuilder;
 pub mod utils;
 

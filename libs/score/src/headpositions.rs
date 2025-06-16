@@ -1,11 +1,10 @@
 use core::{
-    context::CoreContext,
     direction::DirectionUD,
     stems::stemitems::{StemHeadPosition, StemItem, StemType},
 };
 
 type HeadIdLevel = (usize, i8); // (head_id, level)
-type HeadIdPosition = (usize, StemHeadPosition); // (head_id, position)
+                                // type HeadIdPosition = (usize, StemHeadPosition); // (head_id, position)
 
 pub fn calculate_head_positions(stemitems: &[StemItem], map_head_position: &mut std::collections::BTreeMap<usize, StemHeadPosition>) {
     // let mut positions_map: Vec<(usize, StemHeadPosition)> = Vec::new();
@@ -62,14 +61,13 @@ fn calc_head_positions_up(head_ids_levels: Vec<HeadIdLevel>, map_head_position: 
     println!("calc_head_positions_up: {:?}", head_ids_levels);
     let mut ids_levels = head_ids_levels.clone();
     ids_levels.reverse();
-    dbg!(&ids_levels);
 
     let mut positions: Vec<(usize, StemHeadPosition)> = vec![(ids_levels[0].0, StemHeadPosition::Center)];
 
     for head_id_level in ids_levels.windows(2) {
         let diff = head_id_level[0].1 - head_id_level[1].1;
         let id = head_id_level[1].0;
-        dbg!(&diff);
+
         // dbg!(&head_id_level, &diff);
         match &positions.last().unwrap().1 {
             StemHeadPosition::Center => {
@@ -101,14 +99,13 @@ fn calc_head_positions_down(head_ids_levels: Vec<HeadIdLevel>, map_head_position
 
     let mut ids_levels = head_ids_levels.clone();
     ids_levels.reverse();
-    dbg!(&ids_levels);
 
     let mut positions: Vec<(usize, StemHeadPosition)> = vec![(ids_levels[0].0, StemHeadPosition::Center)];
 
     for head_id_level in ids_levels.windows(2) {
         let diff = head_id_level[0].1 - head_id_level[1].1;
         let id = head_id_level[1].0;
-        dbg!(&diff);
+
         // dbg!(&head_id_level, &diff);
         match &positions.last().unwrap().1 {
             StemHeadPosition::Center => {

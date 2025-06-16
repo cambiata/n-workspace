@@ -2,7 +2,7 @@ use core::clef::ClefSignature;
 
 use graphics::{color::Color, fill::Fill, graphicitem::GraphicItem, rectangle::Rectangle, stroke::Stroke};
 use score::{
-    constants::{SPACE, SPACE2, SPACE_HALF},
+    constants::{SPACE, SPACE2},
     glyphitem::GlyphItem,
 };
 
@@ -21,7 +21,7 @@ pub fn get_graphic_items_from_glyph(movex: f32, movey: f32, rect: &Rectangle, gl
             graphic_items.push(GraphicItem::Rect(rect.0 + movex, rect.1 + movey, rect.2, rect.3, Stroke::None, Fill::Solid(Color::Black), None));
         }
         GlyphItem::Notehead(_htype, _hvariant) => {
-            graphic_items.push(GraphicItem::Rect(rect.0 + movex, rect.1 + movey, rect.2, rect.3, Stroke::None, Fill::Solid(Color::DodgerBlue), None));
+            graphic_items.push(GraphicItem::Rect(rect.0 + movex, rect.1 + movey, rect.2, rect.3, Stroke::None, Fill::Solid(Color::Lime), None));
         }
         GlyphItem::Accidental(_atype) => {
             graphic_items.push(GraphicItem::Rect(rect.0 + movex, rect.1 + movey, rect.2, rect.3, Stroke::None, Fill::Solid(Color::Purple), None));

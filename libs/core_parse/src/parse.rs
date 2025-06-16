@@ -7,7 +7,7 @@ use core::duration::{NoteDuration, SumDuration};
 use core::head::HeadItem;
 use core::note::{NoteItem, NoteType};
 use core::part::{PartItem, PartType};
-use core::stems::headpositions::calculate_head_positions;
+
 use core::stems::stemdirections::calculate_stemitem_directions;
 use core::stems::stemitems::create_stem_items_from_notes_in_voice;
 use core::sysitem::{SysItem, SysItemType};
