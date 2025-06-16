@@ -1,18 +1,16 @@
-use crate::{
+use core::{
     context::CoreContext,
     direction::DirectionUD,
-    stems::stemitems::{StemHeadPosition, StemType},
+    stems::stemitems::{StemHeadPosition, StemItem, StemType},
 };
 
 type HeadIdLevel = (usize, i8); // (head_id, level)
 type HeadIdPosition = (usize, StemHeadPosition); // (head_id, position)
 
-#[allow(unused_variables)]
-
-pub fn calculate_head_positions(cx: &CoreContext) {
+pub fn calculate_head_positions(stemitems: &[StemItem], map_head_position: &mut std::collections::BTreeMap<usize, StemHeadPosition>) {
     // let mut positions_map: Vec<(usize, StemHeadPosition)> = Vec::new();
 
-    for stemitem in cx.stemitems.borrow().iter() {
+    for stemitem in stemitems.iter() {
         if stemitem.direction.is_none() {
             println!("Problem: Stem item without direction: {:?}", stemitem);
             continue; // Skip items without a direction
@@ -21,14 +19,14 @@ pub fn calculate_head_positions(cx: &CoreContext) {
         match stemitem.stype {
             StemType::NoteWithoutStem(ref item) => {
                 let head_ids_levels = item.note.get_head_ids_and_levels().unwrap();
-                calc_head_positions(cx, head_ids_levels, &stemitem.direction);
+                calc_head_positions(head_ids_levels, &stemitem.direction, map_head_position);
 
                 // positions_map.push(ids_positions);
                 // item.head_positions = Some(positions);
             }
             StemType::NoteWithStem(ref item) => {
                 let head_ids_levels = item.note.get_head_ids_and_levels().unwrap();
-                calc_head_positions(cx, head_ids_levels, &stemitem.direction);
+                calc_head_positions(head_ids_levels, &stemitem.direction, map_head_position);
 
                 // positions_map.push((stemitem.id, positions));
                 // item.head_positions = Some(positions);
@@ -37,7 +35,7 @@ pub fn calculate_head_positions(cx: &CoreContext) {
                 // Handle beamed notes similarly
                 for item in items.iter() {
                     let head_ids_levels = item.note.get_head_ids_and_levels().unwrap();
-                    calc_head_positions(cx, head_ids_levels, &stemitem.direction);
+                    calc_head_positions(head_ids_levels, &stemitem.direction, map_head_position);
                     // item.head_positions = Some(positions);
                     // positions_map.push((stemitem.id, positions));
                 }
@@ -45,38 +43,22 @@ pub fn calculate_head_positions(cx: &CoreContext) {
             _ => {}
         };
     }
-
-    // for (id, positions) in positions_map {
-    //     let mut stemitems = cx.stemitems.borrow_mut();
-    //     if let Some(stemitem) = stemitems.iter_mut().find(|s| s.id == id) {
-    //         match &mut stemitem.stype {
-    //             StemType::NoteWithoutStem(item) => item.head_positions = Some(positions),
-    //             StemType::NoteWithStem(item) => item.head_positions = Some(positions),
-    //             StemType::NotesBeamed(items) => {
-    //                 for item in items.iter_mut() {
-    //                     item.head_positions = Some(positions.clone());
-    //                 }
-    //             }
-    //             _ => {}
-    //         }
-    //     }
-    // }
 }
 
 #[allow(unused_variables)]
-fn calc_head_positions(cx: &CoreContext, head_ids_levels: Vec<HeadIdLevel>, direction: &Option<DirectionUD>) {
+fn calc_head_positions(head_ids_levels: Vec<HeadIdLevel>, direction: &Option<DirectionUD>, map_head_position: &mut std::collections::BTreeMap<usize, StemHeadPosition>) {
     if head_ids_levels.len() <= 1 {
         return;
     }
 
     match direction.as_ref().unwrap() {
-        DirectionUD::Up => calc_head_positions_up(cx, head_ids_levels),
-        DirectionUD::Down => calc_head_positions_down(cx, head_ids_levels),
+        DirectionUD::Up => calc_head_positions_up(head_ids_levels, map_head_position),
+        DirectionUD::Down => calc_head_positions_down(head_ids_levels, map_head_position),
     };
 }
 
 #[allow(unused_variables)]
-fn calc_head_positions_up(cx: &CoreContext, head_ids_levels: Vec<HeadIdLevel>) {
+fn calc_head_positions_up(head_ids_levels: Vec<HeadIdLevel>, map_head_position: &mut std::collections::BTreeMap<usize, StemHeadPosition>) {
     println!("calc_head_positions_up: {:?}", head_ids_levels);
     let mut ids_levels = head_ids_levels.clone();
     ids_levels.reverse();
@@ -106,15 +88,15 @@ fn calc_head_positions_up(cx: &CoreContext, head_ids_levels: Vec<HeadIdLevel>) {
         }
     }
 
-    // let positions: Vec<(usize, StemHeadPosition)> = positions.iter().filter(|(_, pos)| *pos != StemHeadPosition::Center).cloned().collect();
-
     for position in positions.iter() {
-        cx.map_head_position.borrow_mut().insert(position.0, position.1.clone());
+        if position.1 != StemHeadPosition::Center {
+            map_head_position.insert(position.0, position.1.clone());
+        }
     }
 }
 
 #[allow(unused_variables)]
-fn calc_head_positions_down(cx: &CoreContext, head_ids_levels: Vec<HeadIdLevel>) {
+fn calc_head_positions_down(head_ids_levels: Vec<HeadIdLevel>, map_head_position: &mut std::collections::BTreeMap<usize, StemHeadPosition>) {
     println!("calc_head_positions_down: {:?}", head_ids_levels);
 
     let mut ids_levels = head_ids_levels.clone();
@@ -145,51 +127,9 @@ fn calc_head_positions_down(cx: &CoreContext, head_ids_levels: Vec<HeadIdLevel>)
         }
     }
 
-    // let non_center_positions: Vec<(usize, StemHeadPosition)> = positions.iter().filter(|(_, pos)| *pos != StemHeadPosition::Center).cloned().collect();
-
     for position in positions.iter() {
-        cx.map_head_position.borrow_mut().insert(position.0, position.1.clone());
-    }
-
-    /*
-    let mut levels = head_levels.clone();
-    levels.reverse();
-    println!("DOWN: {:?}", levels);
-
-    let mut positions: Vec<StemHeadPosition> = vec![StemHeadPosition::Center];
-
-    for heads in levels.windows(2) {
-        let diff = heads[0] - heads[1];
-        match &positions.last().unwrap() {
-            StemHeadPosition::Center => {
-                if diff <= 1 {
-                    positions.push(StemHeadPosition::Left);
-                } else {
-                    positions.push(StemHeadPosition::Center);
-                }
-            }
-            StemHeadPosition::Left => {
-                positions.push(StemHeadPosition::Center);
-            }
-            _ => {
-                println!("Unexpected position: {:?}", positions.last().unwrap());
-            }
+        if position.1 != StemHeadPosition::Center {
+            map_head_position.insert(position.0, position.1.clone());
         }
-    }
-    dbg!(&positions);
-
-    positions
-     */
-}
-
-#[cfg(test)]
-mod tests2 {
-
-    use super::{calc_head_positions_up, HeadIdLevel};
-
-    #[test]
-    fn example() {
-        let levels: Vec<HeadIdLevel> = vec![(111, 0), (222, 1), (333, 3)];
-        // let positions = calc_head_positions_up(levels);
     }
 }

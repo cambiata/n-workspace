@@ -35,11 +35,11 @@ pub struct StemNoteItem {
     pub head_positions: Option<Vec<StemHeadPosition>>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum StemHeadPosition {
-    Left,
-    Center,
-    Right,
+    Left = -1,
+    Center = 0,
+    Right = 1,
 }
 
 /*

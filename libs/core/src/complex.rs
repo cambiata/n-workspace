@@ -193,6 +193,7 @@ pub fn create_complexes_for_two_voices(cx: &CoreContext, note_ids_upper: &Vec<It
                 let level_diff: i8 = match (&note_upper.ntype, &note_lower.ntype) {
                     (NoteType::Heads(heads_upper), NoteType::Heads(heads_lower)) => {
                         // dbg!("Check for note head collisions...", &heads_upper, &heads_lower);
+
                         heads_lower.first().unwrap().level - heads_upper.last().unwrap().level
                         // dbg!(level_diff);
                     }

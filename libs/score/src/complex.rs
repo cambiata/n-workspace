@@ -4,8 +4,10 @@ use core::{
     duration::NoteDuration,
     head::{HeadItem, HeadType, HeadVariant},
     note::{NoteItem, NoteType},
+    stems::stemitems::StemHeadPosition,
 };
 use graphics::rectangle::Rectangle;
+use std::collections::BTreeMap;
 use utils::f32_ext::{half::F32ExtHalf, round::F32ExtRound2};
 
 use crate::{
@@ -13,49 +15,49 @@ use crate::{
     glyphitem::{ComplexGlyphsRectangles, GlyphItem, GlyphRectangle},
 };
 
-pub fn create_glyphsrectangles_complex(_partidx: usize, _complex: &Complex) -> ComplexGlyphsRectangles {
-    let mut rectangles: ComplexGlyphsRectangles = Vec::new();
+// pub fn create_glyphsrectangles_complex(_partidx: usize, _complex: &Complex) -> ComplexGlyphsRectangles {
+//     let mut rectangles: ComplexGlyphsRectangles = Vec::new();
 
-    match _complex.ctype {
-        ComplexType::Upper(ref note) => {
-            // note
-            let note_rectangles = create_glyphsrectangles_note(note);
-            rectangles.extend(note_rectangles);
+//     match _complex.ctype {
+//         ComplexType::Upper(ref note) => {
+//             // note
+//             let note_rectangles = create_glyphsrectangles_note(note);
+//             rectangles.extend(note_rectangles);
 
-            // accidentals
-            let mut accidentals = collect_accidentals(note);
-            sort_accidentals(&mut accidentals);
-            let acc_rectangles = create_glyphsrectangles_accidentals(&accidentals);
-            rectangles.extend(acc_rectangles);
-        }
-        ComplexType::Lower(ref note) => {
-            // note
-            let note_rectangles = create_glyphsrectangles_note(note);
-            rectangles.extend(note_rectangles);
+//             // accidentals
+//             let mut accidentals = collect_accidentals(note);
+//             sort_accidentals(&mut accidentals);
+//             let acc_rectangles = create_glyphsrectangles_accidentals(&accidentals);
+//             rectangles.extend(acc_rectangles);
+//         }
+//         ComplexType::Lower(ref note) => {
+//             // note
+//             let note_rectangles = create_glyphsrectangles_note(note);
+//             rectangles.extend(note_rectangles);
 
-            // accidentals
-            let mut accidentals = collect_accidentals(note);
-            sort_accidentals(&mut accidentals);
-            let acc_rectangles = create_glyphsrectangles_accidentals(&accidentals);
-            rectangles.extend(acc_rectangles);
-        }
-        ComplexType::UpperAndLower(ref upper, ref lower, _diff) => {
-            // note
-            let mut note_rectangles = create_glyphsrectangles_note(upper);
-            note_rectangles.extend(create_glyphsrectangles_note(lower));
-            rectangles.extend(note_rectangles);
+//             // accidentals
+//             let mut accidentals = collect_accidentals(note);
+//             sort_accidentals(&mut accidentals);
+//             let acc_rectangles = create_glyphsrectangles_accidentals(&accidentals);
+//             rectangles.extend(acc_rectangles);
+//         }
+//         ComplexType::UpperAndLower(ref upper, ref lower, _diff) => {
+//             // note
+//             let mut note_rectangles = create_glyphsrectangles_note(upper);
+//             note_rectangles.extend(create_glyphsrectangles_note(lower));
+//             rectangles.extend(note_rectangles);
 
-            // accidentals
-            let mut accidentals = collect_accidentals(upper);
-            accidentals.extend(collect_accidentals(lower));
-            sort_accidentals(&mut accidentals);
-            let acc_rectangles = create_glyphsrectangles_accidentals(&accidentals);
-            rectangles.extend(acc_rectangles);
-        }
-    }
+//             // accidentals
+//             let mut accidentals = collect_accidentals(upper);
+//             accidentals.extend(collect_accidentals(lower));
+//             sort_accidentals(&mut accidentals);
+//             let acc_rectangles = create_glyphsrectangles_accidentals(&accidentals);
+//             rectangles.extend(acc_rectangles);
+//         }
+//     }
 
-    rectangles
-}
+//     rectangles
+// }
 
 pub fn sort_accidentals(accidentals: &mut Vec<(i8, Accidental)>) -> &mut Vec<(i8, Accidental)> {
     accidentals.sort_by(|a, b| a.0.cmp(&b.0));
@@ -80,7 +82,7 @@ pub fn collect_accidentals(_note: &NoteItem) -> Vec<(i8, Accidental)> {
     accidentals
 }
 
-fn create_glyphsrectangles_accidentals(accs: &[(i8, Accidental)]) -> ComplexGlyphsRectangles {
+pub fn create_glyphsrectangles_accidentals(accs: &[(i8, Accidental)]) -> ComplexGlyphsRectangles {
     let mut rectangles: ComplexGlyphsRectangles = Vec::new();
     for (accidx, (level, accidental)) in accs.iter().enumerate() {
         let x = (-ACCIDENTAL_WIDTH * (accidx as f32)) - ACCIDENTAL_WIDTH;
@@ -97,12 +99,12 @@ fn create_glyphsrectangles_accidentals(accs: &[(i8, Accidental)]) -> ComplexGlyp
     rectangles
 }
 
-pub fn create_glyphsrectangles_note(_note: &NoteItem) -> ComplexGlyphsRectangles {
+pub fn create_glyphsrectangles_note(_note: &NoteItem, map_head_position: &BTreeMap<usize, StemHeadPosition>) -> ComplexGlyphsRectangles {
     let mut rectangles: ComplexGlyphsRectangles = Vec::new();
     match _note.ntype {
         NoteType::Heads(ref heads) => {
             for head in heads {
-                rectangles.push(create_glyphrectangle_head(&_note.duration, head));
+                rectangles.push(create_glyphrectangle_head(&_note.duration, head, map_head_position));
             }
         }
         NoteType::Rest => {
@@ -115,9 +117,25 @@ pub fn create_glyphsrectangles_note(_note: &NoteItem) -> ComplexGlyphsRectangles
     rectangles
 }
 
-fn create_glyphrectangle_head(duration: &NoteDuration, head: &HeadItem) -> GlyphRectangle {
+fn create_glyphrectangle_head(duration: &NoteDuration, head: &HeadItem, map_head_position: &BTreeMap<usize, StemHeadPosition>) -> GlyphRectangle {
+    let head_x: f32 = match map_head_position.get(&head.id).cloned().unwrap_or(StemHeadPosition::Center) {
+        StemHeadPosition::Center => {
+            // Center position, no adjustment needed
+            0.
+        }
+        StemHeadPosition::Left => {
+            // Adjust for left position
+            -get_head_width(duration)
+        }
+        StemHeadPosition::Right => {
+            // Adjust for right position
+            get_head_width(duration)
+        }
+    };
+    dbg!(&head_x);
+
     let level_y: f32 = head.level as f32 * SPACE_HALF;
-    let rect: Rectangle = (0., -SPACE_HALF + level_y, get_head_width(duration), SPACE);
+    let rect: Rectangle = (head_x, -SPACE_HALF + level_y, get_head_width(duration), SPACE);
     // dbg!(&rect);
     let item: GlyphItem = GlyphItem::Notehead(duration.get_head_type(), HeadVariant::Normal);
     (rect, item)

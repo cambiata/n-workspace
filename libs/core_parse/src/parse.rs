@@ -23,11 +23,15 @@ pub fn parse_head(_cx: &CoreContext, value: &str) -> Result<HeadItem, Box<dyn Er
     let level: i8 = value.chars().filter(|c| c.is_numeric() || *c == '-').collect::<String>().parse()?;
 
     let accidental: Accidental = Accidental::find(value);
+
+    let id = _cx.heads.borrow().len();
     let info: HeadItem = HeadItem {
+        id,
         level: level,
         accidental: accidental,
         head_position: None,
     };
+    _cx.heads.borrow_mut().push(info.clone());
     Ok(info)
 }
 
@@ -36,6 +40,7 @@ pub fn parse_heads(cx: &CoreContext, value: &str) -> Result<Vec<HeadItem>, Box<d
     str_and_level.sort_by_key(|item| item.1); // sort by level
 
     let head_items = str_and_level.iter().map(|item| item.0).map(|s| parse_head(cx, s)).collect::<Result<Vec<HeadItem>, Box<dyn Error>>>()?;
+
     Ok(head_items)
 }
 
@@ -144,7 +149,7 @@ pub fn parse_part(cx: &CoreContext, value: &str) -> Result<ItemId, Box<dyn Error
 
     calculate_stemitem_directions(cx, &ptype);
     let complexids = create_complexes_for_part(cx, &ptype, id);
-    let _ = calculate_head_positions(cx);
+    // let _ = calculate_head_positions(cx);
     let info = PartItem { id, duration, ptype, complexids };
     cx.parts.borrow_mut().push(info);
 

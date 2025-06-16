@@ -3,6 +3,7 @@ use crate::{duration::NoteDuration, head::HeadItem, ItemId};
 #[derive(Debug, Clone)]
 pub enum NoteType {
     Heads(Vec<HeadItem>),
+    // Heads(Vec<usize>, Vec<i8>),
     Rest,
     LyricItem,
 }
@@ -38,6 +39,12 @@ impl NoteItem {
     pub fn get_head_levels(&self) -> Option<Vec<i8>> {
         match &self.ntype {
             NoteType::Heads(heads) => Some(heads.iter().map(|h| h.level).collect()),
+            _ => None,
+        }
+    }
+    pub fn get_head_ids_and_levels(&self) -> Option<Vec<(usize, i8)>> {
+        match &self.ntype {
+            NoteType::Heads(heads) => Some(heads.iter().map(|h| (h.id, h.level)).collect()),
             _ => None,
         }
     }

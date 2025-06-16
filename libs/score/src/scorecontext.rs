@@ -1,8 +1,9 @@
 use core::{
     barline::BarlineType,
     clef::ClefSignature,
-    complex::{Complex, ComplexInfo},
+    complex::{Complex, ComplexInfo, ComplexType},
     duration::SumDuration,
+    stems::stemitems::{StemHeadPosition, StemItem},
     sysitem::{SysItem, SysItemType},
     ItemId,
 };
@@ -12,15 +13,17 @@ use graphics::color::Color;
 use grid::griditem::GridItemType;
 
 use crate::{
-    complex::create_glyphsrectangles_complex,
+    complex::{collect_accidentals, create_glyphsrectangles_accidentals, create_glyphsrectangles_note, sort_accidentals},
     constants::{BARLINE_DOUBLE_WIDTH, BARLINE_FINAL_WIDTH, BARLINE_WIDTH, CLEF_WIDTH, SPACE2, SPACE4},
     glyphitem::{ComplexGlyphsRectangles, GlyphItem, GlyphRectangle, PartGlyphsRectangles, SysitemGlyphsRectangles},
+    headpositions::calculate_head_positions,
 };
 
 #[derive(Debug)]
 pub struct ScoreContext {
     pub grid_columns: RefCell<Vec<Vec<GridItemType<GlyphItem>>>>,
     pub grid_column_sysitem_ids: RefCell<Vec<usize>>,
+    pub map_head_position: RefCell<BTreeMap<usize, StemHeadPosition>>,
 }
 
 impl ScoreContext {
@@ -28,13 +31,20 @@ impl ScoreContext {
         let scx = ScoreContext {
             grid_columns: RefCell::new(Vec::new()),
             grid_column_sysitem_ids: RefCell::new(Vec::new()),
+            map_head_position: RefCell::new(BTreeMap::new()),
         };
         Box::leak(Box::new(scx))
     }
 
     // Vec<Vec<GridItemType<GlyphItem>>>
 
+    pub fn build_stemitems_headpositions(&self, stemitems: &[StemItem]) -> Result<(), Box<dyn std::error::Error>> {
+        calculate_head_positions(stemitems, &mut self.map_head_position.borrow_mut());
+        Ok(())
+    }
+
     pub fn build_sysitems(&self, sysitems: &[SysItem], complexes: &[Complex]) -> Result<(), Box<dyn std::error::Error>> {
+        //---------------------------------------------------------------
         let expected_parts_count = sysitems.iter().fold(0, |acc, sysitem| sysitem.parts_count.max(acc));
 
         for (sysidx, sysitem) in sysitems.iter().enumerate() {
@@ -130,7 +140,7 @@ impl ScoreContext {
                 if let Some(complex_info) = _part_complexes.get(pos) {
                     let complex_id = complex_info.0;
                     let complex = &complexes[complex_id];
-                    let complex_rectangles: ComplexGlyphsRectangles = create_glyphsrectangles_complex(partidx, complex);
+                    let complex_rectangles: ComplexGlyphsRectangles = self.create_glyphsrectangles_complex(partidx, complex);
                     column_griditems.push(GridItemType::Rectangles(complex_rectangles));
                 } else {
                     column_griditems.push(GridItemType::Empty);
@@ -143,6 +153,50 @@ impl ScoreContext {
             self.grid_columns.borrow_mut().push(column_griditems);
         }
         Ok(())
+    }
+
+    pub fn create_glyphsrectangles_complex(&self, _partidx: usize, _complex: &Complex) -> ComplexGlyphsRectangles {
+        let mut rectangles: ComplexGlyphsRectangles = Vec::new();
+
+        match _complex.ctype {
+            ComplexType::Upper(ref note) => {
+                // note
+                let note_rectangles = create_glyphsrectangles_note(note, &self.map_head_position.borrow());
+                rectangles.extend(note_rectangles);
+
+                // accidentals
+                let mut accidentals = collect_accidentals(note);
+                sort_accidentals(&mut accidentals);
+                let acc_rectangles = create_glyphsrectangles_accidentals(&accidentals);
+                rectangles.extend(acc_rectangles);
+            }
+            ComplexType::Lower(ref note) => {
+                // note
+                let note_rectangles = create_glyphsrectangles_note(note, &self.map_head_position.borrow());
+                rectangles.extend(note_rectangles);
+
+                // accidentals
+                let mut accidentals = collect_accidentals(note);
+                sort_accidentals(&mut accidentals);
+                let acc_rectangles = create_glyphsrectangles_accidentals(&accidentals);
+                rectangles.extend(acc_rectangles);
+            }
+            ComplexType::UpperAndLower(ref upper, ref lower, _diff) => {
+                // note
+                let mut note_rectangles = create_glyphsrectangles_note(upper, &self.map_head_position.borrow());
+                note_rectangles.extend(create_glyphsrectangles_note(lower, &self.map_head_position.borrow()));
+                rectangles.extend(note_rectangles);
+
+                // accidentals
+                let mut accidentals = collect_accidentals(upper);
+                accidentals.extend(collect_accidentals(lower));
+                sort_accidentals(&mut accidentals);
+                let acc_rectangles = create_glyphsrectangles_accidentals(&accidentals);
+                rectangles.extend(acc_rectangles);
+            }
+        }
+
+        rectangles
     }
 }
 
