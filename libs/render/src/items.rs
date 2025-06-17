@@ -1,12 +1,14 @@
-use core::clef::ClefSignature;
+use core::{accidental::Accidental, clef::ClefSignature, head::HeadType};
 
 use graphics::{color::Color, fill::Fill, graphicitem::GraphicItem, rectangle::Rectangle, stroke::Stroke};
 use score::{
-    constants::{SPACE, SPACE2},
+    constants::{SPACE, SPACE2, SPACE3, SPACE4, SPACE_HALF},
     glyphitem::GlyphItem,
 };
 
-use crate::music_glyphs::{GLYPH_CLEF_BASS, GLYPH_CLEF_TREBLE, GLYPH_FIVELINES};
+use crate::music_glyphs::{
+    GLYPH_ACCIDENTAL_FLAT, GLYPH_ACCIDENTAL_NATURAL, GLYPH_ACCIDENTAL_SHARP, GLYPH_CLEF_BASS, GLYPH_CLEF_TREBLE, GLYPH_FIVELINES, GLYPH_NOTEHEAD_BLACK, GLYPH_NOTEHEAD_WHITE, GLYPH_NOTEHEAD_WHOLE,
+};
 
 pub fn get_graphic_items_from_glyph(movex: f32, movey: f32, rect: &Rectangle, glyph: &GlyphItem) -> Vec<GraphicItem> {
     let y_zero = -SPACE2 * 1.0;
@@ -21,10 +23,41 @@ pub fn get_graphic_items_from_glyph(movex: f32, movey: f32, rect: &Rectangle, gl
             graphic_items.push(GraphicItem::Rect(rect.0 + movex, rect.1 + movey, rect.2, rect.3, Stroke::None, Fill::Solid(Color::Black), None));
         }
         GlyphItem::Notehead(_htype, _hvariant) => {
-            graphic_items.push(GraphicItem::Rect(rect.0 + movex, rect.1 + movey, rect.2, rect.3, Stroke::None, Fill::Solid(Color::Lime), None));
+            let path = match _htype {
+                HeadType::Whole => GLYPH_NOTEHEAD_WHOLE,
+                HeadType::Brevis => GLYPH_NOTEHEAD_WHOLE,
+                HeadType::White => GLYPH_NOTEHEAD_WHITE,
+                _ => GLYPH_NOTEHEAD_BLACK,
+            };
+
+            // graphic_items.push(GraphicItem::Rect(rect.0 + movex, rect.1 + movey, rect.2, rect.3, Stroke::None, Fill::Solid(Color::LightGray), None));
+
+            graphic_items.push(GraphicItem::Path(
+                path.to_vec(),
+                rect.0 + movex,
+                rect.1 + movey + y_zero - SPACE3 - SPACE_HALF,
+                Stroke::None,
+                Fill::Solid(Color::Black),
+                None,
+            ));
         }
         GlyphItem::Accidental(_atype) => {
-            graphic_items.push(GraphicItem::Rect(rect.0 + movex, rect.1 + movey, rect.2, rect.3, Stroke::None, Fill::Solid(Color::Purple), None));
+            let path = match _atype {
+                Accidental::Flat => GLYPH_ACCIDENTAL_FLAT,
+                Accidental::Natural => GLYPH_ACCIDENTAL_NATURAL,
+                _ => GLYPH_ACCIDENTAL_SHARP,
+            };
+
+            // graphic_items.push(GraphicItem::Rect(rect.0 + movex, rect.1 + movey, rect.2, rect.3, Stroke::None, Fill::Solid(Color::LightGray), None));
+
+            graphic_items.push(GraphicItem::Path(
+                path.to_vec(),
+                rect.0 + movex,
+                rect.1 + movey + y_zero - SPACE2 - SPACE_HALF,
+                Stroke::None,
+                Fill::Solid(Color::Black),
+                None,
+            ));
         }
 
         GlyphItem::Clef(_ctype) => {

@@ -11,13 +11,15 @@ use svg::svg_renderer::SvgBuilder;
 pub fn main() {
     let mut data: HashMap<u32, String> = HashMap::from([
         (35, "ACCIDENTAL_SHARP".to_string()),
+        (98, "ACCIDENTAL_FLAT".to_string()),
+        (110, "ACCIDENTAL_NATURAL".to_string()),
         (38, "CLEF_TREBLE".to_string()),
         (63, "CLEF_BASS".to_string()),
         (66, "CLEF_ALTO".to_string()),
-        (110, "NOTHEAD_WHOLE".to_string()),
+        (119, "NOTEHEAD_WHOLE".to_string()),
         (729, "NOTEHEAD_WHITE".to_string()),
         (339, "NOTEHEAD_BLACK".to_string()),
-        (339, "PAUSE_QUARTER".to_string()),
+        (338, "PAUSE_QUARTER".to_string()),
         (61, "FIVELINES".to_string()),
     ]);
 

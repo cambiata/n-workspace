@@ -10,7 +10,7 @@ use score::{glyphitem::GlyphItem, scorecontext::ScoreContext};
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cx = CoreContext::new();
     // let _ = parse_sysitems(cx, "|clef G F| -3,3 #3,b-1 b0 / d2 0 #-1,b2").unwrap();
-    let _ = parse_sysitems(cx, "|clef G |0,1 0,-3,-4").unwrap();
+    let _ = parse_sysitems(cx, "|clef G |#-1,4n,-5#,6b b-1,#0 1").unwrap();
     let scx = ScoreContext::new();
 
     scx.build_stemitems_headpositions(&cx.stemitems.borrow())?;

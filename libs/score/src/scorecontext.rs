@@ -9,7 +9,7 @@ use core::{
 };
 use std::{cell::RefCell, collections::BTreeMap};
 
-use graphics::color::Color;
+use graphics::{color::Color, rectangle::Rectangle};
 use grid::griditem::GridItemType;
 
 use crate::{
@@ -161,38 +161,41 @@ impl ScoreContext {
         match _complex.ctype {
             ComplexType::Upper(ref note) => {
                 // note
-                let note_rectangles = create_glyphsrectangles_note(note, &self.map_head_position.borrow());
-                rectangles.extend(note_rectangles);
+                let mut note_rectangles: Vec<(Rectangle, GlyphItem)> = create_glyphsrectangles_note(note, &self.map_head_position.borrow());
 
                 // accidentals
                 let mut accidentals = collect_accidentals(note);
                 sort_accidentals(&mut accidentals);
-                let acc_rectangles = create_glyphsrectangles_accidentals(&accidentals);
-                rectangles.extend(acc_rectangles);
+                create_glyphsrectangles_accidentals(&accidentals, &mut note_rectangles);
+
+                rectangles.extend(note_rectangles);
+                // rectangles.extend(acc_rectangles);
             }
             ComplexType::Lower(ref note) => {
                 // note
-                let note_rectangles = create_glyphsrectangles_note(note, &self.map_head_position.borrow());
-                rectangles.extend(note_rectangles);
+                let mut note_rectangles = create_glyphsrectangles_note(note, &self.map_head_position.borrow());
 
                 // accidentals
                 let mut accidentals = collect_accidentals(note);
                 sort_accidentals(&mut accidentals);
-                let acc_rectangles = create_glyphsrectangles_accidentals(&accidentals);
-                rectangles.extend(acc_rectangles);
+                create_glyphsrectangles_accidentals(&accidentals, &mut note_rectangles);
+
+                rectangles.extend(note_rectangles);
+                // rectangles.extend(acc_rectangles);
             }
             ComplexType::UpperAndLower(ref upper, ref lower, _diff) => {
                 // note
                 let mut note_rectangles = create_glyphsrectangles_note(upper, &self.map_head_position.borrow());
                 note_rectangles.extend(create_glyphsrectangles_note(lower, &self.map_head_position.borrow()));
-                rectangles.extend(note_rectangles);
 
                 // accidentals
                 let mut accidentals = collect_accidentals(upper);
                 accidentals.extend(collect_accidentals(lower));
                 sort_accidentals(&mut accidentals);
-                let acc_rectangles = create_glyphsrectangles_accidentals(&accidentals);
-                rectangles.extend(acc_rectangles);
+                create_glyphsrectangles_accidentals(&accidentals, &mut note_rectangles);
+
+                rectangles.extend(note_rectangles);
+                // rectangles.extend(acc_rectangles);
             }
         }
 
