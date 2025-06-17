@@ -5,7 +5,7 @@ use core::{
     note::{NoteItem, NoteType},
     stems::stemitems::StemHeadPosition,
 };
-use graphics::rectangle::{rectangle_overlap_x, rectangles_overlap_x, Rectangle};
+use graphics::rectangle::{rectangle_overlap_x, Rectangle};
 use std::collections::BTreeMap;
 use utils::f32_ext::{half::F32ExtHalf, round::F32ExtRound2};
 
@@ -37,22 +37,19 @@ pub fn collect_accidentals(_note: &NoteItem) -> Vec<(i8, Accidental)> {
     accidentals
 }
 
+#[allow(unused_assignments)]
 pub fn create_glyphsrectangles_accidentals(accs: &[(i8, Accidental)], rectangles: &mut Vec<(Rectangle, GlyphItem)>) {
     // let mut rectangles: ComplexGlyphsRectangles = Vec::new();
 
-    dbg!(&accs);
-
-    let mut altidx = 0;
+    let mut altidx = 0; // Alternate index for even/odd handling
 
     for accidx in 0..accs.len() {
-        dbg!(&accidx);
-
         if (&accidx % 2) == 0 {
             altidx = accidx.div_ceil(2);
-            println!("Even index: {} {}", accidx, altidx);
+            // println!("Even index: {} {}", accidx, altidx);
         } else {
             altidx = &accs.len() - accidx.div_ceil(2);
-            println!("Odd index: {} {}", accidx, altidx);
+            // println!("Odd index: {} {}", accidx, altidx);
         }
 
         let (level, accidental) = &accs[altidx];
@@ -68,23 +65,19 @@ pub fn create_glyphsrectangles_accidentals(accs: &[(i8, Accidental)], rectangles
             _ => ACCIDENTAL_WIDTH_NARROW,
         };
 
-        let x = 0.0; //(-ACCIDENTAL_WIDTH * (accidx as f32)) - ACCIDENTAL_WIDTH;
         let level_y: f32 = *level as f32 * SPACE_HALF;
         let mut rect: Rectangle = (0.0, (-ACCIDENTAL_HEIGHT.half() + level_y).r2(), width, ACCIDENTAL_HEIGHT);
 
         // let overlap = rectangles.iter().any(|(r, _)| r.overlaps(&rect));
-        let overlap = rectangles_overlap_x2(rectangles, &rect);
-        dbg!(&overlap);
+        let overlap = rectangles_overlap_left(rectangles, &rect);
         rect.0 = -overlap;
-
-        dbg!(&accidental);
 
         rectangles.push((rect, item));
     }
     // rectangles
 }
 
-pub fn rectangles_overlap_x2(lefts: &[(Rectangle, GlyphItem)], right: &Rectangle) -> f32 {
+pub fn rectangles_overlap_left(lefts: &[(Rectangle, GlyphItem)], right: &Rectangle) -> f32 {
     let mut result: f32 = 0.;
     lefts.iter().for_each(|left| {
         let ol = rectangle_overlap_x(*right, left.0);
