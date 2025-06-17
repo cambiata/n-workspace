@@ -2,7 +2,7 @@ use core::{accidental::Accidental, clef::ClefSignature, head::HeadType};
 
 use graphics::{color::Color, fill::Fill, graphicitem::GraphicItem, rectangle::Rectangle, stroke::Stroke};
 use score::{
-    constants::{SPACE, SPACE2, SPACE3, SPACE4, SPACE_HALF},
+    constants::{SPACE, SPACE2, SPACE3, SPACE_HALF},
     glyphitem::GlyphItem,
 };
 
@@ -77,10 +77,15 @@ pub fn get_graphic_items_from_glyph(movex: f32, movey: f32, rect: &Rectangle, gl
                 _ => GLYPH_CLEF_TREBLE,
             };
 
+            let y = match _ctype {
+                ClefSignature::Bass => -SPACE3,
+                _ => -SPACE,
+            };
+
             graphic_items.push(GraphicItem::Path(
                 curve.to_vec(),
                 rect.0 + movex,
-                rect.1 + movey + y_zero - SPACE,
+                rect.1 + movey + y_zero + y,
                 Stroke::None,
                 Fill::Solid(Color::Black),
                 None,
