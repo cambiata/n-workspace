@@ -49,7 +49,7 @@ impl ScoreContext {
 
         for (sysidx, sysitem) in sysitems.iter().enumerate() {
             match &sysitem.stype {
-                SysItemType::Parts(_part_ids, _sum_duration, _complexes_infos, _positions_durations) => {
+                SysItemType::Parts(_part_ids, _position, _sum_duration, _complexes_infos, _positions_durations) => {
                     self.build_sysitem_parts(complexes, sysitem.id, _part_ids, _sum_duration, _complexes_infos, _positions_durations, expected_parts_count)?;
                 }
                 SysItemType::Clefs(_clefs) => {

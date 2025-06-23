@@ -10,13 +10,15 @@ use core::part::{PartItem, PartType};
 
 use core::stems::stemdirections::calculate_stemitem_directions;
 use core::stems::stemitems::create_stem_items_from_notes_in_voice;
-use core::sysitem::{SysItem, SysItemType};
+use core::sysitem::{SysItem, SysItemList, SysItemType};
 use core::voice::{VoiceItem, VoiceType};
 use core::ItemId;
 use std::cmp::max;
 use std::collections::{BTreeMap, BTreeSet};
 use std::error::Error;
 use std::vec;
+
+use crate::resolve_ties;
 
 pub fn parse_head(_cx: &CoreContext, value: &str) -> Result<HeadItem, Box<dyn Error>> {
     let value = value.trim();
@@ -132,7 +134,7 @@ pub fn parse_parttype(cx: &CoreContext, value: &str) -> Result<PartType, Box<dyn
     Ok(ptype)
 }
 
-pub fn parse_part(cx: &CoreContext, value: &str) -> Result<ItemId, Box<dyn Error>> {
+pub fn parse_part(cx: &CoreContext, value: &str, idx: usize, position: usize) -> Result<ItemId, Box<dyn Error>> {
     let mut value = value.trim();
     if value.starts_with("%") {
         value = value[1..].trim();
@@ -150,25 +152,33 @@ pub fn parse_part(cx: &CoreContext, value: &str) -> Result<ItemId, Box<dyn Error
     calculate_stemitem_directions(cx, &ptype);
     let complexids = create_complexes_for_part(cx, &ptype, id);
     // let _ = calculate_head_positions(cx);
-    let info = PartItem { id, duration, ptype, complexids };
+    let info = PartItem {
+        id,
+        idx,
+        duration,
+        position,
+        ptype,
+        complexids,
+    };
     cx.parts.borrow_mut().push(info);
 
     Ok(id)
 }
 
-pub fn parse_parts(cx: &CoreContext, value: &str) -> Result<Vec<ItemId>, Box<dyn Error>> {
+pub fn parse_parts(cx: &CoreContext, value: &str, position: usize) -> Result<Vec<ItemId>, Box<dyn Error>> {
     let mut value = value.trim();
     if value.starts_with("/") {
         value = value[1..].trim();
     }
 
     let segments = value.split("/").collect::<Vec<_>>();
-
+    let mut idx = 0;
     let ids: Vec<ItemId> = segments
         .iter()
         .map(|s| {
             let s = s.trim();
-            let id = parse_part(cx, s).expect("Could not parse parts");
+            let id = parse_part(cx, s, idx, position).expect("Could not parse parts");
+            idx += 1;
             id
         })
         .collect::<Vec<_>>();
@@ -176,11 +186,12 @@ pub fn parse_parts(cx: &CoreContext, value: &str) -> Result<Vec<ItemId>, Box<dyn
     Ok(ids)
 }
 
-pub fn parse_sysitemtype(_cx: &CoreContext, value: &str) -> Result<(SysItemType, usize), Box<dyn Error>> {
+pub fn parse_sysitemtype(_cx: &CoreContext, value: &str, sysitem_position: usize) -> Result<(SysItemType, usize), Box<dyn Error>> {
     let mut value = value.trim();
     if value.starts_with("|") {
         value = value[1..].trim();
     }
+
     let (t, parts_count) = if value.starts_with("clef") {
         let segments = value.split(" ").filter(|s| !s.is_empty()).skip(1).map(|s| ClefSignature::find(s)).collect::<Vec<_>>();
         let parts_count = segments.len();
@@ -188,7 +199,7 @@ pub fn parse_sysitemtype(_cx: &CoreContext, value: &str) -> Result<(SysItemType,
     } else if value.starts_with("bl") {
         (SysItemType::Barline(BarlineType::Single), 1 as usize)
     } else {
-        let parts_ids = parse_parts(_cx, value)?;
+        let parts_ids = parse_parts(_cx, value, sysitem_position)?;
         let parts_complexes_infos = parts_ids.iter().map(|part_id| get_complex_infos_for_part(_cx, *part_id).unwrap()).collect::<Vec<_>>();
         let max_duration = parts_complexes_infos.iter().map(|pci| pci.last().unwrap()).map(|pci| pci.2 + pci.1).max().unwrap();
         let mut sysitem_positions: BTreeSet<usize> = parts_complexes_infos.iter().flat_map(|pci| pci.iter().map(|c| c.1)).collect();
@@ -202,7 +213,8 @@ pub fn parse_sysitemtype(_cx: &CoreContext, value: &str) -> Result<(SysItemType,
         // create a BTreeMap from sysitem_positions and sysitem_durations
         let positions_durations: BTreeMap<usize, usize> = sysitem_positions.iter().zip(sysitem_durations.iter()).map(|(pos, dur)| (*pos, *dur)).collect();
         let parts_count = parts_ids.len();
-        (SysItemType::Parts(parts_ids, max_duration, parts_complex_pos_map, positions_durations), parts_count)
+        let sysitemtype = (SysItemType::Parts(parts_ids, max_duration, sysitem_position, parts_complex_pos_map, positions_durations), parts_count);
+        sysitemtype
     };
 
     Ok((t, parts_count))
@@ -224,7 +236,7 @@ fn get_complex_infos_for_part(cx: &CoreContext, part_id: usize) -> Result<Vec<Co
     Ok(complex_infos)
 }
 
-pub fn parse_sysitems(cx: &CoreContext, value: &str) -> Result<Vec<ItemId>, Box<dyn Error>> {
+pub fn parse_sysitems(cx: &CoreContext, value: &str) -> Result<SysItemList, Box<dyn Error>> {
     let mut value = value.trim();
     if value.starts_with("|") {
         value = value[1..].trim();
@@ -234,23 +246,46 @@ pub fn parse_sysitems(cx: &CoreContext, value: &str) -> Result<Vec<ItemId>, Box<
     }
 
     let segments = value.split("|").collect::<Vec<_>>();
+    let mut parts_items_ids: Vec<usize> = Vec::new();
+    let mut max_parts_count = 0;
+
+    let mut position = 0;
 
     let ids = segments
         .iter()
         .map(|s| {
             let s = s.trim();
             let id = cx.sysitems.borrow().len();
-            let (stype, parts_count) = parse_sysitemtype(cx, s).expect("Could not parse sysitemtype");
+            let (stype, parts_count) = parse_sysitemtype(cx, s, position).expect("Could not parse sysitemtype");
+
+            match stype {
+                SysItemType::Parts(_, part_position, _, _, _) => {
+                    parts_items_ids.push(id);
+                    position = part_position;
+                }
+                _ => {}
+            }
+
             let s = SysItem {
                 id,
                 stype,
                 parts_count, // complexes_durations: vec![],
+                position,
             };
             cx.sysitems.borrow_mut().push(s);
+            max_parts_count = max(max_parts_count, parts_count);
             id
         })
         .collect::<Vec<_>>();
-    Ok(ids)
+
+    resolve_ties::resolve_ties(cx)?;
+
+    let sysitems: SysItemList = SysItemList {
+        sysitem_ids: ids.clone(),
+        partscount: max_parts_count,
+    };
+
+    Ok(sysitems)
 }
 
 pub fn level_from_str(s: &str) -> i8 {
@@ -288,7 +323,7 @@ mod tests {
     #[test]
     fn test_p() {
         let cx = CoreContext::new();
-        let _ = parse_part(cx, "11 % 22").unwrap();
+        let _ = parse_part(cx, "11 % 22", 0, 0).unwrap();
         dbg!(&cx);
     }
 
@@ -296,7 +331,7 @@ mod tests {
     fn test_ps() {
         let cx = CoreContext::new();
         // let _ = parse_parts(cx, "0 1 / 1 % 0 d8 0 1 d16 2").unwrap();
-        let _ = parse_parts(cx, "0 D2 1 / 0 1 D8 2 % 0 D16 1 2").unwrap();
+        let _ = parse_parts(cx, "0 D2 1 / 0 1 D8 2 % 0 D16 1 2", 0).unwrap();
         // let _ = parse_parts(cx, "0 1 D8 2 % 0 D16 1 2").unwrap();
         // let _ = parse_parts(cx, "d4 0 0 % d8 1  ").unwrap();
         dbg!(&cx);
@@ -306,7 +341,7 @@ mod tests {
     fn test_s() {
         let cx = CoreContext::new();
         // let _ = parse_sysitemtype(cx, "clef G F").unwrap();
-        let _ = parse_sysitemtype(cx, "0 D2 1 / 0 1 D8 2 % 0 D16 1 2").unwrap();
+        let _ = parse_sysitemtype(cx, "0 D2 1 / 0 1 D8 2 % 0 D16 1 2", 0).unwrap();
         // dbg!(&cx);
     }
 

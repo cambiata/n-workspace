@@ -1,9 +1,12 @@
 use crate::duration::SumDuration;
 
+type VecNoteIds = Vec<usize>;
+type VecStemitemIds = Vec<usize>;
+
 #[derive(Debug)]
 pub enum VoiceType {
     Barpause,
-    NoteIds(Vec<usize>, SumDuration, Vec<usize>),
+    NoteIds(VecNoteIds, SumDuration, VecStemitemIds),
 }
 
 #[derive(Debug)]
