@@ -12,10 +12,14 @@ pub fn main() {
     let cx = CoreContext::new();
     // let _ = parse_sysitems(cx, "|clef G | D4. -2,-3 D8 -4 % D16 2 3 4 5 D8 3 4 / D2. 0  |bl | 0 / 1").unwrap();
     // let _ = parse_sysitems(cx, "0 1 2").unwrap();
-    let _ = parse_sysitems(cx, "0 0 0 % 1 / 2 |bl | 0 0 0 |bl | 1 / 3");
+    let _ = parse_sysitems(cx, "bp % 0");
+
+    // dbg!(cx.map_noteid_tiesto.borrow());
+    // dbg!(cx.map_noteid_tiesfrom.borrow());
+
     // let sysitems = parse_sysitems(cx, "|clef G F | d8 0 1 2  |bl | 3 4 5 / 2").unwrap();
 
-    // dbg!(&sysitems);
+    // dbg!(cx.sysitems.borrow());
     // dbg!(&cx.heads.borrow());
     // dbg!(&cx.map_head_position.borrow());
 

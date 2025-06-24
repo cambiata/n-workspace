@@ -7,7 +7,7 @@ type MapPositionsDurations = BTreeMap<usize, usize>;
 
 #[derive(Debug)]
 pub enum SysItemType {
-    Parts(Vec<ItemId>, usize, SumDuration, Vec<MapPositionComplexInfo>, MapPositionsDurations),
+    Parts(Vec<ItemId>, SumDuration, Vec<MapPositionComplexInfo>, MapPositionsDurations),
     Clefs(Vec<ClefSignature>),
     Barline(BarlineType),
     Other,
@@ -19,11 +19,12 @@ pub struct SysItem {
     pub stype: SysItemType,
     pub parts_count: usize,
     pub position: usize,
+    pub duration: usize,
 }
 
 impl SysItem {
     pub fn is_parts(&self) -> bool {
-        matches!(self.stype, SysItemType::Parts(_, _, _, _, _))
+        matches!(self.stype, SysItemType::Parts(_, _, _, _))
     }
 }
 

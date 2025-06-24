@@ -11,6 +11,7 @@ use core::part::{PartItem, PartType};
 use core::stems::stemdirections::calculate_stemitem_directions;
 use core::stems::stemitems::create_stem_items_from_notes_in_voice;
 use core::sysitem::{SysItem, SysItemList, SysItemType};
+use core::ties::{TieFrom, TieTo};
 use core::voice::{VoiceItem, VoiceType};
 use core::ItemId;
 use std::cmp::max;
@@ -18,14 +19,25 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::error::Error;
 use std::vec;
 
+#[allow(unused_imports)]
 use crate::resolve_ties;
 
-pub fn parse_head(_cx: &CoreContext, value: &str) -> Result<HeadItem, Box<dyn Error>> {
+pub fn parse_head(_cx: &CoreContext, value: &str, _note_id: usize) -> Result<HeadItem, Box<dyn Error>> {
     let value = value.trim();
     let level: i8 = value.chars().filter(|c| c.is_numeric() || *c == '-').collect::<String>().parse()?;
 
-    let accidental: Accidental = Accidental::find(value);
+    // store ties
+    let _tie_to: Option<TieTo> = TieTo::find(value, level);
+    let _tie_from: Option<TieFrom> = TieFrom::find(value, level);
+    if _tie_to.is_some() {
+        _cx.map_noteid_tiesto.borrow_mut().entry(_note_id).or_default().push(_tie_to.unwrap());
+    }
+    if _tie_from.is_some() {
+        _cx.map_noteid_tiesfrom.borrow_mut().entry(_note_id).or_default().push(_tie_from.unwrap());
+    }
 
+    // accidentals
+    let accidental: Accidental = Accidental::find(value);
     let id = _cx.heads.borrow().len();
     let info: HeadItem = HeadItem {
         id,
@@ -37,21 +49,25 @@ pub fn parse_head(_cx: &CoreContext, value: &str) -> Result<HeadItem, Box<dyn Er
     Ok(info)
 }
 
-pub fn parse_heads(cx: &CoreContext, value: &str) -> Result<Vec<HeadItem>, Box<dyn Error>> {
+pub fn parse_heads(cx: &CoreContext, value: &str, note_id: usize) -> Result<Vec<HeadItem>, Box<dyn Error>> {
     let mut str_and_level = value.split(',').map(|s| (s.trim(), level_from_str(s))).collect::<Vec<(&str, i8)>>();
     str_and_level.sort_by_key(|item| item.1); // sort by level
 
-    let head_items = str_and_level.iter().map(|item| item.0).map(|s| parse_head(cx, s)).collect::<Result<Vec<HeadItem>, Box<dyn Error>>>()?;
+    let head_items = str_and_level
+        .iter()
+        .map(|item| item.0)
+        .map(|s| parse_head(cx, s, note_id))
+        .collect::<Result<Vec<HeadItem>, Box<dyn Error>>>()?;
 
     Ok(head_items)
 }
 
-pub fn parse_notetype(_cx: &CoreContext, value: &str) -> Result<NoteType, Box<dyn Error>> {
+pub fn parse_notetype(_cx: &CoreContext, value: &str, note_id: usize) -> Result<NoteType, Box<dyn Error>> {
     let value = value.trim();
     let ntype = match value {
         "r" => NoteType::Rest,
         _ => {
-            let head_infos = parse_heads(_cx, value)?;
+            let head_infos = parse_heads(_cx, value, note_id)?;
             NoteType::Heads(head_infos)
         }
     };
@@ -59,9 +75,9 @@ pub fn parse_notetype(_cx: &CoreContext, value: &str) -> Result<NoteType, Box<dy
 }
 
 pub fn parse_note(cx: &CoreContext, value: &str, position: usize, duration: NoteDuration) -> Result<usize, Box<dyn Error>> {
-    let value = value.trim();
-    let ntype = parse_notetype(cx, value)?;
     let id = cx.notes.borrow().len();
+    let value = value.trim();
+    let ntype = parse_notetype(cx, value, id)?;
     let info: NoteItem = NoteItem { id, position, duration, ntype };
     cx.notes.borrow_mut().push(info);
 
@@ -134,7 +150,9 @@ pub fn parse_parttype(cx: &CoreContext, value: &str) -> Result<PartType, Box<dyn
     Ok(ptype)
 }
 
-pub fn parse_part(cx: &CoreContext, value: &str, idx: usize, position: usize) -> Result<ItemId, Box<dyn Error>> {
+pub fn parse_part(cx: &CoreContext, value: &str, idx: usize) -> Result<ItemId, Box<dyn Error>> {
+    // println!("Parse part - position:{position}, idx:{idx}");
+
     let mut value = value.trim();
     if value.starts_with("%") {
         value = value[1..].trim();
@@ -156,7 +174,7 @@ pub fn parse_part(cx: &CoreContext, value: &str, idx: usize, position: usize) ->
         id,
         idx,
         duration,
-        position,
+        // position,
         ptype,
         complexids,
     };
@@ -165,7 +183,7 @@ pub fn parse_part(cx: &CoreContext, value: &str, idx: usize, position: usize) ->
     Ok(id)
 }
 
-pub fn parse_parts(cx: &CoreContext, value: &str, position: usize) -> Result<Vec<ItemId>, Box<dyn Error>> {
+pub fn parse_parts(cx: &CoreContext, value: &str) -> Result<Vec<ItemId>, Box<dyn Error>> {
     let mut value = value.trim();
     if value.starts_with("/") {
         value = value[1..].trim();
@@ -177,7 +195,7 @@ pub fn parse_parts(cx: &CoreContext, value: &str, position: usize) -> Result<Vec
         .iter()
         .map(|s| {
             let s = s.trim();
-            let id = parse_part(cx, s, idx, position).expect("Could not parse parts");
+            let id = parse_part(cx, s, idx).expect("Could not parse parts");
             idx += 1;
             id
         })
@@ -186,11 +204,13 @@ pub fn parse_parts(cx: &CoreContext, value: &str, position: usize) -> Result<Vec
     Ok(ids)
 }
 
-pub fn parse_sysitemtype(_cx: &CoreContext, value: &str, sysitem_position: usize) -> Result<(SysItemType, usize), Box<dyn Error>> {
+pub fn parse_sysitemtype(_cx: &CoreContext, value: &str) -> Result<(SysItemType, usize, usize), Box<dyn Error>> {
     let mut value = value.trim();
     if value.starts_with("|") {
         value = value[1..].trim();
     }
+
+    let mut max_duration: usize = 0;
 
     let (t, parts_count) = if value.starts_with("clef") {
         let segments = value.split(" ").filter(|s| !s.is_empty()).skip(1).map(|s| ClefSignature::find(s)).collect::<Vec<_>>();
@@ -199,9 +219,9 @@ pub fn parse_sysitemtype(_cx: &CoreContext, value: &str, sysitem_position: usize
     } else if value.starts_with("bl") {
         (SysItemType::Barline(BarlineType::Single), 1 as usize)
     } else {
-        let parts_ids = parse_parts(_cx, value, sysitem_position)?;
+        let parts_ids = parse_parts(_cx, value)?;
         let parts_complexes_infos = parts_ids.iter().map(|part_id| get_complex_infos_for_part(_cx, *part_id).unwrap()).collect::<Vec<_>>();
-        let max_duration = parts_complexes_infos.iter().map(|pci| pci.last().unwrap()).map(|pci| pci.2 + pci.1).max().unwrap();
+        max_duration = parts_complexes_infos.iter().map(|pci| pci.last().unwrap()).map(|pci| pci.2 + pci.1).max().unwrap();
         let mut sysitem_positions: BTreeSet<usize> = parts_complexes_infos.iter().flat_map(|pci| pci.iter().map(|c| c.1)).collect();
         sysitem_positions.insert(max_duration);
         let sysitem_positions: Vec<usize> = sysitem_positions.into_iter().collect();
@@ -213,11 +233,11 @@ pub fn parse_sysitemtype(_cx: &CoreContext, value: &str, sysitem_position: usize
         // create a BTreeMap from sysitem_positions and sysitem_durations
         let positions_durations: BTreeMap<usize, usize> = sysitem_positions.iter().zip(sysitem_durations.iter()).map(|(pos, dur)| (*pos, *dur)).collect();
         let parts_count = parts_ids.len();
-        let sysitemtype = (SysItemType::Parts(parts_ids, max_duration, sysitem_position, parts_complex_pos_map, positions_durations), parts_count);
+        let sysitemtype = (SysItemType::Parts(parts_ids, max_duration, parts_complex_pos_map, positions_durations), parts_count);
         sysitemtype
     };
 
-    Ok((t, parts_count))
+    Ok((t, parts_count, max_duration))
 }
 
 fn get_complex_infos_for_part(cx: &CoreContext, part_id: usize) -> Result<Vec<ComplexInfo>, Box<dyn Error>> {
@@ -246,7 +266,7 @@ pub fn parse_sysitems(cx: &CoreContext, value: &str) -> Result<SysItemList, Box<
     }
 
     let segments = value.split("|").collect::<Vec<_>>();
-    let mut parts_items_ids: Vec<usize> = Vec::new();
+    // let mut parts_items_ids: Vec<usize> = Vec::new();
     let mut max_parts_count = 0;
 
     let mut position = 0;
@@ -256,34 +276,29 @@ pub fn parse_sysitems(cx: &CoreContext, value: &str) -> Result<SysItemList, Box<
         .map(|s| {
             let s = s.trim();
             let id = cx.sysitems.borrow().len();
-            let (stype, parts_count) = parse_sysitemtype(cx, s, position).expect("Could not parse sysitemtype");
-
-            match stype {
-                SysItemType::Parts(_, part_position, _, _, _) => {
-                    parts_items_ids.push(id);
-                    position = part_position;
-                }
-                _ => {}
-            }
+            let (stype, parts_count, duration) = parse_sysitemtype(cx, s).expect("Could not parse sysitemtype");
 
             let s = SysItem {
                 id,
                 stype,
                 parts_count, // complexes_durations: vec![],
                 position,
+                duration,
             };
             cx.sysitems.borrow_mut().push(s);
             max_parts_count = max(max_parts_count, parts_count);
+            position += duration;
+
             id
         })
         .collect::<Vec<_>>();
-
-    resolve_ties::resolve_ties(cx)?;
 
     let sysitems: SysItemList = SysItemList {
         sysitem_ids: ids.clone(),
         partscount: max_parts_count,
     };
+
+    resolve_ties::resolve_ties(cx, max_parts_count)?;
 
     Ok(sysitems)
 }
@@ -323,7 +338,7 @@ mod tests {
     #[test]
     fn test_p() {
         let cx = CoreContext::new();
-        let _ = parse_part(cx, "11 % 22", 0, 0).unwrap();
+        let _ = parse_part(cx, "11 % 22", 0).unwrap();
         dbg!(&cx);
     }
 
@@ -331,7 +346,7 @@ mod tests {
     fn test_ps() {
         let cx = CoreContext::new();
         // let _ = parse_parts(cx, "0 1 / 1 % 0 d8 0 1 d16 2").unwrap();
-        let _ = parse_parts(cx, "0 D2 1 / 0 1 D8 2 % 0 D16 1 2", 0).unwrap();
+        let _ = parse_parts(cx, "0 D2 1 / 0 1 D8 2 % 0 D16 1 2").unwrap();
         // let _ = parse_parts(cx, "0 1 D8 2 % 0 D16 1 2").unwrap();
         // let _ = parse_parts(cx, "d4 0 0 % d8 1  ").unwrap();
         dbg!(&cx);
@@ -341,7 +356,7 @@ mod tests {
     fn test_s() {
         let cx = CoreContext::new();
         // let _ = parse_sysitemtype(cx, "clef G F").unwrap();
-        let _ = parse_sysitemtype(cx, "0 D2 1 / 0 1 D8 2 % 0 D16 1 2", 0).unwrap();
+        let _ = parse_sysitemtype(cx, "0 D2 1 / 0 1 D8 2 % 0 D16 1 2").unwrap();
         // dbg!(&cx);
     }
 

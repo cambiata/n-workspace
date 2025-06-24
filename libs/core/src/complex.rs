@@ -42,7 +42,8 @@ pub fn create_complexes_for_part(cx: &CoreContext, ptype: &PartType, part_id: It
             match voice_item.vtype {
                 VoiceType::NoteIds(ref note_ids, duration, _) => create_complexes_for_one_voice(cx, note_ids, duration, true, part_id),
                 _ => {
-                    todo!()
+                    todo!("Cannot create complexes for barpause");
+                    // Vec::new()
                 }
             }
         }

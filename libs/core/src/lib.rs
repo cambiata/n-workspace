@@ -12,6 +12,7 @@ pub mod part;
 pub mod rest;
 pub mod stems;
 pub mod sysitem;
+pub mod ties;
 pub mod voice;
 
 pub type ItemId = usize;

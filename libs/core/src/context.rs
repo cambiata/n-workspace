@@ -7,6 +7,7 @@ use crate::{
     part::PartItem,
     stems::stemitems::{StemHeadPosition, StemItem},
     sysitem::SysItem,
+    ties::{TieFrom, TieTo},
     ItemId,
 };
 
@@ -20,6 +21,8 @@ pub struct CoreContext {
     pub complexes: RefCell<Vec<Complex>>,
     pub stemitems: RefCell<Vec<StemItem>>,
     pub map_head_position: RefCell<BTreeMap<usize, StemHeadPosition>>,
+    pub map_noteid_tiesto: RefCell<BTreeMap<usize, Vec<TieTo>>>,
+    pub map_noteid_tiesfrom: RefCell<BTreeMap<usize, Vec<TieFrom>>>,
 }
 
 impl CoreContext {
@@ -33,6 +36,8 @@ impl CoreContext {
             complexes: RefCell::new(Vec::new()),
             stemitems: RefCell::new(Vec::new()),
             map_head_position: RefCell::new(BTreeMap::new()),
+            map_noteid_tiesto: RefCell::new(BTreeMap::new()),
+            map_noteid_tiesfrom: RefCell::new(BTreeMap::new()),
         };
         Box::leak(Box::new(cx))
     }
