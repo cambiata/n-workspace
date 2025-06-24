@@ -12,7 +12,7 @@ pub fn main() {
     let cx = CoreContext::new();
     // let _ = parse_sysitems(cx, "|clef G | D4. -2,-3 D8 -4 % D16 2 3 4 5 D8 3 4 / D2. 0  |bl | 0 / 1").unwrap();
     // let _ = parse_sysitems(cx, "0 1 2").unwrap();
-    let _ = parse_sysitems(cx, "bp % 0");
+    let _ = parse_sysitems(cx, "0_ 0 % bp");
 
     // dbg!(cx.map_noteid_tiesto.borrow());
     // dbg!(cx.map_noteid_tiesfrom.borrow());

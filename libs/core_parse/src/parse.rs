@@ -136,7 +136,11 @@ pub fn parse_parttype(cx: &CoreContext, value: &str) -> Result<PartType, Box<dyn
         match nr_of_voices {
             1 => {
                 let voiceitem = parse_voice(cx, value)?;
-                PartType::OneVoice(voiceitem)
+                match voiceitem.vtype {
+                    // VoiceType::Barpause => Ok(PartType::Barpause),
+                    _ => PartType::OneVoice(voiceitem),
+                }
+                // PartType::OneVoice(voiceitem)
             }
             2 => {
                 let values = value.split("%").collect::<Vec<_>>();
@@ -160,6 +164,7 @@ pub fn parse_part(cx: &CoreContext, value: &str, idx: usize) -> Result<ItemId, B
 
     let ptype = parse_parttype(cx, value)?;
     let duration = match &ptype {
+        // PartType::Barpause => 123,
         PartType::OneVoice(info) => info.duration,
         PartType::TwoVoice(info_upper, info_lower) => max(info_upper.duration, info_lower.duration),
         PartType::OtherPart => 0,

@@ -37,6 +37,7 @@ pub type ComplexInfo = (usize, usize, usize);
 
 pub fn create_complexes_for_part(cx: &CoreContext, ptype: &PartType, part_id: ItemId) -> Vec<usize> {
     match ptype {
+        // PartType::Barpause => Vec::new(),
         PartType::OneVoice(ref voice_item) => {
             //
             match voice_item.vtype {

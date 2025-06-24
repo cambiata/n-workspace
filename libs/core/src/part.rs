@@ -2,6 +2,7 @@ use crate::{duration::SumDuration, voice::VoiceItem, ItemId};
 
 #[derive(Debug)]
 pub enum PartType {
+    // Barpause,
     OneVoice(VoiceItem),
     TwoVoice(VoiceItem, VoiceItem),
     OtherPart,
