@@ -29,38 +29,32 @@ pub fn create_part_notes_vecs(cx: &CoreContext, partscount: usize) -> Result<Vec
                     match &part.ptype {
                         PartType::OneVoice(ref voice) => match &voice.vtype {
                             VoiceType::NoteIds(ref note_ids, _, _) => {
-                                // println!("partidx:{partidx} note_ids single voice:{:?}", note_ids);
                                 for note_id in note_ids {
                                     partnotes_upper.push((Some(*note_id), sysitem.position, sysitem.id));
                                 }
                             }
                             VoiceType::Barpause => {
-                                // println!("partidx:{partidx} Handle barpause in resolve_ties");
                                 partnotes_upper.push((None, sysitem.position, sysitem.id));
                             }
                         },
                         PartType::TwoVoice(ref voice_upper, ref voice_lower) => {
                             match &voice_upper.vtype {
                                 VoiceType::NoteIds(ref note_ids, _, _) => {
-                                    // println!("partidx:{partidx} note_ids upper:{:?}", note_ids);
                                     for note_id in note_ids {
                                         partnotes_upper.push((Some(*note_id), sysitem.position, sysitem.id));
                                     }
                                 }
                                 VoiceType::Barpause => {
-                                    // println!("partidx:{partidx} Handle barpause in resolve_ties");
                                     partnotes_upper.push((None, sysitem.position, sysitem.id));
                                 }
                             }
                             match &voice_lower.vtype {
                                 VoiceType::NoteIds(ref note_ids, _, _) => {
-                                    // println!("partidx:{partidx} note_ids lower:{:?}", note_ids);
                                     for note_id in note_ids {
                                         partnotes_lower.push((Some(*note_id), sysitem.position, sysitem.id));
                                     }
                                 }
                                 VoiceType::Barpause => {
-                                    // println!("partidx:{partidx} Handle barpause in resolve_ties");
                                     partnotes_lower.push((None, sysitem.position, sysitem.id));
                                 }
                             }
@@ -71,8 +65,6 @@ pub fn create_part_notes_vecs(cx: &CoreContext, partscount: usize) -> Result<Vec
                     }
                 }
                 None => {
-                    //
-                    // eprintln!("No part found for index: {}", partidx);
                     partnotes_upper.push((None, sysitem.position, sysitem.id));
                 }
             }
