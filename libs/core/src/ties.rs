@@ -25,3 +25,13 @@ impl TieFrom {
         None
     }
 }
+
+#[derive(Debug)]
+pub enum ResolvedTieFrom {
+    Level(i8),
+}
+
+#[derive(Debug)]
+pub enum ResolvedTieTo {
+    Level(i8),
+}

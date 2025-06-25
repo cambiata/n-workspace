@@ -28,6 +28,10 @@ impl SysItem {
     }
 }
 
+pub type SysitemPosition = usize;
+pub type SysitemId = usize;
+pub type VecPartNotes = Vec<(Option<usize>, SysitemPosition, SysitemId)>;
+
 //------------------------------------------------------------------------
 
 #[derive(Debug)]
@@ -35,4 +39,5 @@ pub struct SysItemList {
     pub sysitem_ids: Vec<usize>,
     // pub parts_items_ids: Vec<usize>,
     pub partscount: usize,
+    pub partsnotesvecs: Vec<(VecPartNotes, VecPartNotes)>,
 }

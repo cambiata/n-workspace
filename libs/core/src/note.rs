@@ -1,4 +1,10 @@
-use crate::{duration::NoteDuration, head::HeadItem, ItemId};
+use crate::{
+    duration::NoteDuration,
+    head::{HeadId, HeadItem},
+    ItemId,
+};
+
+pub type NoteId = usize;
 
 #[derive(Debug, Clone)]
 pub enum NoteType {
@@ -10,7 +16,7 @@ pub enum NoteType {
 
 #[derive(Debug, Clone)]
 pub struct NoteItem {
-    pub id: ItemId,
+    pub id: NoteId,
     pub position: usize,
     pub duration: NoteDuration,
     pub ntype: NoteType,
@@ -42,7 +48,7 @@ impl NoteItem {
             _ => None,
         }
     }
-    pub fn get_head_ids_and_levels(&self) -> Option<Vec<(usize, i8)>> {
+    pub fn get_head_ids_and_levels(&self) -> Option<Vec<(HeadId, i8)>> {
         match &self.ntype {
             NoteType::Heads(heads) => Some(heads.iter().map(|h| (h.id, h.level)).collect()),
             _ => None,

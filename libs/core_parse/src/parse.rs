@@ -21,6 +21,7 @@ use std::vec;
 
 #[allow(unused_imports)]
 use crate::resolve_ties;
+use crate::utils::create_part_notes_vecs;
 
 pub fn parse_head(_cx: &CoreContext, value: &str, _note_id: usize) -> Result<HeadItem, Box<dyn Error>> {
     let value = value.trim();
@@ -261,7 +262,7 @@ fn get_complex_infos_for_part(cx: &CoreContext, part_id: usize) -> Result<Vec<Co
     Ok(complex_infos)
 }
 
-pub fn parse_sysitems(cx: &CoreContext, value: &str) -> Result<SysItemList, Box<dyn Error>> {
+pub fn parse_sysitemlist(cx: &CoreContext, value: &str) -> Result<SysItemList, Box<dyn Error>> {
     let mut value = value.trim();
     if value.starts_with("|") {
         value = value[1..].trim();
@@ -298,12 +299,13 @@ pub fn parse_sysitems(cx: &CoreContext, value: &str) -> Result<SysItemList, Box<
         })
         .collect::<Vec<_>>();
 
+    let partsnotesvecs = create_part_notes_vecs(cx, max_parts_count)?;
+
     let sysitems: SysItemList = SysItemList {
         sysitem_ids: ids.clone(),
         partscount: max_parts_count,
+        partsnotesvecs,
     };
-
-    resolve_ties::resolve_ties(cx, max_parts_count)?;
 
     Ok(sysitems)
 }
@@ -368,7 +370,7 @@ mod tests {
     #[test]
     fn test_maj03() {
         let cx = CoreContext::new();
-        let _ = parse_sysitems(cx, "|clef G | D4. -2,-3 D8 -4 % D16 2 3 4 5 D8 3 4 / D2. 0  |bl | 0 / 1").unwrap();
+        let _ = parse_sysitemlist(cx, "|clef G | D4. -2,-3 D8 -4 % D16 2 3 4 5 D8 3 4 / D2. 0  |bl | 0 / 1").unwrap();
         // let _ = parse_sysitems(cx, "0 % 0").unwrap();
         // let _check = check_sysitems_parts_integrity(cx, ids);
         // dbg!(&cx.notes.borrow().len());

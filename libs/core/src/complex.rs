@@ -2,15 +2,17 @@ use std::collections::BTreeMap;
 
 use crate::{
     context::CoreContext,
-    note::{NoteItem, NoteType},
+    note::{NoteId, NoteItem, NoteType},
     part::PartType,
     voice::VoiceType,
     ItemId,
 };
 
+pub type ComplexId = usize;
+
 #[derive(Debug)]
 pub struct Complex {
-    pub id: usize,
+    pub id: ComplexId,
     pub part_id: usize,
     pub position: usize,
     pub duration: usize,
@@ -67,7 +69,7 @@ pub fn create_complexes_for_part(cx: &CoreContext, ptype: &PartType, part_id: It
     // dbg!(&cx.complexes);
 }
 
-pub fn create_complexes_for_one_voice(cx: &CoreContext, note_ids: &Vec<ItemId>, part_duration: usize, is_upper_voice: bool, part_id: ItemId) -> Vec<usize> {
+pub fn create_complexes_for_one_voice(cx: &CoreContext, note_ids: &Vec<NoteId>, part_duration: usize, is_upper_voice: bool, part_id: ItemId) -> Vec<usize> {
     let notes = cx.notes.borrow();
     // let notes_positions = cx.notes_positions.borrow();
 
@@ -115,7 +117,7 @@ pub fn create_complexes_for_one_voice(cx: &CoreContext, note_ids: &Vec<ItemId>, 
             ctype: ctype,
             offsets: ComplexHeadOffsets::None,
         };
-        cx.map_noteid_complexid.borrow_mut().insert(*note_id, id as ItemId);
+        cx.map_noteid_complexid.borrow_mut().insert(*note_id, id as ComplexId);
         partid_complexids.push(id);
         // partid_complexpositions.push(complex.position);
         // partid_complexdurations.push(complex.duration);
@@ -231,7 +233,7 @@ pub fn create_complexes_for_two_voices(cx: &CoreContext, note_ids_upper: &Vec<It
 
         for note_id in note_ids {
             if let Some(note_id) = note_id {
-                cx.map_noteid_complexid.borrow_mut().insert(*note_id, id as ItemId);
+                cx.map_noteid_complexid.borrow_mut().insert(*note_id, id as ComplexId);
             }
         }
         partid_complexids.push(id);
