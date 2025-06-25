@@ -1,13 +1,11 @@
-use core::{context::CoreContext, part::PartType, sysitem::VecPartNotes, ties::TieFrom, voice::VoiceType};
-use std::{error::Error, result};
+use core::{context::CoreContext, part::PartType, sysitem::VecPartNotes, voice::VoiceType};
+use std::error::Error;
 
 #[allow(dead_code, unused_variables, unused_imports)]
 
 pub fn create_part_notes_vecs(cx: &CoreContext, partscount: usize) -> Result<Vec<(VecPartNotes, VecPartNotes)>, Box<dyn Error>> {
     let parts = cx.parts.borrow();
     let sysitems = cx.sysitems.borrow();
-    // let complexes = cx.complexes.borrow();
-    // let partvoices: BTreeMap<(usize, usize), Option<NoteItem>> = BTreeMap::new();
 
     let sysitems = sysitems
         .iter()
@@ -21,7 +19,6 @@ pub fn create_part_notes_vecs(cx: &CoreContext, partscount: usize) -> Result<Vec
         let mut partnotes_lower: VecPartNotes = Vec::new();
 
         for sysitem in sysitems.iter() {
-            // dbg!(sysitem.id, sysitem.position, sysitem.parts_count);
             let part = match &sysitem.stype {
                 core::sysitem::SysItemType::Parts(partids, _, _, _) => partids.get(partidx),
                 _ => continue,
@@ -80,15 +77,8 @@ pub fn create_part_notes_vecs(cx: &CoreContext, partscount: usize) -> Result<Vec
                 }
             }
         }
-        // dbg!(&partnotes_upper);
-        // dbg!(&partnotes_lower);
 
         result_array.push((partnotes_upper.clone(), partnotes_lower.clone()));
-
-        // println!("Resolve upper notes");
-        // handle_partnotes(cx, partidx, &partnotes_upper)?;
-        // println!("Resolve lower notes");
-        // handle_partnotes(cx, partidx, &partnotes_lower)?;
     }
 
     Ok(result_array)

@@ -8,7 +8,6 @@ use crate::{
     stems::stemitems::{StemHeadPosition, StemItem},
     sysitem::SysItem,
     ties::{ResolvedTieFrom, ResolvedTieTo, TieFrom, TieTo},
-    ItemId,
 };
 
 #[derive(Debug)]

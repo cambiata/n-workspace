@@ -1,7 +1,6 @@
 use crate::{
     duration::NoteDuration,
     head::{HeadId, HeadItem},
-    ItemId,
 };
 
 pub type NoteId = usize;
