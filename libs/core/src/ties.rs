@@ -28,7 +28,8 @@ impl TieFrom {
 
 #[derive(Debug)]
 pub enum ResolvedTieFrom {
-    Level(i8),
+    Resolved(i8),
+    Unresolved(i8),
 }
 
 #[derive(Debug)]

@@ -1,13 +1,22 @@
 use core::{
     context::CoreContext,
-    sysitem::{SysitemId, SysitemPosition},
-    ties::TieFrom,
+    sysitem::{SysitemId, SysitemPosition, VecPartNotes},
+    ties::{ResolvedTieFrom, ResolvedTieTo, TieFrom},
 };
 use std::error::Error;
 
+pub fn handle_ties(cx: &CoreContext, partnotes_data: &Vec<(VecPartNotes, VecPartNotes)>) -> Result<(), Box<dyn Error>> {
+    for (partnotes_upper, partnotes_lower) in partnotes_data {
+        handle_partnotes(cx, 0, &partnotes_upper)?;
+        handle_partnotes(cx, 1, &partnotes_lower)?;
+    }
+
+    Ok(())
+}
+
 #[allow(dead_code, unused_variables, unused_imports)]
 
-fn handle_partnotes(cx: &CoreContext, partidx: usize, partnotes: &Vec<(Option<usize>, SysitemPosition, SysitemId)>) -> Result<(), Box<dyn Error>> {
+fn handle_partnotes(cx: &CoreContext, partidx: usize, partnotes: &VecPartNotes) -> Result<(), Box<dyn Error>> {
     for item in partnotes.windows(2) {
         let left = item[0];
         let right = item[1];
@@ -87,8 +96,11 @@ fn handle_tie_pair(
                         if levels_to.contains(left_level) {
                             println!("Tie detected between note {} and note {} at level {}", left_id, right_id, left_level);
                             // Store resolved from left_id and to right_id
+                            cx.map_noteid_resolvedtiesfrom.borrow_mut().entry(left_id).or_default().push(ResolvedTieFrom::Resolved(*left_level));
+                            cx.map_noteid_resolvedtiesto.borrow_mut().entry(right_id).or_default().push(ResolvedTieTo::Level(*left_level));
                         } else {
                             println!("No tie found for level: {}", left_level);
+                            cx.map_noteid_resolvedtiesfrom.borrow_mut().entry(left_id).or_default().push(ResolvedTieFrom::Unresolved(*left_level));
                         }
                     }
                 }

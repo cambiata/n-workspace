@@ -21,6 +21,7 @@ use std::vec;
 
 #[allow(unused_imports)]
 use crate::resolve_ties;
+use crate::resolve_ties::handle_ties;
 use crate::utils::create_part_notes_vecs;
 
 pub fn parse_head(_cx: &CoreContext, value: &str, _note_id: usize) -> Result<HeadItem, Box<dyn Error>> {
@@ -300,6 +301,9 @@ pub fn parse_sysitemlist(cx: &CoreContext, value: &str) -> Result<SysItemList, B
         .collect::<Vec<_>>();
 
     let partsnotesvecs = create_part_notes_vecs(cx, max_parts_count)?;
+    let _ = handle_ties(cx, &partsnotesvecs)?;
+    dbg!(cx.map_noteid_resolvedtiesfrom.borrow());
+    dbg!(cx.map_noteid_resolvedtiesto.borrow());
 
     let sysitems: SysItemList = SysItemList {
         sysitem_ids: ids.clone(),

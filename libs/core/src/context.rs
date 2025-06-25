@@ -7,7 +7,7 @@ use crate::{
     part::PartItem,
     stems::stemitems::{StemHeadPosition, StemItem},
     sysitem::SysItem,
-    ties::{ResolvedTieTo, TieFrom, TieTo},
+    ties::{ResolvedTieFrom, ResolvedTieTo, TieFrom, TieTo},
     ItemId,
 };
 
@@ -24,7 +24,7 @@ pub struct CoreContext {
     pub map_noteid_tiesto: RefCell<BTreeMap<NoteId, Vec<TieTo>>>,
     pub map_noteid_tiesfrom: RefCell<BTreeMap<NoteId, Vec<TieFrom>>>,
     pub map_noteid_resolvedtiesto: RefCell<BTreeMap<NoteId, Vec<ResolvedTieTo>>>,
-    pub map_noteid_resolvedtiesfrom: RefCell<BTreeMap<NoteId, Vec<TieFrom>>>,
+    pub map_noteid_resolvedtiesfrom: RefCell<BTreeMap<NoteId, Vec<ResolvedTieFrom>>>,
 }
 
 impl CoreContext {
