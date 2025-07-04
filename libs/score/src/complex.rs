@@ -11,7 +11,7 @@ use utils::f32_ext::{half::F32ExtHalf, round::F32ExtRound2};
 
 use crate::{
     constants::{ACCIDENTAL_HEIGHT, ACCIDENTAL_WIDTH_NARROW, ACCIDENTAL_WIDTH_WIDE, HEAD_WIDTH_BLACK, HEAD_WIDTH_WHITE, HEAD_WIDTH_WHOLE, REST_WIDTH, SPACE, SPACE2, SPACE_HALF},
-    glyphitem::{ComplexGlyphsRectangles, GlyphItem, GlyphRectangle},
+    glyphitem::{GlyphItem, GlyphRectangle},
 };
 
 pub fn sort_accidentals(accidentals: &mut Vec<(i8, Accidental)>) -> &mut Vec<(i8, Accidental)> {
@@ -38,10 +38,12 @@ pub fn collect_accidentals(_note: &NoteItem) -> Vec<(i8, Accidental)> {
 }
 
 #[allow(unused_assignments)]
-pub fn create_glyphsrectangles_accidentals(accs: &[(i8, Accidental)], rectangles: &mut Vec<(Rectangle, GlyphItem)>) {
+pub fn create_glyphsrectangles_accidentals(accs: &[(i8, Accidental)], rectangles: &mut Vec<(Rectangle, GlyphItem)>) -> f32 {
     // let mut rectangles: ComplexGlyphsRectangles = Vec::new();
 
     let mut altidx = 0; // Alternate index for even/odd handling
+
+    let mut leftmost_x: f32 = 0.0; // Leftmost x position for the accidentals
 
     for accidx in 0..accs.len() {
         if (&accidx % 2) == 0 {
@@ -73,8 +75,10 @@ pub fn create_glyphsrectangles_accidentals(accs: &[(i8, Accidental)], rectangles
         rect.0 = -overlap;
 
         rectangles.push((rect, item));
+        leftmost_x = leftmost_x.min(rect.0);
     }
-    // rectangles
+
+    leftmost_x
 }
 
 pub fn rectangles_overlap_left(lefts: &[(Rectangle, GlyphItem)], right: &Rectangle) -> f32 {
@@ -86,12 +90,15 @@ pub fn rectangles_overlap_left(lefts: &[(Rectangle, GlyphItem)], right: &Rectang
     result
 }
 
-pub fn create_glyphsrectangles_note(_note: &NoteItem, map_head_position: &BTreeMap<usize, StemHeadPosition>) -> ComplexGlyphsRectangles {
-    let mut rectangles: ComplexGlyphsRectangles = Vec::new();
+pub fn create_glyphsrectangles_note(_note: &NoteItem, map_head_position: &BTreeMap<usize, StemHeadPosition>, rectangles: &mut Vec<(Rectangle, GlyphItem)>) -> f32 {
+    // let mut rectangles: ComplexGlyphsRectangles = Vec::new();
+    let mut leftmost_x: f32 = 0.0; // Leftmost x position for the note glyphs
     match _note.ntype {
         NoteType::Heads(ref heads) => {
             for head in heads {
-                rectangles.push(create_glyphrectangle_head(&_note.duration, head, map_head_position));
+                let rect = create_glyphrectangle_head(&_note.duration, head, map_head_position);
+                leftmost_x = leftmost_x.min(rect.0 .0);
+                rectangles.push(rect);
             }
         }
         NoteType::Rest => {
@@ -101,7 +108,7 @@ pub fn create_glyphsrectangles_note(_note: &NoteItem, map_head_position: &BTreeM
             println!("Note is LyricItem");
         }
     }
-    rectangles
+    leftmost_x
 }
 
 fn create_glyphrectangle_head(duration: &NoteDuration, head: &HeadItem, map_head_position: &BTreeMap<usize, StemHeadPosition>) -> GlyphRectangle {

@@ -3,9 +3,8 @@ use std::collections::BTreeMap;
 use crate::{
     context::CoreContext,
     note::{NoteId, NoteItem, NoteType},
-    part::PartType,
+    part::{PartId, PartType},
     voice::VoiceType,
-    ItemId,
 };
 
 pub type ComplexId = usize;
@@ -37,16 +36,17 @@ pub enum ComplexHeadOffsets {
 
 pub type ComplexInfo = (usize, usize, usize);
 
-pub fn create_complexes_for_part(cx: &CoreContext, ptype: &PartType, part_id: ItemId) -> Vec<usize> {
+pub fn create_complexes_for_part(cx: &CoreContext, ptype: &PartType, part_id: PartId) -> Vec<usize> {
     match ptype {
+        PartType::OtherPart => Vec::new(),
         // PartType::Barpause => Vec::new(),
         PartType::OneVoice(ref voice_item) => {
             //
             match voice_item.vtype {
                 VoiceType::NoteIds(ref note_ids, duration, _) => create_complexes_for_one_voice(cx, note_ids, duration, true, part_id),
                 _ => {
-                    todo!("Cannot create complexes for barpause");
-                    // Vec::new()
+                    // todo!("Cannot create complexes for barpause");
+                    Vec::new()
                 }
             }
         }
@@ -69,7 +69,7 @@ pub fn create_complexes_for_part(cx: &CoreContext, ptype: &PartType, part_id: It
     // dbg!(&cx.complexes);
 }
 
-pub fn create_complexes_for_one_voice(cx: &CoreContext, note_ids: &Vec<NoteId>, part_duration: usize, is_upper_voice: bool, part_id: ItemId) -> Vec<usize> {
+pub fn create_complexes_for_one_voice(cx: &CoreContext, note_ids: &Vec<NoteId>, part_duration: usize, is_upper_voice: bool, part_id: PartId) -> Vec<usize> {
     let notes = cx.notes.borrow();
     // let notes_positions = cx.notes_positions.borrow();
 
@@ -78,7 +78,6 @@ pub fn create_complexes_for_one_voice(cx: &CoreContext, note_ids: &Vec<NoteId>, 
         .map(|note_id| {
             //
             let note = notes.get(*note_id).unwrap();
-
             note.position
         })
         .collect::<Vec<_>>();
@@ -130,9 +129,9 @@ pub fn create_complexes_for_one_voice(cx: &CoreContext, note_ids: &Vec<NoteId>, 
     partid_complexids
 }
 
-pub fn create_complexes_for_two_voices(cx: &CoreContext, note_ids_upper: &Vec<ItemId>, note_ids_lower: &Vec<ItemId>, part_duration: usize, part_id: ItemId) -> Vec<usize> {
+pub fn create_complexes_for_two_voices(cx: &CoreContext, note_ids_upper: &Vec<NoteId>, note_ids_lower: &Vec<NoteId>, part_duration: usize, part_id: NoteId) -> Vec<usize> {
     let notes = cx.notes.borrow();
-    let mut map: BTreeMap<usize, Vec<Option<ItemId>>> = BTreeMap::new();
+    let mut map: BTreeMap<usize, Vec<Option<NoteId>>> = BTreeMap::new();
 
     for note_id in note_ids_upper {
         let note = notes.get(*note_id).unwrap();

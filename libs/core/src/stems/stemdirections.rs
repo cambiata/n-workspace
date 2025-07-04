@@ -7,7 +7,7 @@ use crate::{
 
 use super::stemitems::StemType;
 
-pub fn calculate_stemitem_directions(cx: &CoreContext, ptype: &PartType) {
+pub fn calculate_stemitem_directions(cx: &CoreContext, ptype: &PartType) -> Result<(), Box<dyn std::error::Error>> {
     let mut stemitems = cx.stemitems.borrow_mut();
 
     match ptype {
@@ -81,4 +81,5 @@ pub fn calculate_stemitem_directions(cx: &CoreContext, ptype: &PartType) {
         },
         _ => {}
     }
+    Ok(())
 }

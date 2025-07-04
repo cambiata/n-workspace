@@ -6,14 +6,15 @@ use core::context::CoreContext;
 use core::duration::{NoteDuration, SumDuration};
 use core::head::HeadItem;
 use core::note::{NoteItem, NoteType};
-use core::part::{PartItem, PartType};
+use core::part::{PartId, PartItem, PartType};
 
 use core::stems::stemdirections::calculate_stemitem_directions;
 use core::stems::stemitems::create_stem_items_from_notes_in_voice;
 use core::sysitem::{SysItem, SysItemList, SysItemType};
 use core::ties::{TieFrom, TieTo};
+
 use core::voice::{VoiceItem, VoiceType};
-use core::ItemId;
+
 use std::cmp::max;
 use std::collections::{BTreeMap, BTreeSet};
 use std::error::Error;
@@ -156,7 +157,7 @@ pub fn parse_parttype(cx: &CoreContext, value: &str) -> Result<PartType, Box<dyn
     Ok(ptype)
 }
 
-pub fn parse_part(cx: &CoreContext, value: &str, idx: usize) -> Result<ItemId, Box<dyn Error>> {
+pub fn parse_part(cx: &CoreContext, value: &str, idx: usize) -> Result<PartId, Box<dyn Error>> {
     // println!("Parse part - position:{position}, idx:{idx}");
 
     let mut value = value.trim();
@@ -165,6 +166,7 @@ pub fn parse_part(cx: &CoreContext, value: &str, idx: usize) -> Result<ItemId, B
     }
 
     let ptype = parse_parttype(cx, value)?;
+
     let duration = match &ptype {
         // PartType::Barpause => 123,
         PartType::OneVoice(info) => info.duration,
@@ -174,23 +176,17 @@ pub fn parse_part(cx: &CoreContext, value: &str, idx: usize) -> Result<ItemId, B
 
     let id = cx.parts.borrow().len();
 
-    calculate_stemitem_directions(cx, &ptype);
+    calculate_stemitem_directions(cx, &ptype)?;
+
     let complexids = create_complexes_for_part(cx, &ptype, id);
-    // let _ = calculate_head_positions(cx);
-    let info = PartItem {
-        id,
-        idx,
-        duration,
-        // position,
-        ptype,
-        complexids,
-    };
+
+    let info = PartItem { id, idx, duration, ptype, complexids };
     cx.parts.borrow_mut().push(info);
 
     Ok(id)
 }
 
-pub fn parse_parts(cx: &CoreContext, value: &str) -> Result<Vec<ItemId>, Box<dyn Error>> {
+pub fn parse_parts(cx: &CoreContext, value: &str) -> Result<Vec<PartId>, Box<dyn Error>> {
     let mut value = value.trim();
     if value.starts_with("/") {
         value = value[1..].trim();
@@ -198,7 +194,7 @@ pub fn parse_parts(cx: &CoreContext, value: &str) -> Result<Vec<ItemId>, Box<dyn
 
     let segments = value.split("/").collect::<Vec<_>>();
     let mut idx = 0;
-    let ids: Vec<ItemId> = segments
+    let ids: Vec<PartId> = segments
         .iter()
         .map(|s| {
             let s = s.trim();
@@ -227,8 +223,22 @@ pub fn parse_sysitemtype(_cx: &CoreContext, value: &str) -> Result<(SysItemType,
         (SysItemType::Barline(BarlineType::Single), 1 as usize)
     } else {
         let parts_ids = parse_parts(_cx, value)?;
-        let parts_complexes_infos = parts_ids.iter().map(|part_id| get_complex_infos_for_part(_cx, *part_id).unwrap()).collect::<Vec<_>>();
-        max_duration = parts_complexes_infos.iter().map(|pci| pci.last().unwrap()).map(|pci| pci.2 + pci.1).max().unwrap();
+
+        let parts_complexes_infos: Vec<Vec<ComplexInfo>> = parts_ids.iter().map(|part_id| get_complex_infos_for_part(_cx, *part_id).unwrap()).collect::<Vec<_>>();
+
+        max_duration = if parts_complexes_infos[0].is_empty() {
+            // No complexes = only parts with no complexes
+            println!("PROBLEM: No complexes found for 'other-part' parts, using default max duration");
+            123
+        } else {
+            parts_complexes_infos
+                .iter()
+                .map(|pci| pci.last().expect("PROBLEM: No parts_complexes_infos"))
+                .map(|pci| pci.2 + pci.1)
+                .max()
+                .unwrap()
+        };
+
         let mut sysitem_positions: BTreeSet<usize> = parts_complexes_infos.iter().flat_map(|pci| pci.iter().map(|c| c.1)).collect();
         sysitem_positions.insert(max_duration);
         let sysitem_positions: Vec<usize> = sysitem_positions.into_iter().collect();
@@ -241,6 +251,9 @@ pub fn parse_sysitemtype(_cx: &CoreContext, value: &str) -> Result<(SysItemType,
         let positions_durations: BTreeMap<usize, usize> = sysitem_positions.iter().zip(sysitem_durations.iter()).map(|(pos, dur)| (*pos, *dur)).collect();
         let parts_count = parts_ids.len();
         let sysitemtype = (SysItemType::Parts(parts_ids, max_duration, parts_complex_pos_map, positions_durations), parts_count);
+
+        dbg!(&sysitemtype);
+
         sysitemtype
     };
 
@@ -273,7 +286,6 @@ pub fn parse_sysitemlist(cx: &CoreContext, value: &str) -> Result<SysItemList, B
     }
 
     let segments = value.split("|").collect::<Vec<_>>();
-    // let mut parts_items_ids: Vec<usize> = Vec::new();
     let mut max_parts_count = 0;
 
     let mut position = 0;
@@ -299,7 +311,6 @@ pub fn parse_sysitemlist(cx: &CoreContext, value: &str) -> Result<SysItemList, B
             id
         })
         .collect::<Vec<_>>();
-
     let partsnotesvecs = create_part_notes_vecs(cx, max_parts_count)?;
     let _ = handle_ties(cx, &partsnotesvecs)?;
     dbg!(cx.map_noteid_resolvedtiesfrom.borrow());
@@ -354,12 +365,23 @@ mod tests {
     }
 
     #[test]
+    fn test_pt() {
+        let cx = CoreContext::new();
+        let _ = parse_part(cx, "bp", 0).unwrap();
+        dbg!(&cx);
+    }
+
+    #[test]
     fn test_ps() {
         let cx = CoreContext::new();
-        // let _ = parse_parts(cx, "0 1 / 1 % 0 d8 0 1 d16 2").unwrap();
         let _ = parse_parts(cx, "0 D2 1 / 0 1 D8 2 % 0 D16 1 2").unwrap();
-        // let _ = parse_parts(cx, "0 1 D8 2 % 0 D16 1 2").unwrap();
-        // let _ = parse_parts(cx, "d4 0 0 % d8 1  ").unwrap();
+        dbg!(&cx);
+    }
+
+    #[test]
+    fn test_ps2() {
+        let cx = CoreContext::new();
+        let _ = parse_parts(cx, "other-part").unwrap();
         dbg!(&cx);
     }
 
@@ -372,9 +394,20 @@ mod tests {
     }
 
     #[test]
+    fn test_ptype() {
+        let cx = CoreContext::new();
+        // let _ = parse_sysitemtype(cx, "other-part").unwrap();
+        let _ = parse_sysitemtype(cx, "other-part").unwrap();
+        // let _ = parse_sysitemtype(cx, "0").unwrap();
+        dbg!(&cx);
+    }
+
+    #[test]
     fn test_maj03() {
         let cx = CoreContext::new();
-        let _ = parse_sysitemlist(cx, "|clef G | D4. -2,-3 D8 -4 % D16 2 3 4 5 D8 3 4 / D2. 0  |bl | 0 / 1").unwrap();
+        // let _ = parse_sysitemlist(cx, "|clef G | D4. -2,-3 D8 -4 % D16 2 3 4 5 D8 3 4 / D2. 0  |bl | 0 / 1").unwrap();
+        let _ = parse_sysitemlist(cx, "|clef G |other-part").unwrap();
+
         // let _ = parse_sysitems(cx, "0 % 0").unwrap();
         // let _check = check_sysitems_parts_integrity(cx, ids);
         // dbg!(&cx.notes.borrow().len());
@@ -382,5 +415,6 @@ mod tests {
         // dbg!(&cx.complexes);
         // dbg!(&cx.stemitems);
         // dbg!(&cx.parts);
+        dbg!(&cx.sysitems);
     }
 }

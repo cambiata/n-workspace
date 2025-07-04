@@ -3,9 +3,9 @@ use core::{
     clef::ClefSignature,
     complex::{Complex, ComplexInfo, ComplexType},
     duration::SumDuration,
+    part::PartId,
     stems::stemitems::{StemHeadPosition, StemItem},
     sysitem::{SysItem, SysItemType},
-    ItemId,
 };
 use std::{cell::RefCell, collections::BTreeMap};
 
@@ -14,7 +14,7 @@ use grid::griditem::GridItemType;
 
 use crate::{
     complex::{collect_accidentals, create_glyphsrectangles_accidentals, create_glyphsrectangles_note, sort_accidentals},
-    constants::{BARLINE_DOUBLE_WIDTH, BARLINE_FINAL_WIDTH, BARLINE_WIDTH, CLEF_WIDTH, SPACE2, SPACE4},
+    constants::{BARLINE_DOUBLE_WIDTH, BARLINE_FINAL_WIDTH, BARLINE_WIDTH, CLEF_WIDTH, SPACE, SPACE2, SPACE4, SPACE_BEFORE_FIRST_NOTE_IN_BAR},
     glyphitem::{ComplexGlyphsRectangles, GlyphItem, GlyphRectangle, PartGlyphsRectangles, SysitemGlyphsRectangles},
     headpositions::calculate_head_positions,
 };
@@ -127,7 +127,7 @@ impl ScoreContext {
         &self,
         complexes: &[Complex],
         sysitem_id: usize,
-        _parts_ids: &Vec<ItemId>,
+        _parts_ids: &Vec<PartId>,
         _sum_duration: &SumDuration,
         complexes_infos: &Vec<BTreeMap<usize, ComplexInfo>>,
         positions_durations: &BTreeMap<usize, usize>,
@@ -161,38 +161,55 @@ impl ScoreContext {
         match _complex.ctype {
             ComplexType::Upper(ref note) => {
                 // note
-                let mut note_rectangles: Vec<(Rectangle, GlyphItem)> = create_glyphsrectangles_note(note, &self.map_head_position.borrow());
+                let mut note_rectangles: Vec<(Rectangle, GlyphItem)> = Vec::new();
 
+                let leftmost_head_x = create_glyphsrectangles_note(note, &self.map_head_position.borrow(), &mut note_rectangles);
                 // accidentals
                 let mut accidentals = collect_accidentals(note);
                 sort_accidentals(&mut accidentals);
-                create_glyphsrectangles_accidentals(&accidentals, &mut note_rectangles);
+                let leftmost_accidental_x = create_glyphsrectangles_accidentals(&accidentals, &mut note_rectangles);
+
+                if note.position == 0 {
+                    note_rectangles.push(create_space_rectangle_for_first_note_in_bar(leftmost_accidental_x.min(leftmost_head_x)));
+                }
 
                 rectangles.extend(note_rectangles);
-                // rectangles.extend(acc_rectangles);
             }
             ComplexType::Lower(ref note) => {
                 // note
-                let mut note_rectangles = create_glyphsrectangles_note(note, &self.map_head_position.borrow());
+                let mut note_rectangles = Vec::new();
+                let leftmost_head_x = create_glyphsrectangles_note(note, &self.map_head_position.borrow(), &mut note_rectangles);
 
                 // accidentals
                 let mut accidentals = collect_accidentals(note);
                 sort_accidentals(&mut accidentals);
-                create_glyphsrectangles_accidentals(&accidentals, &mut note_rectangles);
+                let leftmost_accidental_x = create_glyphsrectangles_accidentals(&accidentals, &mut note_rectangles);
+
+                if note.position == 0 {
+                    note_rectangles.push(create_space_rectangle_for_first_note_in_bar(leftmost_accidental_x.min(leftmost_head_x)));
+                }
 
                 rectangles.extend(note_rectangles);
                 // rectangles.extend(acc_rectangles);
             }
+
             ComplexType::UpperAndLower(ref upper, ref lower, _diff) => {
                 // note
-                let mut note_rectangles = create_glyphsrectangles_note(upper, &self.map_head_position.borrow());
-                note_rectangles.extend(create_glyphsrectangles_note(lower, &self.map_head_position.borrow()));
+                let mut note_rectangles = Vec::new();
+                let leftmost_upper_x = create_glyphsrectangles_note(upper, &self.map_head_position.borrow(), &mut note_rectangles);
+
+                let leftmost_lower_x = create_glyphsrectangles_note(lower, &self.map_head_position.borrow(), &mut note_rectangles);
 
                 // accidentals
                 let mut accidentals = collect_accidentals(upper);
                 accidentals.extend(collect_accidentals(lower));
                 sort_accidentals(&mut accidentals);
-                create_glyphsrectangles_accidentals(&accidentals, &mut note_rectangles);
+
+                let leftmost_accidental_x = create_glyphsrectangles_accidentals(&accidentals, &mut note_rectangles);
+
+                if upper.position == 0 {
+                    note_rectangles.push(create_space_rectangle_for_first_note_in_bar(leftmost_accidental_x.min(leftmost_upper_x.min(leftmost_lower_x))));
+                }
 
                 rectangles.extend(note_rectangles);
                 // rectangles.extend(acc_rectangles);
@@ -201,6 +218,13 @@ impl ScoreContext {
 
         rectangles
     }
+}
+
+fn create_space_rectangle_for_first_note_in_bar(left_x: f32) -> ((f32, f32, f32, f32), GlyphItem) {
+    (
+        (left_x - SPACE_BEFORE_FIRST_NOTE_IN_BAR, -SPACE, SPACE_BEFORE_FIRST_NOTE_IN_BAR, SPACE2),
+        GlyphItem::XRect(Color::Purple),
+    )
 }
 
 #[derive(Debug)]

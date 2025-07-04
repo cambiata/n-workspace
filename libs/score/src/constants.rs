@@ -5,6 +5,9 @@ pub const SPACE3: f32 = SPACE * 3.0;
 pub const SPACE4: f32 = SPACE * 4.0;
 pub const SPACE6: f32 = SPACE * 6.0;
 pub const SPACE_HALF: f32 = SPACE / 2.0;
+
+pub const SPACE_BEFORE_FIRST_NOTE_IN_BAR: f32 = SPACE * 0.5;
+
 pub const HEAD_WIDTH_BLACK: f32 = SPACE * 1.3;
 pub const HEAD_WIDTH_WHITE: f32 = SPACE * 1.35;
 pub const HEAD_WIDTH_WHOLE: f32 = SPACE * 2.4;

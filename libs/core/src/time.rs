@@ -1,5 +1,5 @@
 #[derive(Debug)]
-#[derive(Debug)]
+
 pub enum TimeSignature {
     TimeSignature(TimeNominator, TimeDenominator),
     CommonFourFour,

@@ -1,4 +1,6 @@
-use crate::{duration::SumDuration, voice::VoiceItem, ItemId};
+use crate::{duration::SumDuration, voice::VoiceItem};
+
+pub type PartId = usize;
 
 #[derive(Debug)]
 pub enum PartType {
@@ -10,7 +12,7 @@ pub enum PartType {
 
 #[derive(Debug)]
 pub struct PartItem {
-    pub id: ItemId,
+    pub id: PartId,
     pub idx: usize,
     pub duration: SumDuration,
     pub ptype: PartType,

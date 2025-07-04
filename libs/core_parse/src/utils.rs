@@ -59,9 +59,7 @@ pub fn create_part_notes_vecs(cx: &CoreContext, partscount: usize) -> Result<Vec
                                 }
                             }
                         }
-                        _ => {
-                            todo!("Unhandled part type for part_idx: {}", partidx);
-                        }
+                        PartType::OtherPart => {}
                     }
                 }
                 None => {

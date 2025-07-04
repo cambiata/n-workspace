@@ -28,8 +28,6 @@ pub fn rectangles_overlap_x(lefts: &[Rectangle], rights: &[Rectangle]) -> f32 {
     result
 }
 
-
-
 pub fn widest_of_rectangles(rects: &[Rectangle]) -> f32 {
     let mut result: f32 = 0.;
     rects.iter().for_each(|rect| {
