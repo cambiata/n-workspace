@@ -35,9 +35,9 @@ impl Parse2 {
         }
 
         Parse2Utils::correct_to_parts_count(&mut bpvmap, parts_count);
-        Parse2Utils::create_columns_and_rows_of_parts(cx, &mut bpvmap, parts_count)?;
-        Parse2Utils::set_stemitems_directions(cx);
-        HeadPositionUtils::calculate_head_positions(cx);
+        Parse2Utils::create_columns_of_parts2(cx, &mut bpvmap, parts_count)?;
+        // Parse2Utils::set_stemitems_directions(cx);
+        // HeadPositionUtils::calculate_head_positions(cx);
 
         Ok(())
     }

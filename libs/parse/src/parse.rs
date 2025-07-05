@@ -1,7 +1,7 @@
 use core::accidental::Accidental;
 use core::barline::BarlineType;
 use core::clef::ClefSignature;
-use core::complex::{create_complexes_for_part, ComplexInfo};
+use core::complex::{ComplexInfo, ComplexUtils};
 use core::context::CoreContext;
 use core::duration::{NoteDuration, SumDuration};
 use core::head::HeadItem;
@@ -178,7 +178,7 @@ pub fn parse_part(cx: &CoreContext, value: &str, idx: usize) -> Result<PartId, B
 
     calculate_stemitem_directions(cx, &ptype)?;
 
-    let complexids = create_complexes_for_part(cx, &ptype, id);
+    let complexids = ComplexUtils::create_complexes_for_part(cx, &ptype, id);
 
     let info = PartItem { id, idx, duration, ptype, complexids };
     cx.parts.borrow_mut().push(info);

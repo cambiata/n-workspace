@@ -64,7 +64,7 @@ impl HeadPositionUtils {
 
     #[allow(unused_variables)]
     fn calc_head_positions_up(head_ids_levels: Vec<HeadIdLevel>, map_head_position: &mut std::collections::BTreeMap<usize, StemHeadPosition>) {
-        println!("calc_head_positions_up: {:?}", head_ids_levels);
+        // println!("calc_head_positions_up: {:?}", head_ids_levels);
         let mut ids_levels = head_ids_levels.clone();
         ids_levels.reverse();
 
@@ -101,7 +101,7 @@ impl HeadPositionUtils {
 
     #[allow(unused_variables)]
     fn calc_head_positions_down(head_ids_levels: Vec<HeadIdLevel>, map_head_position: &mut std::collections::BTreeMap<usize, StemHeadPosition>) {
-        println!("calc_head_positions_down: {:?}", head_ids_levels);
+        // println!("calc_head_positions_down: {:?}", head_ids_levels);
 
         let mut ids_levels = head_ids_levels.clone();
         ids_levels.reverse();
