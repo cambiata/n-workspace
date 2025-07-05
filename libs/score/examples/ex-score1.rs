@@ -1,7 +1,7 @@
 // cargo watch -q -c --ignore '**/*.svg' -x "run -q --example ex-score1"
 
 use core::context::CoreContext;
-use core_parse::parse::parse_sysitemlist;
+use parse::parse::parse_sysitemlist;
 use score::scorecontext::ScoreContext;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {

@@ -9,6 +9,13 @@ pub type PartsCount = usize;
 type MapPositionComplexInfo = BTreeMap<usize, ComplexInfo>;
 type MapPositionsDurations = BTreeMap<usize, usize>;
 
+#[derive(Debug, PartialOrd, PartialEq, Ord, Eq, Clone)]
+pub enum SysItemTypeId {
+    Clefs(Vec<String>),
+    Parts(Vec<Vec<String>>),
+    Barlines(Vec<String>),
+}
+
 #[derive(Debug)]
 pub enum SysItemType {
     Parts(Vec<PartId>, SumDuration, Vec<MapPositionComplexInfo>, MapPositionsDurations),

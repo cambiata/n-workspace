@@ -64,6 +64,7 @@ impl ScoreContext {
                     println!("Other item found in sysitem {}", sysidx);
                     todo!();
                 }
+                _ => todo!("Invalid sysitem type"),
             };
         }
 

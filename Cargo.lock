@@ -55,13 +55,6 @@ name = "core"
 version = "0.1.0"
 
 [[package]]
-name = "core_parse"
-version = "0.1.0"
-dependencies = [
- "core",
-]
-
-[[package]]
 name = "crc32fast"
 version = "1.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -152,6 +145,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "parse"
+version = "0.1.0"
+dependencies = [
+ "core",
+]
+
+[[package]]
 name = "png"
 version = "0.17.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -169,9 +169,9 @@ name = "render"
 version = "0.1.0"
 dependencies = [
  "core",
- "core_parse",
  "graphics",
  "grid",
+ "parse",
  "score",
  "svg",
 ]
@@ -191,9 +191,9 @@ name = "score"
 version = "0.1.0"
 dependencies = [
  "core",
- "core_parse",
  "graphics",
  "grid",
+ "parse",
  "utils",
 ]
 

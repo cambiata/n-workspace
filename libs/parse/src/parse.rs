@@ -191,8 +191,8 @@ pub fn parse_parts(cx: &CoreContext, value: &str) -> Result<Vec<PartId>, Box<dyn
     if value.starts_with("/") {
         value = value[1..].trim();
     }
-
     let segments = value.split("/").collect::<Vec<_>>();
+
     let mut idx = 0;
     let ids: Vec<PartId> = segments
         .iter()

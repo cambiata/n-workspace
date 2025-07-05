@@ -2,8 +2,8 @@
 use core::context::CoreContext;
 use std::fs;
 
-use core_parse::parse::parse_sysitemlist;
 use grid::{gridcontext::GridContext, griditem::GridItemType};
+use parse::parse::parse_sysitemlist;
 use render::gridrender::render_gridcontext_with_glyphitem;
 use score::{glyphitem::GlyphItem, scorecontext::ScoreContext};
 

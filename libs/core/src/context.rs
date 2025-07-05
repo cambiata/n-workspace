@@ -3,6 +3,7 @@ use std::{cell::RefCell, collections::BTreeMap};
 use crate::{
     complex::{Complex, ComplexId},
     head::{HeadId, HeadItem},
+    hpart::{HPartItem, HPartItems},
     note::{NoteId, NoteItem},
     part::PartItem,
     stems::stemitems::{StemHeadPosition, StemItem},
@@ -19,6 +20,12 @@ pub struct CoreContext {
     pub sysitems: RefCell<Vec<SysItem>>,
     pub complexes: RefCell<Vec<Complex>>,
     pub stemitems: RefCell<Vec<StemItem>>,
+
+    pub hparts: RefCell<Vec<HPartItem>>,
+
+    pub columns: RefCell<Vec<HPartItems>>,
+    pub rows: RefCell<Vec<HPartItems>>,
+
     pub map_head_position: RefCell<BTreeMap<HeadId, StemHeadPosition>>,
     pub map_noteid_tiesto: RefCell<BTreeMap<NoteId, Vec<TieTo>>>,
     pub map_noteid_tiesfrom: RefCell<BTreeMap<NoteId, Vec<TieFrom>>>,
@@ -36,6 +43,12 @@ impl CoreContext {
             sysitems: RefCell::new(Vec::new()),
             complexes: RefCell::new(Vec::new()),
             stemitems: RefCell::new(Vec::new()),
+
+            hparts: RefCell::new(Vec::new()),
+
+            columns: RefCell::new(Vec::new()),
+            rows: RefCell::new(Vec::new()),
+
             map_head_position: RefCell::new(BTreeMap::new()),
             map_noteid_tiesto: RefCell::new(BTreeMap::new()),
             map_noteid_tiesfrom: RefCell::new(BTreeMap::new()),

@@ -1,6 +1,6 @@
 // cargo watch -q -c --ignore '**/*.svg' -x "run -q --example ex-parse1"
 
-use core_parse::parse::parse_sysitemlist;
+use parse::parse::parse_sysitemlist;
 
 use core::context::CoreContext;
 

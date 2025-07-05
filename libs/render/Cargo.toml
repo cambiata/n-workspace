@@ -8,5 +8,5 @@ graphics = { path = "../graphics" }
 grid = { path = "../grid" }
 svg = { path = "../svg" }
 core = { path = "../core" }
-core_parse = { path = "../core_parse" }
+parse = { path = "../parse" }
 score = { path = "../score" }

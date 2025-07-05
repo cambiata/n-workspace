@@ -7,6 +7,33 @@ use crate::{
 
 use super::stemitems::StemType;
 
+pub struct StemDirectionUtils;
+impl StemDirectionUtils {
+    pub fn set_direction_auto(cx: &CoreContext, stemitem_id: usize) {
+        let mut cx_stemitems = cx.stemitems.borrow_mut();
+        let stemitem = cx_stemitems.get_mut(stemitem_id).unwrap();
+        match stemitem.stype {
+            StemType::NoteWithStem(ref item) => {
+                let direction = DirectionUAD::from_level(item.bottom_level + item.top_level);
+                stemitem.direction = Some(direction);
+            }
+            StemType::NotesBeamed(ref items) => {
+                let top_level = items.iter().map(|item| item.top_level).min().unwrap();
+                let bottom_level = items.iter().map(|item| item.bottom_level).max().unwrap();
+                let direction = DirectionUAD::from_level(bottom_level + top_level);
+                stemitem.direction = Some(direction);
+            }
+            _ => {}
+        }
+    }
+
+    pub fn set_direction_force(cx: &CoreContext, stemitem_id: usize, force_direction: DirectionUD) {
+        let mut cx_stemitems = cx.stemitems.borrow_mut();
+        let stemitem = cx_stemitems.get_mut(stemitem_id).unwrap();
+        stemitem.direction = Some(force_direction);
+    }
+}
+
 pub fn calculate_stemitem_directions(cx: &CoreContext, ptype: &PartType) -> Result<(), Box<dyn std::error::Error>> {
     let mut stemitems = cx.stemitems.borrow_mut();
 

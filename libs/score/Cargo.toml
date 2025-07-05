@@ -6,6 +6,6 @@ edition = "2021"
 [dependencies]
 graphics = { path = "../graphics" }
 core = { path = "../core" }
-core_parse = { path = "../core_parse" }
+parse = { path = "../parse" }
 utils = { path = "../utils" }
 grid = { path = "../grid" }

@@ -1,3 +1,4 @@
+pub mod email;
 pub mod f32_ext;
 pub mod slice_ext;
 pub mod string_ext;
