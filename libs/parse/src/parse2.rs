@@ -2,7 +2,7 @@ use core::{
     context::CoreContext,
     duration::{NoteDuration, SumDuration},
     hpart::VoiceType2,
-    stems::stemitems::create_stem_items_from_notes_in_voice,
+    stems::{headpositions::HeadPositionUtils, stemitems::StemItemUtils},
     sysitem::SysItemTypeId,
 };
 use std::error::Error;
@@ -37,6 +37,7 @@ impl Parse2 {
         Parse2Utils::correct_to_parts_count(&mut bpvmap, parts_count);
         Parse2Utils::create_columns_and_rows_of_parts(cx, &mut bpvmap, parts_count)?;
         Parse2Utils::set_stemitems_directions(cx);
+        HeadPositionUtils::calculate_head_positions(cx);
 
         Ok(())
     }
@@ -89,7 +90,7 @@ impl Parse2 {
             let (note_ids, duration) = parse_notes(cx, value)?;
 
             let pattern_values = vec![NoteDuration::D4];
-            let stemitem_ids = create_stem_items_from_notes_in_voice(cx, &note_ids, duration, pattern_values).unwrap();
+            let stemitem_ids = StemItemUtils::create_stem_items_from_notes(cx, &note_ids, duration, pattern_values).unwrap();
             VoiceType2::NoteIds { note_ids, duration, stemitem_ids }
         };
 

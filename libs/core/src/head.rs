@@ -1,4 +1,4 @@
-use crate::{accidental::Accidental, stems::stemitems::StemHeadPosition};
+use crate::accidental::Accidental;
 
 pub type HeadId = usize;
 
@@ -7,7 +7,6 @@ pub struct HeadItem {
     pub id: HeadId,
     pub level: i8,
     pub accidental: Accidental,
-    pub head_position: Option<StemHeadPosition>,
 }
 
 #[derive(Debug, Clone)]

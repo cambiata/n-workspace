@@ -9,7 +9,8 @@ use core::note::{NoteItem, NoteType};
 use core::part::{PartId, PartItem, PartType};
 
 use core::stems::stemdirections::calculate_stemitem_directions;
-use core::stems::stemitems::create_stem_items_from_notes_in_voice;
+
+use core::stems::stemitems::StemItemUtils;
 use core::sysitem::{SysItem, SysItemList, SysItemType};
 use core::ties::{TieFrom, TieTo};
 
@@ -46,7 +47,6 @@ pub fn parse_head(_cx: &CoreContext, value: &str, _note_id: usize) -> Result<Hea
         id,
         level: level,
         accidental: accidental,
-        head_position: None,
     };
     _cx.heads.borrow_mut().push(info.clone());
     Ok(info)
@@ -111,7 +111,7 @@ pub fn parse_voicetype(cx: &CoreContext, value: &str) -> Result<VoiceType, Box<d
     } else {
         let (note_ids, sum_duration) = parse_notes(cx, value).expect("Could not parse notes");
         let pattern_values = vec![NoteDuration::D4];
-        let stemitem_ids = create_stem_items_from_notes_in_voice(cx, &note_ids, sum_duration, pattern_values).unwrap();
+        let stemitem_ids = StemItemUtils::create_stem_items_from_notes(cx, &note_ids, sum_duration, pattern_values).unwrap();
 
         VoiceType::NoteIds(note_ids, sum_duration, stemitem_ids)
     };

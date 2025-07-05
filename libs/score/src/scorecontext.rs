@@ -4,7 +4,10 @@ use core::{
     complex::{Complex, ComplexInfo, ComplexType},
     duration::SumDuration,
     part::PartId,
-    stems::stemitems::{StemHeadPosition, StemItem},
+    stems::{
+        headpositions::HeadPositionUtils,
+        stemitems::{StemHeadPosition, StemItem},
+    },
     sysitem::{SysItem, SysItemType},
 };
 use std::{cell::RefCell, collections::BTreeMap};
@@ -16,7 +19,6 @@ use crate::{
     complex::{collect_accidentals, create_glyphsrectangles_accidentals, create_glyphsrectangles_note, sort_accidentals},
     constants::{BARLINE_DOUBLE_WIDTH, BARLINE_FINAL_WIDTH, BARLINE_WIDTH, CLEF_WIDTH, SPACE, SPACE2, SPACE4, SPACE_BEFORE_FIRST_NOTE_IN_BAR},
     glyphitem::{ComplexGlyphsRectangles, GlyphItem, GlyphRectangle, PartGlyphsRectangles, SysitemGlyphsRectangles},
-    headpositions::calculate_head_positions,
 };
 
 #[derive(Debug)]
@@ -39,7 +41,8 @@ impl ScoreContext {
     // Vec<Vec<GridItemType<GlyphItem>>>
 
     pub fn build_stemitems_headpositions(&self, stemitems: &[StemItem]) -> Result<(), Box<dyn std::error::Error>> {
-        calculate_head_positions(stemitems, &mut self.map_head_position.borrow_mut());
+        HeadPositionUtils::set_head_positions(stemitems, &mut self.map_head_position.borrow_mut());
+
         Ok(())
     }
 

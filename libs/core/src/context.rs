@@ -20,12 +20,9 @@ pub struct CoreContext {
     pub sysitems: RefCell<Vec<SysItem>>,
     pub complexes: RefCell<Vec<Complex>>,
     pub stemitems: RefCell<Vec<StemItem>>,
-
     pub hparts: RefCell<Vec<HPartItem>>,
-
     pub columns: RefCell<Vec<HPartItems>>,
     pub rows: RefCell<Vec<HPartItems>>,
-
     pub map_head_position: RefCell<BTreeMap<HeadId, StemHeadPosition>>,
     pub map_noteid_tiesto: RefCell<BTreeMap<NoteId, Vec<TieTo>>>,
     pub map_noteid_tiesfrom: RefCell<BTreeMap<NoteId, Vec<TieFrom>>>,

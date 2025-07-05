@@ -340,4 +340,59 @@ impl Parse2Utils {
             }
         }
     }
+
+    pub(crate) fn set_head_positions(cx: &CoreContext) {
+        let hparts = cx.hparts.borrow();
+        let rows = cx.rows.borrow();
+        for row in rows.iter() {
+            for id in row.hpart_ids.iter() {
+                let item = hparts.get(*id).unwrap();
+                dbg!(&item);
+                match &item.parttype {
+                    HPartType::Music(HPartMusicType::OneVoice { voice, complexes: _ }, _) => match voice {
+                        VoiceType2::NoteIds {
+                            note_ids: _,
+                            duration: _,
+                            stemitem_ids,
+                        } => {
+                            stemitem_ids.iter().for_each(|stemitem_id| {
+                                StemDirectionUtils::set_direction_auto(cx, *stemitem_id);
+                            });
+                        }
+                        _ => {}
+                    },
+                    HPartType::Music(HPartMusicType::TwoVoices { upper, lower, complexes: _ }, _) => {
+                        match upper {
+                            VoiceType2::NoteIds {
+                                note_ids: _,
+                                duration: _,
+                                stemitem_ids,
+                            } => {
+                                stemitem_ids.iter().for_each(|stemitem_id| {
+                                    StemDirectionUtils::set_direction_force(cx, *stemitem_id, DirectionUD::Up);
+                                });
+                            }
+                            _ => {}
+                        }
+                        match lower {
+                            VoiceType2::NoteIds {
+                                note_ids: _,
+                                duration: _,
+                                stemitem_ids,
+                            } => {
+                                stemitem_ids.iter().for_each(|stemitem_id| {
+                                    StemDirectionUtils::set_direction_force(cx, *stemitem_id, DirectionUD::Down);
+                                });
+                            }
+                            _ => {}
+                        }
+                    }
+
+                    _ => {
+                        dbg!(&item);
+                    }
+                }
+            }
+        }
+    }
 }
