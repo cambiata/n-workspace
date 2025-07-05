@@ -2,7 +2,7 @@ use core::{
     context::CoreContext,
     duration::{NoteDuration, SumDuration},
     hpart::VoiceType2,
-    stems::{headpositions::HeadPositionUtils, stemitems::StemItemUtils},
+    stems::stemitems::StemItemUtils,
     sysitem::SysItemTypeId,
 };
 use std::error::Error;

@@ -1,25 +1,9 @@
-use core::{
-    barline::BarlineType,
-    clef::ClefSignature,
-    complex::{Complex, ComplexInfo, ComplexType},
-    duration::SumDuration,
-    part::PartId,
-    stems::{
-        headpositions::HeadPositionUtils,
-        stemitems::{StemHeadPosition, StemItem},
-    },
-    sysitem::{SysItem, SysItemType},
-};
+use core::stems::stemitems::StemHeadPosition;
 use std::{cell::RefCell, collections::BTreeMap};
 
-use graphics::{color::Color, rectangle::Rectangle};
 use grid::griditem::GridItemType;
 
-use crate::{
-    complex::{collect_accidentals, create_glyphsrectangles_accidentals, create_glyphsrectangles_note, sort_accidentals},
-    constants::{BARLINE_DOUBLE_WIDTH, BARLINE_FINAL_WIDTH, BARLINE_WIDTH, CLEF_WIDTH, SPACE, SPACE2, SPACE4, SPACE_BEFORE_FIRST_NOTE_IN_BAR},
-    glyphitem::{ComplexGlyphsRectangles, GlyphItem, GlyphRectangle, PartGlyphsRectangles, SysitemGlyphsRectangles},
-};
+use crate::glyphitem::GlyphItem;
 
 #[derive(Debug)]
 pub struct ScoreContext {

@@ -2,7 +2,7 @@
 
 use core::context::CoreContext;
 use parse::parse::parse_sysitemlist;
-use score::scorecontext::{ScoreContext, ScoreContextUtils};
+use score::{scorecontext::ScoreContext, scoreutils::ScoreUtils};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cx = CoreContext::new();
@@ -12,7 +12,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let _ = parse_sysitemlist(cx, "|bl |clef | 0 1 2 / d2 0 0 |bl").unwrap();
 
     let scx = ScoreContext::new();
-    ScoreContextUtils::build_sysitems(scx, &cx.sysitems.borrow(), &cx.complexes.borrow())?;
+    ScoreUtils::build_sysitems(scx, &cx.sysitems.borrow(), &cx.complexes.borrow())?;
 
     Ok(())
 }

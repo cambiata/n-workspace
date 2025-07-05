@@ -5,10 +5,7 @@ use std::fs;
 use grid::{gridcontext::GridContext, griditem::GridItemType};
 use parse::parse::parse_sysitemlist;
 use render::gridrender::render_gridcontext_with_glyphitem;
-use score::{
-    glyphitem::GlyphItem,
-    scorecontext::{ScoreContext, ScoreContextUtils},
-};
+use score::{glyphitem::GlyphItem, scorecontext::ScoreContext, scoreutils::ScoreUtils};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cx = CoreContext::new();
@@ -18,8 +15,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let _ = parse_sysitemlist(cx, "|clef G G |-3,-2 % #5 / 0 ").unwrap();
     let mut scx = ScoreContext::new();
-    ScoreContextUtils::build_stemitems_headpositions(scx, &cx.stemitems.borrow())?;
-    ScoreContextUtils::build_sysitems(scx, &cx.sysitems.borrow(), &cx.complexes.borrow())?;
+    ScoreUtils::build_stemitems_headpositions(scx, &cx.stemitems.borrow())?;
+    ScoreUtils::build_sysitems(scx, &cx.sysitems.borrow(), &cx.complexes.borrow())?;
 
     //-------------------------------------------------
     // Turn 180 degrees...

@@ -3,10 +3,8 @@ use core::{
     clef::ClefSignature,
     complex::ComplexUtils,
     context::CoreContext,
-    direction::DirectionUD,
     hpart::{HPartAttributes, HPartItem, HPartItemsColumn, HPartItemsColumnType, HPartItemsRow, HPartMusicType, HPartType, VoiceType2},
     key::KeySignature,
-    stems::stemdirections::StemDirectionUtils,
     sysitem::SysItemTypeId,
     time::{TimeDenominator, TimeNominator, TimeSignature},
 };
@@ -57,7 +55,7 @@ impl Parse2Utils {
                     };
                     _cx.columns.borrow_mut().push(column);
                 }
-                SysItemTypeId::Barlines(segments) => {
+                SysItemTypeId::Barlines(_segments) => {
                     let mut items_ids: Vec<usize> = vec![];
                     for part_idx in 0..parts_count {
                         // let item = &segments[part_idx];
@@ -180,7 +178,6 @@ impl Parse2Utils {
                     _cx.columns.borrow_mut().push(column);
                     column_position += column_duration;
                 }
-                _ => {}
             }
         }
 
@@ -346,60 +343,60 @@ impl Parse2Utils {
         }
     }
 
-    pub(crate) fn set_stemitems_directions(cx: &CoreContext) {
-        let hparts = cx.hparts.borrow();
-        let rows = cx.rows.borrow();
-        for row in rows.iter() {
-            for id in row.hpart_ids.iter() {
-                let item = hparts.get(*id).unwrap();
+    // pub(crate) fn set_stemitems_directions(cx: &CoreContext) {
+    //     let hparts = cx.hparts.borrow();
+    //     let rows = cx.rows.borrow();
+    //     for row in rows.iter() {
+    //         for id in row.hpart_ids.iter() {
+    //             let item = hparts.get(*id).unwrap();
 
-                match &item.parttype {
-                    HPartType::Music(HPartMusicType::OneVoice { voice }, complexes, _) => match voice {
-                        VoiceType2::NoteIds {
-                            note_ids: _,
-                            duration: _,
-                            stemitem_ids,
-                        } => {
-                            stemitem_ids.iter().for_each(|stemitem_id| {
-                                StemDirectionUtils::set_direction_auto(cx, *stemitem_id);
-                            });
-                        }
-                        _ => {}
-                    },
-                    HPartType::Music(HPartMusicType::TwoVoices { upper, lower }, complexes, _) => {
-                        match upper {
-                            VoiceType2::NoteIds {
-                                note_ids: _,
-                                duration: _,
-                                stemitem_ids,
-                            } => {
-                                stemitem_ids.iter().for_each(|stemitem_id| {
-                                    StemDirectionUtils::set_direction_force(cx, *stemitem_id, DirectionUD::Up);
-                                });
-                            }
-                            _ => {}
-                        }
-                        match lower {
-                            VoiceType2::NoteIds {
-                                note_ids: _,
-                                duration: _,
-                                stemitem_ids,
-                            } => {
-                                stemitem_ids.iter().for_each(|stemitem_id| {
-                                    StemDirectionUtils::set_direction_force(cx, *stemitem_id, DirectionUD::Down);
-                                });
-                            }
-                            _ => {}
-                        }
-                    }
+    //             match &item.parttype {
+    //                 HPartType::Music(HPartMusicType::OneVoice { voice }, _, _) => match voice {
+    //                     VoiceType2::NoteIds {
+    //                         note_ids: _,
+    //                         duration: _,
+    //                         stemitem_ids,
+    //                     } => {
+    //                         stemitem_ids.iter().for_each(|stemitem_id| {
+    //                             StemDirectionUtils::set_direction_auto(cx, *stemitem_id);
+    //                         });
+    //                     }
+    //                     _ => {}
+    //                 },
+    //                 HPartType::Music(HPartMusicType::TwoVoices { upper, lower }, _, _) => {
+    //                     match upper {
+    //                         VoiceType2::NoteIds {
+    //                             note_ids: _,
+    //                             duration: _,
+    //                             stemitem_ids,
+    //                         } => {
+    //                             stemitem_ids.iter().for_each(|stemitem_id| {
+    //                                 StemDirectionUtils::set_direction_force(cx, *stemitem_id, DirectionUD::Up);
+    //                             });
+    //                         }
+    //                         _ => {}
+    //                     }
+    //                     match lower {
+    //                         VoiceType2::NoteIds {
+    //                             note_ids: _,
+    //                             duration: _,
+    //                             stemitem_ids,
+    //                         } => {
+    //                             stemitem_ids.iter().for_each(|stemitem_id| {
+    //                                 StemDirectionUtils::set_direction_force(cx, *stemitem_id, DirectionUD::Down);
+    //                             });
+    //                         }
+    //                         _ => {}
+    //                     }
+    //                 }
 
-                    _ => {
-                        dbg!(&item);
-                    }
-                }
-            }
-        }
-    }
+    //                 _ => {
+    //                     dbg!(&item);
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
     /*
     pub(crate) fn set_head_positions(cx: &CoreContext) {
