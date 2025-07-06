@@ -44,7 +44,7 @@ pub struct HPartItem {
 pub enum HPartType {
     Clef(ClefSignature),
     Barline(BarlineType),
-    Music(HPartMusicType, Vec<usize>, HPartAttributes),
+    Music { mtype: HPartMusicType, complexes: Vec<usize>, attr: HPartAttributes },
 }
 
 #[derive(Debug, Clone)]

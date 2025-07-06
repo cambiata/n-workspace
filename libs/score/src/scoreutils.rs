@@ -180,6 +180,7 @@ impl ScoreUtils {
             ComplexType::UpperAndLower(ref upper, ref lower, _diff) => {
                 // note
                 let mut note_rectangles = Vec::new();
+
                 let leftmost_upper_x = create_glyphsrectangles_note(upper, &scx.map_head_position.borrow(), &mut note_rectangles);
 
                 let leftmost_lower_x = create_glyphsrectangles_note(lower, &scx.map_head_position.borrow(), &mut note_rectangles);

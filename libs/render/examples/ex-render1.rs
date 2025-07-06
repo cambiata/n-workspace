@@ -6,15 +6,13 @@ use std::fs;
 use grid::{gridcontext::GridContext, griditem::GridItemType};
 use parse::parse2::Parse2;
 use render::gridrender::Render;
-use score::{build::ScoreUtils2, glyphitem::GlyphItem, scorecontext::ScoreContext};
+use score::{build::Build, glyphitem::GlyphItem, scorecontext::ScoreContext};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cx = CoreContext::new();
-    let _ = Parse2::sysitemlist2(cx, "clef G F | bl", false).unwrap();
-
+    let _ = Parse2::sysitemlist2(cx, "clef G | D2 0 D4 1 1 D1 2 |bl", false).unwrap();
     let scx = ScoreContext::new();
-    ScoreUtils2::build(&scx, &cx)?;
-    dbg!(&scx.grid_columns.borrow());
+    Build::build(&scx, &cx)?;
 
     //-------------------------------------------------
     // Turn 180 degrees...

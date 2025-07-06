@@ -112,7 +112,11 @@ impl Parse2Utils {
                                     _ => Vec::new(),
                                 };
 
-                                HPartType::Music(HPartMusicType::OneVoice { voice: voicetype }, complexes, attr)
+                                HPartType::Music {
+                                    mtype: HPartMusicType::OneVoice { voice: voicetype },
+                                    complexes,
+                                    attr,
+                                }
                             }
                             2 => {
                                 let upper = Parse2::voicetype(_cx, &item[0], default_duration)?;
@@ -144,7 +148,11 @@ impl Parse2Utils {
                                     }
                                     _ => Vec::new(),
                                 };
-                                HPartType::Music(HPartMusicType::TwoVoices { upper, lower }, complexes, attr)
+                                HPartType::Music {
+                                    mtype: HPartMusicType::TwoVoices { upper, lower },
+                                    complexes,
+                                    attr,
+                                }
                             }
                             _ => {
                                 panic!("Should not happen");
@@ -185,20 +193,20 @@ impl Parse2Utils {
 
         //------------------------------------------
 
-        for part_idx in 0..parts_count {
-            let mut ids: Vec<usize> = Vec::new();
-            for column in _cx.columns.borrow().iter() {
-                let id = match &column.hptype {
-                    HPartItemsColumnType::Musics(ids) | HPartItemsColumnType::Barlines(ids) | HPartItemsColumnType::Clefs(ids) => ids[part_idx],
-                };
-                ids.push(id);
-            }
-            let id = _cx.rows.borrow().len();
-            let row: HPartItemsRow = HPartItemsRow { id, hpart_ids: ids, part_idx };
-            _cx.rows.borrow_mut().push(row);
-        }
+        // for part_idx in 0..parts_count {
+        //     let mut ids: Vec<usize> = Vec::new();
+        //     for column in _cx.columns.borrow().iter() {
+        //         let id = match &column.hptype {
+        //             HPartItemsColumnType::Musics(ids) | HPartItemsColumnType::Barlines(ids) | HPartItemsColumnType::Clefs(ids) => ids[part_idx],
+        //         };
+        //         ids.push(id);
+        //     }
+        //     let id = _cx.rows.borrow().len();
+        //     let row: HPartItemsRow = HPartItemsRow { id, hpart_ids: ids, part_idx };
+        //     _cx.rows.borrow_mut().push(row);
+        // }
 
-        dbg!(&_cx.rows.borrow());
+        // dbg!(&_cx.rows.borrow());
 
         Ok(())
     }
@@ -362,7 +370,6 @@ impl Parse2Utils {
             let row: HPartItemsRow = HPartItemsRow { id, hpart_ids: ids, part_idx };
             cx.rows.borrow_mut().push(row);
         }
-        dbg!(&cx.rows.borrow());
 
         Ok(())
     }
@@ -375,7 +382,11 @@ impl Parse2Utils {
                 let item = hparts.get(*id).unwrap();
 
                 match &item.hptype {
-                    HPartType::Music(HPartMusicType::OneVoice { voice }, _, _) => match voice {
+                    HPartType::Music {
+                        mtype: HPartMusicType::OneVoice { voice },
+                        complexes: _,
+                        attr: _,
+                    } => match voice {
                         VoiceType2::NoteIds {
                             note_ids: _,
                             duration: _,
@@ -387,7 +398,11 @@ impl Parse2Utils {
                         }
                         _ => {}
                     },
-                    HPartType::Music(HPartMusicType::TwoVoices { upper, lower }, _, _) => {
+                    HPartType::Music {
+                        mtype: HPartMusicType::TwoVoices { upper, lower },
+                        complexes: _,
+                        attr: _,
+                    } => {
                         match upper {
                             VoiceType2::NoteIds {
                                 note_ids: _,
