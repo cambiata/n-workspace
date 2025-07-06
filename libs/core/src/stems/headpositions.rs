@@ -8,10 +8,6 @@ type HeadIdLevel = (usize, i8);
 
 pub struct HeadPositionUtils;
 impl HeadPositionUtils {
-    pub fn calculate_head_positions(cx: &CoreContext) {
-        HeadPositionUtils::set_head_positions(&cx.stemitems.borrow(), &mut cx.map_head_position.borrow_mut());
-    }
-
     pub fn set_head_positions(stemitems: &[StemItem], map_head_position: &mut std::collections::BTreeMap<usize, StemHeadPosition>) {
         // let mut positions_map: Vec<(usize, StemHeadPosition)> = Vec::new();
 

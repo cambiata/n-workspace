@@ -3,12 +3,14 @@ use core::{
     clef::ClefSignature,
     complex::ComplexUtils,
     context::CoreContext,
+    direction::DirectionUD,
     hpart::{HPartAttributes, HPartItem, HPartItemsColumn, HPartItemsColumnType, HPartItemsRow, HPartMusicType, HPartType, VoiceType2},
     key::KeySignature,
+    stems::{headpositions::HeadPositionUtils, stemdirections::StemDirectionUtils},
     sysitem::SysItemTypeId,
     time::{TimeDenominator, TimeNominator, TimeSignature},
 };
-use std::collections::HashMap;
+use std::{collections::HashMap, error::Error};
 
 use crate::parse2::Parse2;
 
@@ -36,7 +38,7 @@ impl Parse2Utils {
                         let id = _cx.hparts.borrow().len();
                         let item: HPartItem = HPartItem {
                             id, // This will be set later
-                            parttype: hpart,
+                            hptype: hpart,
                             position: column_position,
                             duration: column_duration,
                             part_idx,
@@ -64,7 +66,7 @@ impl Parse2Utils {
                         let id = _cx.hparts.borrow().len();
                         let item: HPartItem = HPartItem {
                             id,
-                            parttype: hpart,
+                            hptype: hpart,
                             position: column_position,
                             duration: column_duration,
                             part_idx,
@@ -157,7 +159,7 @@ impl Parse2Utils {
                         let id = _cx.hparts.borrow().len();
                         let item: HPartItem = HPartItem {
                             id, // This will be set later
-                            parttype: htype,
+                            hptype: htype,
                             position: column_position,
                             duration: column_duration,
                             part_idx,
@@ -180,8 +182,6 @@ impl Parse2Utils {
                 }
             }
         }
-
-        dbg!(&_cx.columns.borrow());
 
         //------------------------------------------
 
@@ -343,71 +343,39 @@ impl Parse2Utils {
         }
     }
 
-    // pub(crate) fn set_stemitems_directions(cx: &CoreContext) {
-    //     let hparts = cx.hparts.borrow();
-    //     let rows = cx.rows.borrow();
-    //     for row in rows.iter() {
-    //         for id in row.hpart_ids.iter() {
-    //             let item = hparts.get(*id).unwrap();
+    pub fn create_rows_from_columns(cx: &CoreContext) -> Result<(), Box<dyn Error>> {
+        let cx_columns = cx.columns.borrow();
+        let first_column = cx_columns.first().ok_or("No columns found")?;
+        let parts_count = match &first_column.hptype {
+            HPartItemsColumnType::Musics(ids) | HPartItemsColumnType::Barlines(ids) | HPartItemsColumnType::Clefs(ids) => ids.len(),
+        };
 
-    //             match &item.parttype {
-    //                 HPartType::Music(HPartMusicType::OneVoice { voice }, _, _) => match voice {
-    //                     VoiceType2::NoteIds {
-    //                         note_ids: _,
-    //                         duration: _,
-    //                         stemitem_ids,
-    //                     } => {
-    //                         stemitem_ids.iter().for_each(|stemitem_id| {
-    //                             StemDirectionUtils::set_direction_auto(cx, *stemitem_id);
-    //                         });
-    //                     }
-    //                     _ => {}
-    //                 },
-    //                 HPartType::Music(HPartMusicType::TwoVoices { upper, lower }, _, _) => {
-    //                     match upper {
-    //                         VoiceType2::NoteIds {
-    //                             note_ids: _,
-    //                             duration: _,
-    //                             stemitem_ids,
-    //                         } => {
-    //                             stemitem_ids.iter().for_each(|stemitem_id| {
-    //                                 StemDirectionUtils::set_direction_force(cx, *stemitem_id, DirectionUD::Up);
-    //                             });
-    //                         }
-    //                         _ => {}
-    //                     }
-    //                     match lower {
-    //                         VoiceType2::NoteIds {
-    //                             note_ids: _,
-    //                             duration: _,
-    //                             stemitem_ids,
-    //                         } => {
-    //                             stemitem_ids.iter().for_each(|stemitem_id| {
-    //                                 StemDirectionUtils::set_direction_force(cx, *stemitem_id, DirectionUD::Down);
-    //                             });
-    //                         }
-    //                         _ => {}
-    //                     }
-    //                 }
+        for part_idx in 0..parts_count {
+            let mut ids: Vec<usize> = Vec::new();
+            for column in cx_columns.iter() {
+                let id = match &column.hptype {
+                    HPartItemsColumnType::Musics(ids) | HPartItemsColumnType::Barlines(ids) | HPartItemsColumnType::Clefs(ids) => ids[part_idx],
+                };
+                ids.push(id);
+            }
+            let id = cx.rows.borrow().len();
+            let row: HPartItemsRow = HPartItemsRow { id, hpart_ids: ids, part_idx };
+            cx.rows.borrow_mut().push(row);
+        }
+        dbg!(&cx.rows.borrow());
 
-    //                 _ => {
-    //                     dbg!(&item);
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
+        Ok(())
+    }
 
-    /*
-    pub(crate) fn set_head_positions(cx: &CoreContext) {
+    pub fn set_stemitems_directions(cx: &CoreContext) {
         let hparts = cx.hparts.borrow();
         let rows = cx.rows.borrow();
         for row in rows.iter() {
             for id in row.hpart_ids.iter() {
                 let item = hparts.get(*id).unwrap();
-                dbg!(&item);
-                match &item.parttype {
-                    HPartType::Music(HPartMusicType::OneVoice { voice, complexes: _ }, _) => match voice {
+
+                match &item.hptype {
+                    HPartType::Music(HPartMusicType::OneVoice { voice }, _, _) => match voice {
                         VoiceType2::NoteIds {
                             note_ids: _,
                             duration: _,
@@ -419,7 +387,7 @@ impl Parse2Utils {
                         }
                         _ => {}
                     },
-                    HPartType::Music(HPartMusicType::TwoVoices { upper, lower, complexes: _ }, _) => {
+                    HPartType::Music(HPartMusicType::TwoVoices { upper, lower }, _, _) => {
                         match upper {
                             VoiceType2::NoteIds {
                                 note_ids: _,
@@ -447,11 +415,14 @@ impl Parse2Utils {
                     }
 
                     _ => {
-                        dbg!(&item);
+                        // dbg!(&item);
                     }
                 }
             }
         }
     }
-     */
+
+    pub fn calculate_head_positions(cx: &CoreContext) {
+        HeadPositionUtils::set_head_positions(&cx.stemitems.borrow(), &mut cx.map_head_position.borrow_mut());
+    }
 }

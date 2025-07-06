@@ -33,7 +33,7 @@ pub enum HPartItemsColumnType {
 #[derive(Debug, Clone)]
 pub struct HPartItem {
     pub id: usize,
-    pub parttype: HPartType,
+    pub hptype: HPartType,
     pub position: usize,
     pub duration: usize,
     pub part_idx: usize,

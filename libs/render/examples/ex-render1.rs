@@ -1,34 +1,39 @@
 // cargo watch -q -c --ignore '**/*.svg' -x "run -q --example ex-render1"
 
+use core::context::CoreContext;
 use std::fs;
 
-use graphics::color::Color;
 use grid::{gridcontext::GridContext, griditem::GridItemType};
-use render::gridrender::render_gridcontext_with_color;
+use parse::parse2::Parse2;
+use render::gridrender::Render;
+use score::{build::ScoreUtils2, glyphitem::GlyphItem, scorecontext::ScoreContext};
 
-fn main() {
-    let items = vec![
-        vec![
-            GridItemType::Rectangles(vec![((0.0, 0.0, 5.0, 5.0), Color::Red)]),
-            GridItemType::Empty,
-            GridItemType::Rectangles(vec![((0.0, 0.0, 5.0, 5.0), Color::Orange)]),
-        ],
-        vec![
-            GridItemType::Empty,
-            GridItemType::Rectangles(vec![((0.0, 0.0, 6.0, 5.0), Color::Green)]),
-            GridItemType::Rectangles(vec![((-4.0, 0.0, 8.0, 5.0), Color::Tomato)]),
-        ],
-        vec![
-            GridItemType::Rectangles(vec![((0.0, 0.0, 1.0, 5.0), Color::Green)]),
-            GridItemType::Rectangles(vec![((0.0, 0.0, 2.0, 5.0), Color::Blue)]),
-            GridItemType::Rectangles(vec![((0.0, 0.0, 5.0, 5.0), Color::Purple)]),
-        ],
-    ];
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let cx = CoreContext::new();
+    let _ = Parse2::sysitemlist2(cx, "clef G F | bl", false).unwrap();
 
-    let gcx: &'static GridContext<Color> = GridContext::<Color>::new();
-    gcx.add_items(items);
+    let scx = ScoreContext::new();
+    ScoreUtils2::build(&scx, &cx)?;
+    dbg!(&scx.grid_columns.borrow());
+
+    //-------------------------------------------------
+    // Turn 180 degrees...
+    let items = scx.grid_columns.borrow().to_vec();
+    let mut items2: Vec<Vec<GridItemType<GlyphItem>>> = Vec::new();
+    let rows = items[0].len();
+    for row in 0..rows {
+        let mut rowitems = Vec::new();
+        for col in 0..items.len() {
+            rowitems.push(items[col][row].clone());
+        }
+        items2.push(rowitems);
+    }
+    //-------------------------------------------------
+
+    let gcx = GridContext::<GlyphItem>::new();
+    gcx.add_items(items2);
     gcx.calculate_minimal_col_spacing();
-    // gcx.set_durations(vec![0, 8, 10]); //
+    fs::write("libs/render/examples/ex-render1.svg", Render::render_gridcontext_with_glyphitem(gcx)).unwrap();
 
-    fs::write("libs/render/examples/ex-render1.svg", render_gridcontext_with_color(gcx)).unwrap();
+    Ok(())
 }
