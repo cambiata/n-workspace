@@ -3,6 +3,7 @@ use std::fmt::Debug;
 
 use crate::griditem::{GridColumn, GridItem, GridItemType, GridRow};
 use graphics::rectangle::{rectangles_overlap_x, Rectangle};
+use utils::f32_ext::round::F32ExtRound2;
 
 #[derive(Debug)]
 pub struct GridContext<T>
@@ -192,7 +193,7 @@ where
             let minimal_width = overlaps[idx + 1];
             let calculated_width = linear(*duration);
             if calculated_width > minimal_width {
-                overlaps[idx + 1] = calculated_width
+                overlaps[idx + 1] = calculated_width.r2();
             }
         }
         dbg!(&overlaps);
