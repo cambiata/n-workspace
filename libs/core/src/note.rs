@@ -19,6 +19,7 @@ pub struct NoteItem {
     pub position: usize,
     pub duration: NoteDuration,
     pub ntype: NoteType,
+    // pub direction: Option<DirectionUD>,
 }
 
 impl NoteItem {

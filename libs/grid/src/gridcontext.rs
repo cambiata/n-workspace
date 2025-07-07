@@ -174,6 +174,29 @@ where
             }
         }
     }
+
+    pub fn calculate_duraction_col_spacing(&self, durations: Vec<usize>) {
+        *self.cols_durations.borrow_mut() = durations;
+        dbg!(self.cols_durations.borrow());
+        dbg!(self.cols_overlaps.borrow());
+
+        let durations = self.cols_durations.borrow_mut();
+        let mut overlaps = self.cols_overlaps.borrow_mut();
+        let mut overlaps2: Vec<f32> = overlaps.iter().map(|d| *d as f32).collect();
+
+        fn linear(dur: usize) -> f32 {
+            dur as f32 * 1.2 // Scale factor for spacing
+        }
+
+        for (idx, duration) in durations.iter().enumerate() {
+            let minimal_width = overlaps[idx + 1];
+            let calculated_width = linear(*duration);
+            if calculated_width > minimal_width {
+                overlaps[idx + 1] = calculated_width
+            }
+        }
+        dbg!(&overlaps);
+    }
 }
 
 type PrevRectData = Option<(usize, Vec<Rectangle>)>;

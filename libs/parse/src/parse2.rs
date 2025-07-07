@@ -2,7 +2,7 @@ use core::{
     context::CoreContext,
     duration::{NoteDuration, SumDuration},
     hpart::VoiceType2,
-    stems::{headpositions::HeadPositionUtils, stemitems::StemItemUtils},
+    stems::stemitems::StemItemUtils,
     sysitem::SysItemTypeId,
 };
 use std::error::Error;
@@ -37,8 +37,11 @@ impl Parse2 {
         Parse2Utils::correct_to_parts_count(&mut bpvmap, parts_count);
         Parse2Utils::create_columns_of_parts2(cx, &mut bpvmap, parts_count)?;
         Parse2Utils::create_rows_from_columns(cx)?;
-        Parse2Utils::set_stemitems_directions(cx);
-        Parse2Utils::calculate_head_positions(cx);
+        Parse2Utils::set_stemitems_directions(cx)?;
+        Parse2Utils::calculate_head_positions(cx)?;
+        Parse2Utils::map_notes_by_voices(cx)?;
+        Parse2Utils::resolve_ties_from(cx)?;
+        Parse2Utils::resolve_ties_to(cx)?;
 
         Ok(())
     }

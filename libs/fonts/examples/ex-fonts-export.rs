@@ -19,7 +19,10 @@ pub fn main() {
         (119, "NOTEHEAD_WHOLE".to_string()),
         (729, "NOTEHEAD_WHITE".to_string()),
         (339, "NOTEHEAD_BLACK".to_string()),
-        (338, "PAUSE_QUARTER".to_string()),
+        (338, "REST_QUARTER".to_string()),
+        (61668, "REST_EIGHTH".to_string()),
+        (61637, "REST_SIXTEENTH".to_string()),
+        (61623, "REST_HALF".to_string()),
         (61, "FIVELINES".to_string()),
     ]);
 

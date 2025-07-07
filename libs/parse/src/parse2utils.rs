@@ -8,6 +8,7 @@ use core::{
     key::KeySignature,
     stems::{headpositions::HeadPositionUtils, stemdirections::StemDirectionUtils},
     sysitem::SysItemTypeId,
+    ties::{CheckedTieFrom, CheckedTieTo, TieFrom},
     time::{TimeDenominator, TimeNominator, TimeSignature},
 };
 use std::{collections::HashMap, error::Error};
@@ -374,7 +375,7 @@ impl Parse2Utils {
         Ok(())
     }
 
-    pub fn set_stemitems_directions(cx: &CoreContext) {
+    pub fn set_stemitems_directions(cx: &CoreContext) -> Result<(), Box<dyn Error>> {
         let hparts = cx.hparts.borrow();
         let rows = cx.rows.borrow();
         for row in rows.iter() {
@@ -435,9 +436,140 @@ impl Parse2Utils {
                 }
             }
         }
+        Ok(())
     }
 
-    pub fn calculate_head_positions(cx: &CoreContext) {
+    pub fn calculate_head_positions(cx: &CoreContext) -> Result<(), Box<dyn Error>> {
         HeadPositionUtils::set_head_positions(&cx.stemitems.borrow(), &mut cx.map_head_position.borrow_mut());
+        Ok(())
+    }
+
+    pub fn map_notes_by_voices(cx: &CoreContext) -> Result<(), Box<dyn Error>> {
+        let rows = cx.rows.borrow();
+        let hparts = cx.hparts.borrow();
+
+        let mut map_notids_per_voice = cx.map_notids_per_voice.borrow_mut();
+        let mut map_stemitem_ids_per_voice = cx.map_stemitem_ids_per_voice.borrow_mut();
+
+        for (_part_idx, row) in rows.iter().enumerate() {
+            let hpart_ids = &row.hpart_ids;
+            for hpart_id in hpart_ids.iter() {
+                let hpart = hparts.get(*hpart_id).unwrap();
+                match &hpart.hptype {
+                    HPartType::Music { mtype, complexes: _, attr: _ } => match mtype {
+                        HPartMusicType::OneVoice { voice } => {
+                            if let VoiceType2::NoteIds { note_ids, duration: _, stemitem_ids } = voice {
+                                map_notids_per_voice.entry((hpart.part_idx, 0)).or_insert_with(Vec::new).extend(note_ids.iter().cloned());
+                                map_stemitem_ids_per_voice.entry((hpart.part_idx, 0)).or_insert_with(Vec::new).extend(stemitem_ids.iter().cloned());
+                            }
+                        }
+                        HPartMusicType::TwoVoices { upper, lower } => {
+                            if let VoiceType2::NoteIds { note_ids, duration: _, stemitem_ids } = upper {
+                                map_notids_per_voice.entry((hpart.part_idx, 0)).or_insert_with(Vec::new).extend(note_ids.iter().cloned());
+                                map_stemitem_ids_per_voice.entry((hpart.part_idx, 0)).or_insert_with(Vec::new).extend(stemitem_ids.iter().cloned());
+                            }
+                            if let VoiceType2::NoteIds { note_ids, duration: _, stemitem_ids } = lower {
+                                map_notids_per_voice.entry((hpart.part_idx, 1)).or_insert_with(Vec::new).extend(note_ids.iter().cloned());
+                                map_stemitem_ids_per_voice.entry((hpart.part_idx, 1)).or_insert_with(Vec::new).extend(stemitem_ids.iter().cloned());
+                            }
+                        }
+                    },
+                    _ => {}
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    pub fn resolve_ties_to(_cx: &CoreContext) -> Result<(), Box<dyn Error>> {
+        // let map_notids_per_voice = cx.map_notids_per_voice.borrow();
+        // let map_ties_to = cx.map_noteid_tiesto.borrow_mut();
+        // let notes = cx.notes.borrow();
+
+        // for (part_idx, voice_idx) in map_notids_per_voice.keys() {
+        //     let note_ids = map_notids_per_voice.get(&(*part_idx, *voice_idx)).unwrap();
+
+        //     for note_id in note_ids {
+        //         if map_ties_to.contains_key(&note_id) {
+        //             dbg!(&note_id);
+
+        //             let levels = map_ties_to.get(note_id).ok_or("Note has no ties to")?;
+        //             dbg!(&levels);
+        //             for level in levels.iter() {
+        //                 match level {
+        //                     TieTo::Level(level) => {
+        //                         // already has resolved tie to?
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+
+        Ok(())
+    }
+
+    pub fn resolve_ties_from(cx: &CoreContext) -> Result<(), Box<dyn Error>> {
+        let map_notids_per_voice = cx.map_notids_per_voice.borrow();
+        let map_ties_from = cx.map_noteid_tiesfrom.borrow_mut();
+        let notes = cx.notes.borrow();
+
+        for (part_idx, voice_idx) in map_notids_per_voice.keys() {
+            let note_ids = map_notids_per_voice.get(&(*part_idx, *voice_idx)).unwrap();
+
+            for n in note_ids.windows(2) {
+                let left_id = n[0];
+                let right_id = n[1];
+                if map_ties_from.contains_key(&left_id) {
+                    // Note has ties from
+                    let left_tied_levels = map_ties_from.get(&left_id).ok_or("Left note has no ties from")?;
+
+                    let right_note = notes.get(right_id).ok_or("Right note not found")?;
+                    if let Some(right_head_levels) = right_note.get_head_levels() {
+                        // dbg!(&left_tied_levels, &right_head_levels);
+                        for left_tied_level in left_tied_levels.iter() {
+                            match left_tied_level {
+                                TieFrom::Level(left_level) => {
+                                    if right_head_levels.contains(left_level) {
+                                        // Found a tie resolution
+                                        let tie_to = CheckedTieTo::Resolved(*left_level);
+                                        cx.map_noteid_resolvedtiesto.borrow_mut().entry(left_id).or_insert_with(Vec::new).push(tie_to);
+                                        let tie_from = CheckedTieFrom::Resolved(*left_level);
+                                        cx.map_noteid_resolvedtiesfrom.borrow_mut().entry(right_id).or_insert_with(Vec::new).push(tie_from);
+                                    } else {
+                                        // Did not find a tie resolution
+                                        let tie_to = CheckedTieTo::Unresolved(*left_level);
+                                        cx.map_noteid_resolvedtiesto.borrow_mut().entry(left_id).or_insert_with(Vec::new).push(tie_to);
+                                    }
+                                } // _ => {
+                                  //     todo!("Handle other TieFrom types");
+                                  // }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Handle very last note in the voice
+            if let Some(last_id) = note_ids.last() {
+                if map_ties_from.contains_key(last_id) {
+                    // Note has ties from
+                    let left_tied_levels = map_ties_from.get(last_id).ok_or("Last note has no ties from")?;
+                    for left_tied_level in left_tied_levels.iter() {
+                        match left_tied_level {
+                            TieFrom::Level(left_level) => {
+                                let tie_to = CheckedTieTo::Unresolved(*left_level);
+                                cx.map_noteid_resolvedtiesto.borrow_mut().entry(*last_id).or_insert_with(Vec::new).push(tie_to);
+                            } // _ => {
+                              //     todo!("Handle other TieFrom types");
+                              // }
+                        }
+                    }
+                }
+            }
+        }
+
+        Ok(())
     }
 }

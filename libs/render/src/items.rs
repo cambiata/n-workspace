@@ -1,4 +1,4 @@
-use core::{accidental::Accidental, clef::ClefSignature, head::HeadType};
+use core::{accidental::Accidental, clef::ClefSignature, head::HeadType, rest::RestType};
 
 use graphics::{color::Color, fill::Fill, graphicitem::GraphicItem, rectangle::Rectangle, stroke::Stroke};
 use score::{
@@ -8,6 +8,7 @@ use score::{
 
 use crate::music_glyphs::{
     GLYPH_ACCIDENTAL_FLAT, GLYPH_ACCIDENTAL_NATURAL, GLYPH_ACCIDENTAL_SHARP, GLYPH_CLEF_BASS, GLYPH_CLEF_TREBLE, GLYPH_FIVELINES, GLYPH_NOTEHEAD_BLACK, GLYPH_NOTEHEAD_WHITE, GLYPH_NOTEHEAD_WHOLE,
+    GLYPH_REST_EIGHTH, GLYPH_REST_HALF, GLYPH_REST_QUARTER, GLYPH_REST_SIXTEENTH,
 };
 
 pub fn get_graphic_items_from_glyph(movex: f32, movey: f32, rect: &Rectangle, glyph: &GlyphItem) -> Vec<GraphicItem> {
@@ -86,6 +87,25 @@ pub fn get_graphic_items_from_glyph(movex: f32, movey: f32, rect: &Rectangle, gl
                 curve.to_vec(),
                 rect.0 + movex,
                 rect.1 + movey + y_zero + y,
+                Stroke::None,
+                Fill::Solid(Color::Black),
+                None,
+            ));
+        }
+        GlyphItem::Rest(rtype) => {
+            let path = match rtype {
+                // score::rest::RestType::Brevis => GLYPH_NOTEHEAD_WHOLE,
+                RestType::Whole => GLYPH_REST_HALF,
+                RestType::Half => GLYPH_REST_HALF,
+                RestType::Eighth => GLYPH_REST_EIGHTH,
+                RestType::Sixteenth => GLYPH_REST_SIXTEENTH,
+                _ => GLYPH_REST_QUARTER,
+            };
+
+            graphic_items.push(GraphicItem::Path(
+                path.to_vec(),
+                rect.0 + movex,
+                rect.1 + movey + y_zero - SPACE3,
                 Stroke::None,
                 Fill::Solid(Color::Black),
                 None,

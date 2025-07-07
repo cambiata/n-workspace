@@ -1,7 +1,7 @@
 use core::{
     context::CoreContext,
     sysitem::{SysitemId, SysitemPosition, VecPartNotes},
-    ties::{ResolvedTieFrom, ResolvedTieTo, TieFrom},
+    ties::{CheckedTieFrom, CheckedTieTo, TieFrom},
 };
 use std::error::Error;
 
@@ -96,11 +96,11 @@ fn handle_tie_pair(
                         if levels_to.contains(left_level) {
                             println!("Tie detected between note {} and note {} at level {}", left_id, right_id, left_level);
                             // Store resolved from left_id and to right_id
-                            cx.map_noteid_resolvedtiesfrom.borrow_mut().entry(left_id).or_default().push(ResolvedTieFrom::Resolved(*left_level));
-                            cx.map_noteid_resolvedtiesto.borrow_mut().entry(right_id).or_default().push(ResolvedTieTo::Level(*left_level));
+                            cx.map_noteid_resolvedtiesfrom.borrow_mut().entry(left_id).or_default().push(CheckedTieFrom::Resolved(*left_level));
+                            cx.map_noteid_resolvedtiesto.borrow_mut().entry(right_id).or_default().push(CheckedTieTo::Resolved(*left_level));
                         } else {
                             println!("No tie found for level: {}", left_level);
-                            cx.map_noteid_resolvedtiesfrom.borrow_mut().entry(left_id).or_default().push(ResolvedTieFrom::Unresolved(*left_level));
+                            cx.map_noteid_resolvedtiesfrom.borrow_mut().entry(left_id).or_default().push(CheckedTieFrom::Unresolved(*left_level));
                         }
                     }
                 }

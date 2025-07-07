@@ -2,6 +2,7 @@ use std::collections::BTreeMap;
 
 use crate::{
     context::CoreContext,
+    direction::DirectionUD,
     note::{NoteId, NoteItem, NoteType},
     part::{PartId, PartType},
     voice::VoiceType,
@@ -33,6 +34,12 @@ pub enum ComplexHeadOffsets {
     UpperX(f32),
     LowerX(f32),
     UpperLowerX(f32, f32),
+}
+
+#[derive(Debug, Clone)]
+pub enum ComplexConfiguration {
+    OneNote,
+    TwoNotes(DirectionUD),
 }
 
 pub type ComplexInfo = (usize, usize, usize);

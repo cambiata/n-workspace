@@ -27,12 +27,13 @@ impl TieFrom {
 }
 
 #[derive(Debug)]
-pub enum ResolvedTieFrom {
+pub enum CheckedTieFrom {
     Resolved(i8),
     Unresolved(i8),
 }
 
 #[derive(Debug)]
-pub enum ResolvedTieTo {
-    Level(i8),
+pub enum CheckedTieTo {
+    Resolved(i8),
+    Unresolved(i8),
 }

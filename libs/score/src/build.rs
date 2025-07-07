@@ -2,13 +2,15 @@ use core::{
     accidental::Accidental,
     barline::BarlineType,
     clef::ClefSignature,
-    complex::{self, ComplexType},
+    complex::{self, ComplexConfiguration, ComplexType},
     context::CoreContext,
+    direction::DirectionUD,
     duration::NoteDuration,
     head::{HeadItem, HeadType, HeadVariant},
     hpart::{HPartItemsColumnType, HPartType},
     note::{NoteItem, NoteType},
     stems::stemitems::StemHeadPosition,
+    ties::CheckedTieTo,
 };
 
 use graphics::{
@@ -32,7 +34,7 @@ use crate::{
 pub struct Build;
 impl Build {
     pub fn build(scx: &ScoreContext, cx: &CoreContext) -> Result<(), Box<dyn std::error::Error>> {
-        for (column_idx, item) in cx.columns.borrow().iter().enumerate() {
+        for (_column_idx, item) in cx.columns.borrow().iter().enumerate() {
             match item.hptype {
                 HPartItemsColumnType::Clefs(ref ids) => {
                     Self::build_clefs(scx, cx, ids.clone())?;
@@ -41,10 +43,8 @@ impl Build {
                     Self::build_barlines(scx, cx, ids.clone())?;
                 }
                 HPartItemsColumnType::Musics(ref ids) => {
-                    Self::build_musics(scx, cx, ids.clone())?;
+                    Self::build_musics(scx, cx, ids.clone(), item.position, item.duration)?;
                 }
-
-                _ => {}
             }
         }
 
@@ -73,6 +73,7 @@ impl Build {
             }
         });
         scx.grid_columns.borrow_mut().push(column_griditems);
+        scx.grid_column_duration.borrow_mut().push(0);
         Ok(())
     }
 
@@ -96,27 +97,28 @@ impl Build {
             }
         });
         scx.grid_columns.borrow_mut().push(column_griditems);
+        scx.grid_column_duration.borrow_mut().push(0);
         Ok(())
     }
 
-    fn build_musics(scx: &ScoreContext, cx: &CoreContext, ids: Vec<usize>) -> Result<(), Box<dyn std::error::Error>> {
+    fn build_musics(scx: &ScoreContext, cx: &CoreContext, ids: Vec<usize>, _position: usize, duration: usize) -> Result<(), Box<dyn std::error::Error>> {
         let cx_hparts = cx.hparts.borrow();
         let cx_complexes = cx.complexes.borrow();
         let hparts = ids.iter().map(|id| &cx_hparts[*id]).collect::<Vec<_>>();
         let parts_count = hparts.len();
-        let (positions, map, map_ids) = BuildUtils::get_complexes_information(cx, &hparts)?;
+        let (positions, durations, map_ids) = BuildUtils::get_complexes_information(cx, &hparts, duration)?;
 
-        for position in positions {
+        for (idx, position) in positions.iter().enumerate() {
             // each position corresponds to a column in the grid
             let mut column_griditems: Vec<GridItemType<GlyphItem>> = Vec::new();
 
             for part_idx in 0..parts_count {
-                if map_ids.contains_key(&(part_idx, position)) {
-                    if let Some(complex_id) = map_ids.get(&(part_idx, position)) {
-                        dbg!(position, part_idx, complex_id);
+                if map_ids.contains_key(&(part_idx, *position)) {
+                    if let Some(complex_id) = map_ids.get(&(part_idx, *position)) {
+                        // dbg!(position, part_idx, complex_id);
                         let complex = &cx_complexes[*complex_id];
-                        dbg!(complex);
-                        let rects = Build::build_complex(cx, complex, part_idx, position)?;
+                        // dbg!(complex);
+                        let rects = Build::build_complex(cx, complex, part_idx, *position)?;
 
                         column_griditems.push(GridItemType::Rectangles(rects));
                     } else {
@@ -127,7 +129,10 @@ impl Build {
                 }
             }
             scx.grid_columns.borrow_mut().push(column_griditems);
+            scx.grid_column_duration.borrow_mut().push(durations[idx]);
         }
+        dbg!(&scx.grid_column_duration.borrow());
+
         Ok(())
     }
 
@@ -136,32 +141,49 @@ impl Build {
 
         match &complex.ctype {
             ComplexType::Upper(note) | ComplexType::Lower(note) => {
-                let rs = Build::build_notetype(cx, note, part_idx, position)?;
+                let rs = Build::build_notetype(cx, note, part_idx, position, None, ComplexConfiguration::OneNote)?;
+
                 let leftmost_head_x: f32 = leftmost_x(&rs);
                 rects.extend(rs);
 
+                //------------------------
+                // accidentals
                 let mut accidentals = collect_accidentals(note);
                 sort_accidentals(&mut accidentals);
                 let leftmost_accidental_x = create_glyphsrectangles_accidentals(&accidentals, &mut rects);
 
+                //---------------------------
+                // extra space for first complex
                 if note.position == 0 {
                     rects.push(create_space_rectangle_for_first_note_in_bar(leftmost_accidental_x.min(leftmost_head_x)));
                 }
             }
-            ComplexType::UpperAndLower(upper, lower, diffx) => {
-                let rs = Build::build_notetype(cx, upper, part_idx, position)?;
+            ComplexType::UpperAndLower(upper, lower, _) => {
+                // get values to avoid collisions with rests
+                let upper_bottom_y = get_upper_bottom_level(upper) * SPACE_HALF;
+                let lower_top_y = get_lower_top_level(lower) * SPACE_HALF;
+
+                //------------------------
+                // upper
+                let rs = Build::build_notetype(cx, upper, part_idx, position, Some(lower_top_y), ComplexConfiguration::TwoNotes(DirectionUD::Up))?;
                 let leftmost_upper_x: f32 = leftmost_x(&rs);
                 rects.extend(rs);
-                let rs = Build::build_notetype(cx, lower, part_idx, position)?;
+
+                //------------------------
+                // lower
+                let rs = Build::build_notetype(cx, lower, part_idx, position, Some(upper_bottom_y), ComplexConfiguration::TwoNotes(DirectionUD::Down))?;
                 let leftmost_lower_x: f32 = leftmost_x(&rs);
                 rects.extend(rs);
 
+                //------------------------
+                // accidentals
                 let mut accidentals = collect_accidentals(upper);
                 accidentals.extend(collect_accidentals(lower));
                 sort_accidentals(&mut accidentals);
-
                 let leftmost_accidental_x = create_glyphsrectangles_accidentals(&accidentals, &mut rects);
 
+                //---------------------------
+                // extra space for first complex
                 if upper.position == 0 {
                     rects.push(create_space_rectangle_for_first_note_in_bar(leftmost_accidental_x.min(leftmost_upper_x.min(leftmost_lower_x))));
                 }
@@ -179,16 +201,23 @@ impl Build {
         Ok(rects)
     }
 
-    fn build_notetype(cx: &CoreContext, note: &NoteItem, part_idx: usize, position: usize) -> Result<Vec<(Rectangle, GlyphItem)>, Box<dyn std::error::Error>> {
+    fn build_notetype(
+        cx: &CoreContext,
+        note: &NoteItem,
+        part_idx: usize,
+        position: usize,
+        y_rest_offset: Option<f32>,
+        cplx_config: ComplexConfiguration,
+    ) -> Result<Vec<(Rectangle, GlyphItem)>, Box<dyn std::error::Error>> {
         let mut rects: Vec<(Rectangle, GlyphItem)> = Vec::new();
 
         match note.ntype {
             core::note::NoteType::Heads(ref heads) => {
-                let rs = Build::build_heads(cx, note, heads, part_idx, position)?;
+                let rs = Build::build_heads(cx, note, heads, part_idx, position, cplx_config)?;
                 rects.extend(rs);
             }
             core::note::NoteType::Rest => {
-                let rs = Build::build_rest(cx, note, part_idx, position)?;
+                let rs = Build::build_rest(cx, note, part_idx, position, y_rest_offset)?;
                 rects.extend(rs);
             }
             core::note::NoteType::LyricItem => {
@@ -199,23 +228,47 @@ impl Build {
         Ok(rects)
     }
 
-    fn build_heads(cx: &CoreContext, note: &NoteItem, heads: &[HeadItem], part_idx: usize, position: usize) -> Result<Vec<(Rectangle, GlyphItem)>, Box<dyn std::error::Error>> {
+    fn build_heads(
+        cx: &CoreContext,
+        note: &NoteItem,
+        heads: &[HeadItem],
+        part_idx: usize,
+        position: usize,
+        cplx_config: ComplexConfiguration,
+    ) -> Result<Vec<(Rectangle, GlyphItem)>, Box<dyn std::error::Error>> {
         let mut rects: Vec<(Rectangle, GlyphItem)> = Vec::new();
         for head in heads {
-            let rs = Build::build_head(cx, note, head, part_idx, position)?;
+            let rs = Build::build_head(cx, note, head, heads, part_idx, position, cplx_config.clone())?;
             rects.extend(rs);
         }
         Ok(rects)
     }
 
-    fn build_rest(cx: &CoreContext, note: &NoteItem, part_idx: usize, position: usize) -> Result<Vec<(Rectangle, GlyphItem)>, Box<dyn std::error::Error>> {
+    fn build_rest(_cx: &CoreContext, note: &NoteItem, _part_idx: usize, _position: usize, y_rest_offset: Option<f32>) -> Result<Vec<(Rectangle, GlyphItem)>, Box<dyn std::error::Error>> {
         let mut rects: Vec<(Rectangle, GlyphItem)> = Vec::new();
+
+        let y_offset = y_rest_offset.unwrap_or(0.0);
+
+        let rect: Rectangle = (0., -SPACE + y_offset, SPACE, SPACE2);
+        let item: GlyphItem = GlyphItem::Rest(note.duration.get_rest_type());
+        rects.push((rect, item));
+
         Ok(rects)
     }
 
-    fn build_head(cx: &CoreContext, note: &NoteItem, head: &HeadItem, part_idx: usize, position: usize) -> Result<Vec<(Rectangle, GlyphItem)>, Box<dyn std::error::Error>> {
+    fn build_head(
+        cx: &CoreContext,
+        note: &NoteItem,
+        head: &HeadItem,
+        _heads: &[HeadItem],
+        _part_idx: usize,
+        _position: usize,
+        _cplx_config: ComplexConfiguration,
+    ) -> Result<Vec<(Rectangle, GlyphItem)>, Box<dyn std::error::Error>> {
         let mut rects: Vec<(Rectangle, GlyphItem)> = Vec::new();
 
+        //--------------------------------------------
+        // The head itself
         let cx_map_head_position = cx.map_head_position.borrow();
         let head_x: f32 = if !cx_map_head_position.contains_key(&head.id) {
             0.
@@ -226,13 +279,110 @@ impl Build {
                 StemHeadPosition::Right => get_head_width(&note.duration),
             }
         };
-        let level_y: f32 = head.level as f32 * SPACE_HALF;
-        let rect: Rectangle = (head_x, -SPACE_HALF + level_y, get_head_width(&note.duration), SPACE);
+        let head_y: f32 = head.level as f32 * SPACE_HALF;
+
+        let head_width = get_head_width(&note.duration);
+        let rect: Rectangle = (head_x, -SPACE_HALF + head_y, head_width, SPACE);
         let item: GlyphItem = GlyphItem::Notehead(note.duration.get_head_type(), HeadVariant::Normal);
         rects.push((rect, item));
 
+        //---------------------------------------
+        // dotted durations
+        if note.duration.is_dotted() {
+            let mut color = Color::Lime;
+            let mut _dot_y = 0.0;
+
+            if let Some(direction) = cx.map_noteid_direction.borrow().get(&note.id).cloned() {
+                match direction {
+                    DirectionUD::Up => {
+                        color = Color::DodgerBlue;
+                    }
+                    DirectionUD::Down => {
+                        color = Color::Tomato;
+                    }
+                }
+            }
+
+            let rect: Rectangle = (head_x + head_width, -SPACE_HALF + head_y + _dot_y, SPACE, SPACE);
+            let item: GlyphItem = GlyphItem::XRect(color);
+            rects.push((rect, item));
+        }
+
+        //---------------------------------------
+        // Ties
+        if let Some(ties_from) = cx.map_noteid_resolvedtiesto.borrow().get(&note.id) {
+            let found = ties_from.iter().find(|tie| match tie {
+                CheckedTieTo::Resolved(level) | CheckedTieTo::Unresolved(level) => *level == head.level,
+            });
+            if let Some(found) = found {
+                match found {
+                    CheckedTieTo::Resolved(level) => {
+                        let rect: Rectangle = (head_x + head_width, -SPACE_HALF + *level as f32 * SPACE_HALF, SPACE, SPACE);
+                        let item: GlyphItem = GlyphItem::XRect(Color::Green);
+                        rects.push((rect, item));
+                    }
+                    CheckedTieTo::Unresolved(level) => {
+                        let rect: Rectangle = (head_x + head_width, -SPACE_HALF + *level as f32 * SPACE_HALF, SPACE, SPACE);
+                        let item: GlyphItem = GlyphItem::XRect(Color::Tomato);
+                        rects.push((rect, item));
+                    }
+                }
+            }
+
+            // if let Some(found) = found {
+            //     match found {
+            //         CheckedTieTo::Resolved(level) => {
+            //             let rect: Rectangle = (head_x + head_width, -SPACE_HALF + *level as f32 * SPACE_HALF, SPACE, SPACE);
+            //             let item: GlyphItem = GlyphItem::XRect(Color::Green);
+            //             rects.push((rect, item));
+            //         }
+            //         CheckedTieTo::Unresolved(level) => {
+            //             let rect: Rectangle = (head_x + head_width, -SPACE_HALF + *level as f32 * SPACE_HALF, SPACE, SPACE);
+            //             let item: GlyphItem = GlyphItem::XRect(Color::Tomato);
+            //             rects.push((rect, item));
+            //         }
+            //     }
+            // }
+        }
+
+        //---------------------------------------
+
         Ok(rects)
     }
+}
+
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+
+fn get_upper_bottom_level(upper: &NoteItem) -> f32 {
+    let level = match upper.ntype {
+        NoteType::Heads(ref heads) => {
+            let head_level = heads.last().unwrap().level + 5;
+            let level_mod = head_level % 2;
+            let head_level2 = head_level + level_mod;
+            dbg!(&head_level, &level_mod, &head_level2);
+            head_level2 as f32
+        }
+        NoteType::Rest => 0.0,
+        _ => 2.0,
+    };
+    level.max(4.0)
+}
+
+fn get_lower_top_level(lower: &NoteItem) -> f32 {
+    let level = match lower.ntype {
+        NoteType::Heads(ref heads) => {
+            let head_level = heads.first().unwrap().level - 6;
+            let level_mod = head_level % 2;
+            let head_level2 = head_level - level_mod;
+            head_level2 as f32
+        }
+        NoteType::Rest => -0.0,
+        _ => -2.0,
+    };
+    level.min(-4.0)
 }
 
 fn leftmost_x(rs: &[(Rectangle, GlyphItem)]) -> f32 {

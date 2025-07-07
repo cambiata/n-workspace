@@ -2,13 +2,14 @@ use std::{cell::RefCell, collections::BTreeMap};
 
 use crate::{
     complex::{Complex, ComplexId},
+    direction::DirectionUD,
     head::{HeadId, HeadItem},
     hpart::{HPartItem, HPartItemsColumn, HPartItemsRow},
     note::{NoteId, NoteItem},
     part::PartItem,
     stems::stemitems::{StemHeadPosition, StemItem},
     sysitem::SysItem,
-    ties::{ResolvedTieFrom, ResolvedTieTo, TieFrom, TieTo},
+    ties::{CheckedTieFrom, CheckedTieTo, TieFrom, TieTo},
 };
 
 #[derive(Debug)]
@@ -23,11 +24,16 @@ pub struct CoreContext {
     pub hparts: RefCell<Vec<HPartItem>>,
     pub columns: RefCell<Vec<HPartItemsColumn>>,
     pub rows: RefCell<Vec<HPartItemsRow>>,
+
+    pub map_notids_per_voice: RefCell<BTreeMap<(usize, usize), Vec<usize>>>,
+    pub map_stemitem_ids_per_voice: RefCell<BTreeMap<(usize, usize), Vec<usize>>>,
+
     pub map_head_position: RefCell<BTreeMap<HeadId, StemHeadPosition>>,
+    pub map_noteid_direction: RefCell<BTreeMap<NoteId, DirectionUD>>,
     pub map_noteid_tiesto: RefCell<BTreeMap<NoteId, Vec<TieTo>>>,
     pub map_noteid_tiesfrom: RefCell<BTreeMap<NoteId, Vec<TieFrom>>>,
-    pub map_noteid_resolvedtiesto: RefCell<BTreeMap<NoteId, Vec<ResolvedTieTo>>>,
-    pub map_noteid_resolvedtiesfrom: RefCell<BTreeMap<NoteId, Vec<ResolvedTieFrom>>>,
+    pub map_noteid_resolvedtiesto: RefCell<BTreeMap<NoteId, Vec<CheckedTieTo>>>,
+    pub map_noteid_resolvedtiesfrom: RefCell<BTreeMap<NoteId, Vec<CheckedTieFrom>>>,
 }
 
 impl CoreContext {
@@ -46,7 +52,11 @@ impl CoreContext {
             columns: RefCell::new(Vec::new()),
             rows: RefCell::new(Vec::new()),
 
+            map_notids_per_voice: RefCell::new(BTreeMap::new()),
+            map_stemitem_ids_per_voice: RefCell::new(BTreeMap::new()),
+
             map_head_position: RefCell::new(BTreeMap::new()),
+            map_noteid_direction: RefCell::new(BTreeMap::new()),
             map_noteid_tiesto: RefCell::new(BTreeMap::new()),
             map_noteid_tiesfrom: RefCell::new(BTreeMap::new()),
             map_noteid_resolvedtiesto: RefCell::new(BTreeMap::new()),

@@ -33,6 +33,13 @@ impl NoteDuration {
         }
     }
 
+    pub fn is_dotted(self) -> bool {
+        match self {
+            NoteDuration::D1Dot | NoteDuration::D2Dot | NoteDuration::D4Dot | NoteDuration::D8Dot | NoteDuration::D16Dot => true,
+            _ => false,
+        }
+    }
+
     #[allow(dead_code)]
     pub fn has_stem(self) -> bool {
         match self {

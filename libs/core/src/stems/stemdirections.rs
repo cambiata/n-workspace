@@ -13,15 +13,19 @@ impl StemDirectionUtils {
         let mut cx_stemitems = cx.stemitems.borrow_mut();
         let stemitem = cx_stemitems.get_mut(stemitem_id).unwrap();
         match stemitem.stype {
-            StemType::NoteWithStem(ref item) => {
+            StemType::NoteWithStem(ref mut item) => {
                 let direction = DirectionUAD::from_level(item.bottom_level + item.top_level);
-                stemitem.direction = Some(direction);
+                stemitem.direction = Some(direction.clone());
+                cx.map_noteid_direction.borrow_mut().insert(item.note.id, direction.clone());
             }
-            StemType::NotesBeamed(ref items) => {
+            StemType::NotesBeamed(ref mut items) => {
                 let top_level = items.iter().map(|item| item.top_level).min().unwrap();
                 let bottom_level = items.iter().map(|item| item.bottom_level).max().unwrap();
                 let direction = DirectionUAD::from_level(bottom_level + top_level);
-                stemitem.direction = Some(direction);
+                stemitem.direction = Some(direction.clone());
+                for item in items.iter_mut() {
+                    cx.map_noteid_direction.borrow_mut().insert(item.note.id, direction.clone());
+                }
             }
             _ => {}
         }
@@ -30,7 +34,19 @@ impl StemDirectionUtils {
     pub fn set_direction_force(cx: &CoreContext, stemitem_id: usize, force_direction: DirectionUD) {
         let mut cx_stemitems = cx.stemitems.borrow_mut();
         let stemitem = cx_stemitems.get_mut(stemitem_id).unwrap();
-        stemitem.direction = Some(force_direction);
+        stemitem.direction = Some(force_direction.clone());
+
+        match stemitem.stype {
+            StemType::NoteWithStem(ref mut item) => {
+                cx.map_noteid_direction.borrow_mut().insert(item.note.id, force_direction.clone());
+            }
+            StemType::NotesBeamed(ref mut items) => {
+                for item in items.iter_mut() {
+                    cx.map_noteid_direction.borrow_mut().insert(item.note.id, force_direction.clone());
+                }
+            }
+            _ => {}
+        }
     }
 }
 

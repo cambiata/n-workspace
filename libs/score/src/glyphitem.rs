@@ -26,6 +26,8 @@ pub enum GlyphItem {
 
     Accidental(Accidental),
     Clef(ClefSignature),
+    // TieFromResolved(i8),
+    // TieFromUnresolved(i8),
 }
 
 pub type GlyphRectangle = (Rectangle, GlyphItem);

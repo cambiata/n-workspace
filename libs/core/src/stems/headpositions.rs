@@ -1,5 +1,4 @@
 use crate::{
-    context::CoreContext,
     direction::DirectionUD,
     stems::stemitems::{StemHeadPosition, StemItem, StemType},
 };
