@@ -1,3 +1,4 @@
+use crate::items::get_graphic_items_from_glyph;
 use graphics::{
     color::Color,
     fill::Fill,
@@ -8,15 +9,12 @@ use grid::{gridcontext::GridContext, griditem::GridItemType};
 use score::{constants::SPACE6, glyphitem::GlyphItem};
 use svg::svg_renderer::SvgBuilder;
 
-use crate::items::get_graphic_items_from_glyph;
-
 pub struct Render;
 impl Render {
     pub fn render_gridcontext_with_glyphitem(cx: &'static GridContext<GlyphItem>) -> String {
         let mut graphic_items = GraphicItems::new();
         let cx_rows = &cx.rows.borrow();
         let cx_cols_overlaps = &cx.cols_widths.borrow();
-
         let mut move_y = 0.0;
 
         for row in cx_rows.iter() {

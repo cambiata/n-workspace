@@ -2,7 +2,7 @@
 
 use core::context::CoreContext;
 use parse::parse2::Parse2;
-use score::{build::Build, scorecontext::ScoreContext};
+use score::{build::BuildScore, scorecontext::ScoreContext};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cx = CoreContext::new();
@@ -11,7 +11,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let scx = ScoreContext::new();
     // scx.build_sysitems(&cx.sysitems.borrow(), &cx.complexes.borrow())?;
 
-    Build::build(&scx, &cx)?;
+    BuildScore::build(&scx, &cx)?;
     dbg!(&scx.grid_columns.borrow());
     Ok(())
 }

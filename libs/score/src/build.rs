@@ -32,8 +32,8 @@ use crate::{
     scorecontext::ScoreContext,
 };
 
-pub struct Build;
-impl Build {
+pub struct BuildScore;
+impl BuildScore {
     pub fn build(scx: &ScoreContext, cx: &CoreContext) -> Result<(), Box<dyn std::error::Error>> {
         for (_column_idx, item) in cx.columns.borrow().iter().enumerate() {
             match item.hptype {
@@ -118,7 +118,7 @@ impl Build {
                 if map_ids.contains_key(&(part_idx, *position)) {
                     if let Some(complex_id) = map_ids.get(&(part_idx, *position)) {
                         let complex = &cx_complexes[*complex_id];
-                        let rects = Build::build_complex(cx, complex, part_idx, *position)?;
+                        let rects = BuildScore::build_complex(cx, complex, part_idx, *position)?;
                         column_griditems.push(GridItemType::Rectangles(rects));
                     } else {
                         panic!("Complex ID not found for part_idx: {}, position: {}", part_idx, position);
@@ -140,7 +140,7 @@ impl Build {
 
         match &complex.ctype {
             ComplexType::Upper(note) | ComplexType::Lower(note) => {
-                let rs = Build::build_notetype(cx, note, part_idx, position, None, ComplexConfiguration::OneNote)?;
+                let rs = BuildScore::build_notetype(cx, note, part_idx, position, None, ComplexConfiguration::OneNote)?;
 
                 let leftmost_head_x: f32 = leftmost_x(&rs);
                 rects.extend(rs);
@@ -164,13 +164,13 @@ impl Build {
 
                 //------------------------
                 // upper
-                let rs = Build::build_notetype(cx, upper, part_idx, position, Some(lower_top_y), ComplexConfiguration::TwoNotes(DirectionUD::Up))?;
+                let rs = BuildScore::build_notetype(cx, upper, part_idx, position, Some(lower_top_y), ComplexConfiguration::TwoNotes(DirectionUD::Up))?;
                 let leftmost_upper_x: f32 = leftmost_x(&rs);
                 rects.extend(rs);
 
                 //------------------------
                 // lower
-                let rs = Build::build_notetype(cx, lower, part_idx, position, Some(upper_bottom_y), ComplexConfiguration::TwoNotes(DirectionUD::Down))?;
+                let rs = BuildScore::build_notetype(cx, lower, part_idx, position, Some(upper_bottom_y), ComplexConfiguration::TwoNotes(DirectionUD::Down))?;
                 let leftmost_lower_x: f32 = leftmost_x(&rs);
                 rects.extend(rs);
 
@@ -212,11 +212,11 @@ impl Build {
 
         match note.ntype {
             core::note::NoteType::Heads(ref heads) => {
-                let rs = Build::build_heads(cx, note, heads, part_idx, position, cplx_config)?;
+                let rs = BuildScore::build_heads(cx, note, heads, part_idx, position, cplx_config)?;
                 rects.extend(rs);
             }
             core::note::NoteType::Rest => {
-                let rs = Build::build_rest(cx, note, part_idx, position, y_rest_offset)?;
+                let rs = BuildScore::build_rest(cx, note, part_idx, position, y_rest_offset)?;
                 rects.extend(rs);
             }
             core::note::NoteType::LyricItem => {
@@ -237,7 +237,7 @@ impl Build {
     ) -> Result<Vec<(Rectangle, GlyphItem)>, Box<dyn std::error::Error>> {
         let mut rects: Vec<(Rectangle, GlyphItem)> = Vec::new();
         for head in heads {
-            let rs = Build::build_head(cx, note, head, heads, part_idx, position, cplx_config.clone())?;
+            let rs = BuildScore::build_head(cx, note, head, heads, part_idx, position, cplx_config.clone())?;
             rects.extend(rs);
         }
         Ok(rects)
