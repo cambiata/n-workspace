@@ -22,6 +22,31 @@ pub enum NoteDuration {
     D32 = 3,
 }
 
+impl TryFrom<usize> for NoteDuration {
+    type Error = Box<dyn std::error::Error>;
+
+    fn try_from(value: usize) -> Result<Self, Self::Error> {
+        match value {
+            144 => Ok(NoteDuration::D1Dot),
+            96 => Ok(NoteDuration::D1),
+            72 => Ok(NoteDuration::D2Dot),
+            48 => Ok(NoteDuration::D2),
+            36 => Ok(NoteDuration::D4Dot),
+            32 => Ok(NoteDuration::D2Tri),
+            24 => Ok(NoteDuration::D4),
+            18 => Ok(NoteDuration::D8Dot),
+            16 => Ok(NoteDuration::D4Tri),
+            12 => Ok(NoteDuration::D8),
+            9 => Ok(NoteDuration::D16Dot),
+            8 => Ok(NoteDuration::D8Tri),
+            6 => Ok(NoteDuration::D16),
+            4 => Ok(NoteDuration::D16Tri),
+            3 => Ok(NoteDuration::D32),
+            _ => Err(format!("Invalid duration value '{}'", value).into()),
+        }
+    }
+}
+
 impl NoteDuration {
     #[allow(dead_code)]
     pub fn is_beamable(self) -> bool {

@@ -1,13 +1,18 @@
-use core::hpart::{HPartItem, HPartType};
+use core::{
+    duration::NoteDuration,
+    hpart::{HPartItem, HPartType},
+};
 use std::collections::{BTreeMap, BTreeSet};
+
+use utils::f32_ext::round::F32ExtRound2;
 
 pub struct BuildUtils;
 impl BuildUtils {
-    pub fn get_complexes_information(
+    pub fn get_complexes_positions_allotments(
         cx: &core::context::CoreContext,
         hparts: &[&HPartItem],
         duration: usize,
-    ) -> Result<(Vec<usize>, Vec<usize>, BTreeMap<(usize, usize), usize>), Box<dyn std::error::Error>> {
+    ) -> Result<(Vec<usize>, Vec<usize>, Vec<f32>, BTreeMap<(usize, usize), usize>), Box<dyn std::error::Error>> {
         let cx_complexes = cx.complexes.borrow();
 
         // Collect positions and map them to hpart indices
@@ -34,7 +39,6 @@ impl BuildUtils {
 
         let mut positions_incl_duration: Vec<usize> = positions.clone();
         positions_incl_duration.push(duration);
-        dbg!(&positions_incl_duration);
 
         let mut durations: Vec<usize> = Vec::new();
         for left_right in positions_incl_duration.windows(2) {
@@ -43,11 +47,47 @@ impl BuildUtils {
             let duration = right - left;
             durations.push(duration);
         }
-        dbg!(&durations);
-        dbg!(&positions);
+        // dbg!(&durations);
+        // dbg!(&positions);
 
+        //------------------------------
         // calculat allotments...
 
-        Ok((positions, durations, map_ids))
+        let allotments: Vec<f32> = durations.iter().map(|d| Spacing::relative(*d)).collect();
+        Ok((positions, durations, allotments, map_ids))
+    }
+}
+
+struct Spacing;
+impl Spacing {
+    #[allow(dead_code)]
+    pub fn linear(dur: usize) -> f32 {
+        (dur as f32).r2() // Scale factor for spacing
+    }
+
+    pub fn relative(dur: usize) -> f32 {
+        let factor = 4.0;
+        let dur: NoteDuration = NoteDuration::try_from(dur).unwrap();
+        let space = match dur {
+            NoteDuration::D1 => 7.0,
+            NoteDuration::D2Dot => 6.0,
+            NoteDuration::D2 => 5.0,
+            NoteDuration::D4Dot => 4.0,
+            NoteDuration::D2Tri => 3.75,
+            NoteDuration::D4 => 3.5,
+            NoteDuration::D8Dot => 3.0,
+            NoteDuration::D4Tri => 2.75,
+            NoteDuration::D8 => 2.5,
+            NoteDuration::D16Dot => 2.35,
+            NoteDuration::D8Tri => 2.15,
+            NoteDuration::D16 => 2.0,
+            NoteDuration::D16Tri => 1.75,
+            NoteDuration::D32 => 1.5,
+            _ => {
+                println!("Implement relative spacing for all note durations {:?}", dur);
+                3.5
+            }
+        };
+        (space * factor).r2() // Scale factor for spacing
     }
 }

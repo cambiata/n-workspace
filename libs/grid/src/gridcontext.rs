@@ -12,8 +12,7 @@ where
 {
     pub items: RefCell<Vec<GridItem<T>>>,
     pub cols: RefCell<Vec<GridColumn>>,
-    pub cols_overlaps: RefCell<Vec<f32>>,
-    pub cols_durations: RefCell<Vec<usize>>,
+    pub cols_widths: RefCell<Vec<f32>>,
     pub rows: RefCell<Vec<GridRow>>,
 }
 
@@ -26,14 +25,14 @@ where
         let cx = GridContext {
             items: RefCell::new(Vec::new()),
             cols: RefCell::new(Vec::new()),
-            cols_overlaps: RefCell::new(Vec::new()),
-            cols_durations: RefCell::new(Vec::new()),
+            cols_widths: RefCell::new(Vec::new()),
+
             rows: RefCell::new(Vec::new()),
         };
         Box::leak(Box::new(cx))
     }
 
-    pub fn add_items(&self, items: Vec<Vec<GridItemType<T>>>) {
+    pub fn add_items(&self, items: Vec<Vec<GridItemType<T>>>) -> Result<(usize, usize), Box<dyn std::error::Error>> {
         let mut cx_items = self.items.borrow_mut();
         let mut cx_cols = self.cols.borrow_mut();
         let mut cx_rows = self.rows.borrow_mut();
@@ -76,26 +75,61 @@ where
             cx_cols.push(gridcol);
         }
 
-        for _ in 0..colcount {
-            self.cols_overlaps.borrow_mut().push(0.0);
-        }
-        self.cols_overlaps.borrow_mut().push(0.0); // one extra for the last column?
+        // for _ in 0..colcount {
+        //     self.cols_overlaps.borrow_mut().push(0.0);
+        // }
+        // self.cols_overlaps.borrow_mut().push(0.0); // one extra for the last column?
+
+        Ok((colcount, rowcount))
     }
 
-    pub fn set_durations(&self, durations: Vec<usize>) {
-        let mut cx_cols_durations = self.cols_durations.borrow_mut();
-        cx_cols_durations.clear();
-        cx_cols_durations.extend(durations);
-        dbg!(cx_cols_durations);
+    pub fn set_cols_widths(&self, spacing: Vec<f32>) -> Result<(), Box<dyn std::error::Error>> {
+        *self.cols_widths.borrow_mut() = spacing;
+        Ok(())
     }
 
-    pub fn calculate_minimal_col_spacing(&self) {
+    //----------------------------------------------------------
+
+    pub fn handle_column_spacing(&self, allotments: &Vec<f32>) -> Result<(), Box<dyn std::error::Error>> {
+        let minimal_spacing = self.calculate_minimal_col_spacing()?;
+        // dbg!(&minimal_spacing);
+
+        let alloted_spacing = self.calculate_alloted_col_spacing(allotments, 1.9)?;
+        // dbg!(&alloted_spacing);
+
+        let final_spacing = self.calculate_final_col_spacing(&minimal_spacing, &alloted_spacing)?;
+        // dbg!(&final_spacing);
+
+        self.set_cols_widths(final_spacing)?;
+
+        Ok(())
+    }
+
+    fn calculate_alloted_col_spacing(&self, allotments: &Vec<f32>, factor: f32) -> Result<Vec<f32>, Box<dyn std::error::Error>> {
+        let alloted_overlaps = calculate_overlaps_with_factor(&allotments, factor);
+        let alloted_width = alloted_overlaps.iter().sum::<f32>();
+        Ok(alloted_overlaps)
+    }
+
+    pub fn calculate_minimal_col_spacing(&self) -> Result<Vec<f32>, Box<dyn std::error::Error>> {
+        type PrevRectData = Option<(usize, Vec<Rectangle>)>;
+
         let colindexes: Vec<usize> = (0..self.cols.borrow().len()).collect();
         let self_items = self.items.borrow();
         let self_rows = self.rows.borrow();
-        let mut self_cols_overlaps = self.cols_overlaps.borrow_mut();
-        let mut prev_rect_data: Vec<PrevRectData> = vec![None; self.rows.borrow().len()];
+        let colcount = self.cols.borrow().len();
 
+        // let mut cols_overlaps = self.cols_overlaps.borrow_mut();
+        let mut spacing: Vec<f32> = Vec::new();
+        //-----------------------------------------------
+        // Create cols_overlaps - should be deleted later?
+        for _ in 0..colcount {
+            spacing.push(0.0);
+        }
+        spacing.push(0.0);
+
+        //-----------------------------------------------
+        let mut prev_rect_data: Vec<PrevRectData> = vec![None; self.rows.borrow().len()];
         // pass one: calculate overlaps for each column pair
         for colidx in colindexes.windows(2) {
             let left_colidx = colidx[0];
@@ -112,8 +146,8 @@ where
                         let overlap_x = rectangles_overlap_x(left_rects, right_rects);
                         // dbg!(overlap_x);
 
-                        if overlap_x > self_cols_overlaps[right_colidx] {
-                            self_cols_overlaps[right_colidx] = overlap_x;
+                        if overlap_x > spacing[right_colidx] {
+                            spacing[right_colidx] = overlap_x;
                         }
                         // Store the right rectangles for later use
                         prev_rect_data[rowidx] = Some((right_colidx, right_rects.clone()));
@@ -124,11 +158,11 @@ where
                         if let Some((prev_colidx, prev_rects)) = &prev_rect_data[rowidx] {
                             // println!("- Compare right_rects column {right_colidx} with previous rectangles at column {prev_colidx}");
 
-                            let sum_cols_overlaps = ((prev_colidx + 1)..=right_colidx).map(|i| self_cols_overlaps[i]).sum::<f32>();
+                            let sum_cols_overlaps = ((prev_colidx + 1)..=right_colidx).map(|i| spacing[i]).sum::<f32>();
                             let overlap_x = rectangles_overlap_x(prev_rects, right_rects);
                             let factor = (overlap_x - sum_cols_overlaps).max(0.0);
                             if factor > 0.0 {
-                                self_cols_overlaps[right_colidx] = self_cols_overlaps[right_colidx] + factor;
+                                spacing[right_colidx] = spacing[right_colidx] + factor;
                             }
                         } else {
                             // println!("- No previous rectangles to compare with");
@@ -141,7 +175,7 @@ where
                         prev_rect_data[rowidx] = Some((left_colidx, left_rects.clone()));
                     }
                     (GridItemType::Empty, GridItemType::Empty) => {
-                        println!("- Both items are empty, no overlap to calculate");
+                        // println!("- Both items are empty, no overlap to calculate");
                     }
                 }
                 // dbg!(&prev_rect_data);
@@ -165,8 +199,8 @@ where
                     }
 
                     // Ensure the last column has enough space for the widest rectangle
-                    if self_cols_overlaps[last_colidx + 1] < max_w {
-                        self_cols_overlaps[last_colidx + 1] = max_w;
+                    if spacing[last_colidx + 1] < max_w {
+                        spacing[last_colidx + 1] = max_w;
                     }
                 }
                 GridItemType::Empty => {
@@ -174,30 +208,23 @@ where
                 }
             }
         }
+
+        Ok(spacing)
     }
 
-    pub fn calculate_duraction_col_spacing(&self, durations: Vec<usize>) {
-        *self.cols_durations.borrow_mut() = durations;
-        dbg!(self.cols_durations.borrow());
-        dbg!(self.cols_overlaps.borrow());
-
-        let durations = self.cols_durations.borrow_mut();
-        let mut overlaps = self.cols_overlaps.borrow_mut();
-        let mut overlaps2: Vec<f32> = overlaps.iter().map(|d| *d as f32).collect();
-
-        fn linear(dur: usize) -> f32 {
-            dur as f32 * 1.2 // Scale factor for spacing
-        }
-
-        for (idx, duration) in durations.iter().enumerate() {
-            let minimal_width = overlaps[idx + 1];
-            let calculated_width = linear(*duration);
-            if calculated_width > minimal_width {
-                overlaps[idx + 1] = calculated_width.r2();
-            }
-        }
-        dbg!(&overlaps);
+    fn calculate_final_col_spacing(&self, minimal_spacing: &[f32], alloted_spacing: &[f32]) -> Result<Vec<f32>, Box<dyn std::error::Error>> {
+        let final_spacing = minimal_spacing.iter().zip(alloted_spacing.iter()).map(|(minimal, alloted)| minimal.max(*alloted)).collect::<Vec<f32>>();
+        Ok(final_spacing)
     }
 }
 
-type PrevRectData = Option<(usize, Vec<Rectangle>)>;
+fn calculate_overlaps_with_factor(allotments: &[f32], factor: f32) -> Vec<f32> {
+    let mut overlaps = vec![0.0; allotments.len() + 1];
+    for (idx, allotment) in allotments.iter().enumerate() {
+        let calculated_width = allotment * factor;
+        if calculated_width > overlaps[idx + 1] {
+            overlaps[idx + 1] = calculated_width.r2();
+        }
+    }
+    overlaps
+}

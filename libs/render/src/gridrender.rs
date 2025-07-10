@@ -15,7 +15,7 @@ impl Render {
     pub fn render_gridcontext_with_glyphitem(cx: &'static GridContext<GlyphItem>) -> String {
         let mut graphic_items = GraphicItems::new();
         let cx_rows = &cx.rows.borrow();
-        let cx_cols_overlaps = &cx.cols_overlaps.borrow();
+        let cx_cols_overlaps = &cx.cols_widths.borrow();
 
         let mut move_y = 0.0;
 
@@ -44,8 +44,6 @@ impl Render {
             graphic_items.push(GraphicItem::Line(move_x - 0.1, 0.0, move_x, move_y, Stroke::Solid(0.2, Color::RGBA(0, 0, 0, 0.2)), None));
         }
 
-        // let graphic_items = items_scale(graphic_items, 3.0, 3.0);
-
         let svg = SvgBuilder::new();
         let svg_string = svg.build(graphic_items, None);
 
@@ -56,7 +54,7 @@ impl Render {
     pub fn render_gridcontext_with_color(cx: &'static GridContext<Color>) -> String {
         let mut graphic_items = GraphicItems::new();
         let cx_rows = &cx.rows.borrow();
-        let cx_cols_overlaps = &cx.cols_overlaps.borrow();
+        let cx_cols_overlaps = &cx.cols_widths.borrow();
 
         let mut move_y = 0.0;
 

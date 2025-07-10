@@ -17,6 +17,7 @@ use graphics::{
     color::Color,
     rectangle::{rectangle_overlap_x, Rectangle},
 };
+
 use grid::griditem::GridItemType;
 
 use utils::f32_ext::{half::F32ExtHalf, round::F32ExtRound2};
@@ -47,7 +48,6 @@ impl Build {
                 }
             }
         }
-
         Ok(())
     }
 
@@ -73,7 +73,8 @@ impl Build {
             }
         });
         scx.grid_columns.borrow_mut().push(column_griditems);
-        scx.grid_column_duration.borrow_mut().push(0);
+        // scx.grid_column_duration.borrow_mut().push(0);
+        scx.grid_column_allotment.borrow_mut().push(0.);
         Ok(())
     }
 
@@ -97,7 +98,8 @@ impl Build {
             }
         });
         scx.grid_columns.borrow_mut().push(column_griditems);
-        scx.grid_column_duration.borrow_mut().push(0);
+        // scx.grid_column_duration.borrow_mut().push(0);
+        scx.grid_column_allotment.borrow_mut().push(0.);
         Ok(())
     }
 
@@ -106,7 +108,7 @@ impl Build {
         let cx_complexes = cx.complexes.borrow();
         let hparts = ids.iter().map(|id| &cx_hparts[*id]).collect::<Vec<_>>();
         let parts_count = hparts.len();
-        let (positions, durations, map_ids) = BuildUtils::get_complexes_information(cx, &hparts, duration)?;
+        let (positions, _durations, allotments, map_ids) = BuildUtils::get_complexes_positions_allotments(cx, &hparts, duration)?;
 
         for (idx, position) in positions.iter().enumerate() {
             // each position corresponds to a column in the grid
@@ -115,11 +117,8 @@ impl Build {
             for part_idx in 0..parts_count {
                 if map_ids.contains_key(&(part_idx, *position)) {
                     if let Some(complex_id) = map_ids.get(&(part_idx, *position)) {
-                        // dbg!(position, part_idx, complex_id);
                         let complex = &cx_complexes[*complex_id];
-                        // dbg!(complex);
                         let rects = Build::build_complex(cx, complex, part_idx, *position)?;
-
                         column_griditems.push(GridItemType::Rectangles(rects));
                     } else {
                         panic!("Complex ID not found for part_idx: {}, position: {}", part_idx, position);
@@ -129,9 +128,9 @@ impl Build {
                 }
             }
             scx.grid_columns.borrow_mut().push(column_griditems);
-            scx.grid_column_duration.borrow_mut().push(durations[idx]);
+            // scx.grid_column_duration.borrow_mut().push(durations[idx]);
+            scx.grid_column_allotment.borrow_mut().push(allotments[idx]);
         }
-        dbg!(&scx.grid_column_duration.borrow());
 
         Ok(())
     }
@@ -362,7 +361,6 @@ fn get_upper_bottom_level(upper: &NoteItem) -> f32 {
             let head_level = heads.last().unwrap().level + 5;
             let level_mod = head_level % 2;
             let head_level2 = head_level + level_mod;
-            dbg!(&head_level, &level_mod, &head_level2);
             head_level2 as f32
         }
         NoteType::Rest => 0.0,

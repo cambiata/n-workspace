@@ -37,6 +37,6 @@ mod tests2 {
         cx.add_items(items);
         // cx.calculate_minimal_col_spacing_for_row(0);
         cx.calculate_minimal_col_spacing();
-        dbg!(cx.cols_overlaps.borrow());
+        dbg!(cx.cols_widths.borrow());
     }
 }
