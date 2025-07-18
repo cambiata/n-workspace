@@ -229,7 +229,7 @@ impl ComplexUtils {
             };
 
             // calculate head offsets to avoid collisions
-            let offsets = ComplexUtils::calculate_head_offsets(&ctype);
+            let offsets = ComplexUtils::calculate_head_offsets(cx, &ctype);
 
             // store complex in context
             let id = cx.complexes.borrow().len();
@@ -258,13 +258,29 @@ impl ComplexUtils {
         partid_complexids
     }
 
-    fn calculate_head_offsets(ctype: &ComplexType) -> ComplexHeadOffsets {
+    fn calculate_head_offsets(cx: &CoreContext, ctype: &ComplexType) -> ComplexHeadOffsets {
         match ctype {
-            ComplexType::UpperAndLower(_, _, level_diff) => match level_diff {
-                _ if *level_diff <= 0 => ComplexHeadOffsets::UpperX(-10.0),
-                _ if *level_diff == 1 => ComplexHeadOffsets::LowerX(5.0),
-                _ => ComplexHeadOffsets::None,
-            },
+            ComplexType::UpperAndLower(upper, lower, level_diff) => {
+                //store offsets for notes?
+                match level_diff {
+                    _ if *level_diff <= 0 => {
+                        // store offsets for upper
+                        let id = upper.id;
+                        let offset = -13.0;
+
+                        cx.map_noteid_headoffsetx.borrow_mut().insert(id, offset);
+                        ComplexHeadOffsets::UpperX(offset)
+                    }
+                    _ if *level_diff == 1 => {
+                        // store offsets for lower
+                        let id = lower.id;
+                        let offset = 10.0;
+                        cx.map_noteid_headoffsetx.borrow_mut().insert(id, offset);
+                        ComplexHeadOffsets::LowerX(offset)
+                    }
+                    _ => ComplexHeadOffsets::None,
+                }
+            }
             _ => ComplexHeadOffsets::None,
         }
     }

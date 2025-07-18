@@ -269,7 +269,7 @@ impl BuildScore {
         //--------------------------------------------
         // The head itself
         let cx_map_head_position = cx.map_head_position.borrow();
-        let head_x: f32 = if !cx_map_head_position.contains_key(&head.id) {
+        let mut head_x: f32 = if !cx_map_head_position.contains_key(&head.id) {
             0.
         } else {
             match cx_map_head_position.get(&head.id).cloned().unwrap_or(StemHeadPosition::Center) {
@@ -278,6 +278,11 @@ impl BuildScore {
                 StemHeadPosition::Right => get_head_width(&note.duration),
             }
         };
+
+        if cx.map_noteid_headoffsetx.borrow().contains_key(&note.id) {
+            head_x += cx.map_noteid_headoffsetx.borrow().get(&note.id).cloned().unwrap_or(0.0);
+        };
+
         let head_y: f32 = head.level as f32 * SPACE_HALF;
 
         let head_width = get_head_width(&note.duration);
