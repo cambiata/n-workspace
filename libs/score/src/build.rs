@@ -4,12 +4,12 @@ use core::{
     clef::ClefSignature,
     complex::{self, ComplexConfiguration, ComplexType},
     context::CoreContext,
-    direction::DirectionUD,
+    direction::{self, DirectionUD},
     duration::NoteDuration,
     head::{HeadItem, HeadType, HeadVariant},
     hpart::{HPartItemsColumnType, HPartType},
     note::{NoteItem, NoteType},
-    stems::stemitems::StemHeadPosition,
+    stems::stemitems::{StemHeadPosition, StemItem, StemType},
     ties::CheckedTieTo,
 };
 
@@ -26,7 +26,7 @@ use crate::{
     buildutils::BuildUtils,
     constants::{
         ACCIDENTAL_HEIGHT, ACCIDENTAL_WIDTH_NARROW, ACCIDENTAL_WIDTH_WIDE, BARLINE_DOUBLE_WIDTH, BARLINE_FINAL_WIDTH, BARLINE_WIDTH, CLEF_WIDTH, HEAD_WIDTH_BLACK, HEAD_WIDTH_WHITE, HEAD_WIDTH_WHOLE,
-        SPACE, SPACE2, SPACE4, SPACE_BEFORE_FIRST_NOTE_IN_BAR, SPACE_HALF,
+        SPACE, SPACE2, SPACE4, SPACE_BEFORE_FIRST_NOTE_IN_BAR, SPACE_HALF, SPACE_QUARTER,
     },
     glyphitem::{GlyphItem, GlyphRectangle},
     scorecontext::ScoreContext,
@@ -212,7 +212,9 @@ impl BuildScore {
 
         match note.ntype {
             core::note::NoteType::Heads(ref heads) => {
-                let rs = BuildScore::build_heads(cx, note, heads, part_idx, position, cplx_config)?;
+                let rs = BuildScore::build_heads(cx, note, heads, part_idx, position, cplx_config.clone())?;
+                rects.extend(rs);
+                let rs = BuildScore::build_stem_root(cx, note, part_idx, position, cplx_config)?;
                 rects.extend(rs);
             }
             core::note::NoteType::Rest => {
@@ -351,6 +353,119 @@ impl BuildScore {
 
         //---------------------------------------
 
+        Ok(rects)
+    }
+
+    fn build_stem_root(cx: &CoreContext, note: &NoteItem, part_idx: usize, position: usize, cplx_config: ComplexConfiguration) -> Result<Vec<(Rectangle, GlyphItem)>, Box<dyn std::error::Error>> {
+        let stemitems = cx.stemitems.borrow();
+
+        let mut rects: Vec<(Rectangle, GlyphItem)> = Vec::new();
+
+        let heads = match note.ntype {
+            NoteType::Heads(ref heads) => heads,
+            _ => return Ok(rects), // No heads, no stem root
+        };
+
+        if heads.is_empty() {
+            return Ok(rects);
+        }
+
+        let direction = match cx.map_noteid_direction.borrow().get(&note.id) {
+            Some(direction) => direction.clone(),
+            None => return Ok(rects), // No direction, no stem root
+        };
+
+        let level = match direction {
+            DirectionUD::Up => {
+                let level = heads.first().unwrap().level as f32;
+                level
+            }
+            DirectionUD::Down => {
+                let level = heads.first().unwrap().level as f32;
+                level
+            }
+        };
+
+        let head_width = get_head_width(&note.duration);
+        let head_offset_x = cx.map_noteid_headoffsetx.borrow().get(&note.id).cloned().unwrap_or(0.0);
+
+        let stem_width = SPACE_QUARTER;
+        let stem_length = SPACE4;
+
+        let stem_x = head_offset_x + if direction == DirectionUD::Up { head_width - stem_width } else { 0.0 };
+        let stem_y = SPACE_HALF * level;
+
+        //----------------------------------------------
+        // Build stem rectangle
+        match direction {
+            DirectionUD::Up => {
+                let rect: Rectangle = (stem_x, stem_y - stem_length, stem_width, stem_length);
+                let item: GlyphItem = GlyphItem::XRect(Color::DodgerBlue);
+                rects.push((rect, item));
+            }
+            DirectionUD::Down => {
+                let rect: Rectangle = (stem_x, stem_y, stem_width, stem_length);
+                let item: GlyphItem = GlyphItem::XRect(Color::Tomato);
+                rects.push((rect, item));
+            }
+        }
+
+        //---------------------------------------------
+        // build flag rects
+        if note.duration.has_flag() {
+            let stemitem = cx.map_noteid_stemitemid.borrow().get(&note.id).cloned().unwrap_or(0);
+            if let Some(stemitem) = stemitems.get(stemitem) {
+                match stemitem.stype {
+                    StemType::NoteWithStem(ref note) => {
+                        // Handle NoteWithStem case
+                        let flag_width = SPACE;
+                        let flag_height = SPACE2;
+                        match direction {
+                            DirectionUD::Up => {
+                                let rect: Rectangle = (stem_x, stem_y - stem_length, flag_width, flag_height);
+                                let item: GlyphItem = GlyphItem::XRect(Color::Lime);
+                                rects.push((rect, item));
+                            }
+                            DirectionUD::Down => {
+                                let rect: Rectangle = (stem_x, stem_y + stem_length - flag_height, flag_width, flag_height);
+                                let item: GlyphItem = GlyphItem::XRect(Color::Purple);
+                                rects.push((rect, item));
+                            }
+                        }
+                    }
+                    StemType::NoteWithoutStem(ref note) => {
+                        // Handle NoteWithoutStem case
+                    }
+                    StemType::NotNote(ref note) => {
+                        // Handle NotNote case
+                    }
+                    StemType::NotesBeamed(ref notes) => {
+                        // Handle NotesBeamed case
+                    }
+                }
+            }
+        }
+
+        // if let Some(direction) = cx.map_noteid_direction.borrow().get(&note.id).cloned() {
+        //     let head_y: f32 = match direction {
+        //         DirectionUD::Up => {
+        //             let level = heads.first().unwrap().level as f32 * SPACE_HALF;
+        //             level + SPACE_HALF
+        //         }
+        //         DirectionUD::Down => {
+        //             let level = heads.last().unwrap().level as f32 * SPACE_HALF;
+        //             level - SPACE_HALF
+        //         }
+        //     };
+
+        //     let rect: Rectangle = (0.0, -SPACE_HALF + head_y, SPACE, SPACE2);
+        //     let item: GlyphItem = GlyphItem::XRect(Color::Lime);
+        //     rects.push((rect, item));
+
+        //     Ok(rects)
+        // } else {
+        //     Ok(vec![])
+        // }
         Ok(rects)
     }
 }

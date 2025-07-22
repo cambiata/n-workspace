@@ -73,6 +73,14 @@ impl NoteDuration {
         }
     }
 
+    #[allow(dead_code)]
+    pub fn has_flag(self) -> bool {
+        match self {
+            NoteDuration::D8 | NoteDuration::D8Dot | NoteDuration::D8Tri | NoteDuration::D16 | NoteDuration::D16Dot | NoteDuration::D16Tri | NoteDuration::D32 => true,
+            _ => false,
+        }
+    }
+
     pub fn parse(s: &str) -> Result<NoteDuration, Box<dyn std::error::Error>> {
         let s = s.trim();
         if !(s.starts_with('D') || s.starts_with("d")) {

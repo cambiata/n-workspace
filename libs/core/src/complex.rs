@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use crate::{
     context::CoreContext,
     direction::DirectionUD,
-    note::{NoteId, NoteItem, NoteType},
+    note::{NoteConfiguration, NoteId, NoteItem, NoteType},
     part::{PartId, PartType},
     voice::VoiceType,
 };
@@ -134,6 +134,12 @@ impl ComplexUtils {
             // partid_complexdurations.push(complex.duration);
 
             cx.complexes.borrow_mut().push(complex);
+
+            //--------------------------
+            // Store note configuration
+            cx.map_noteid_configuration
+                .borrow_mut()
+                .insert(*note_id, if is_upper_voice { NoteConfiguration::SingleUpper } else { NoteConfiguration::SingleLower });
         }
 
         // store partid_complexids in context
@@ -231,6 +237,22 @@ impl ComplexUtils {
             // calculate head offsets to avoid collisions
             let offsets = ComplexUtils::calculate_head_offsets(cx, &ctype);
 
+            //-----------------------------------------
+            // store note configuration
+            match ctype {
+                ComplexType::Upper(ref note) => {
+                    cx.map_noteid_configuration.borrow_mut().insert(note.id, NoteConfiguration::SingleUpper);
+                }
+                ComplexType::Lower(ref note) => {
+                    cx.map_noteid_configuration.borrow_mut().insert(note.id, NoteConfiguration::SingleLower);
+                }
+                ComplexType::UpperAndLower(ref upper, ref lower, _) => {
+                    cx.map_noteid_configuration.borrow_mut().insert(*&upper.id, NoteConfiguration::DoubleUpper);
+                    cx.map_noteid_configuration.borrow_mut().insert(*&lower.id, NoteConfiguration::DoubleLower);
+                }
+            }
+
+            //-------------------------------------------------
             // store complex in context
             let id = cx.complexes.borrow().len();
             let complex = Complex {
@@ -243,15 +265,16 @@ impl ComplexUtils {
                 offsets,
             };
 
+            partid_complexids.push(id);
+            cx.complexes.borrow_mut().push(complex);
+
+            //-----------------------------------------------------
+            // store complex in context
             for note_id in note_ids {
                 if let Some(note_id) = note_id {
                     cx.map_noteid_complexid.borrow_mut().insert(*note_id, id as ComplexId);
                 }
             }
-            partid_complexids.push(id);
-            // partid_complexpositions.push(complex.position);
-            // partid_complexdurations.push(complex.duration);
-            cx.complexes.borrow_mut().push(complex);
         }
         // store partid_complexids in context
         // cx.map_partid_complexids.borrow_mut().insert(part_id, partid_complexids);

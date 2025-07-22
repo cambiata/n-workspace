@@ -53,7 +53,10 @@ pub fn parse_head(_cx: &CoreContext, value: &str, _note_id: usize) -> Result<Hea
 }
 
 pub fn parse_heads(cx: &CoreContext, value: &str, note_id: usize) -> Result<Vec<HeadItem>, Box<dyn Error>> {
-    let mut str_and_level = value.split(',').map(|s| (s.trim(), level_from_str(s))).collect::<Vec<(&str, i8)>>();
+    let str_and_level = value.split(',').map(|s| (s.trim(), level_from_str(s))).collect::<Vec<_>>();
+
+    let mut str_and_level = str_and_level.into_iter().map(|(str, level)| (str, level.unwrap())).collect::<Vec<_>>();
+
     str_and_level.sort_by_key(|item| item.1); // sort by level
 
     let head_items = str_and_level
@@ -325,9 +328,10 @@ pub fn parse_sysitemlist(cx: &CoreContext, value: &str) -> Result<SysItemList, B
     Ok(sysitems)
 }
 
-pub fn level_from_str(s: &str) -> i8 {
-    let level: i8 = s.chars().filter(|c| c.is_numeric() || *c == '-').collect::<String>().parse().unwrap();
-    level
+pub fn level_from_str(s: &str) -> Result<i8, Box<dyn Error>> {
+    // Extract the level from the string, which is expected to be a number or a negative{
+    let level: i8 = s.chars().filter(|c| c.is_numeric() || *c == '-').collect::<String>().parse()?;
+    Ok(level)
 }
 
 #[cfg(test)]

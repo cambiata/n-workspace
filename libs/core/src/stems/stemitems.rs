@@ -55,6 +55,8 @@ impl StemItemUtils {
         let mut position: usize = 0;
         let mut duration: usize = 0;
         for group in groups.iter() {
+            let stem_item_id = cx.stemitems.borrow().len() as StemItemId;
+
             let t: Result<StemType, Box<dyn std::error::Error>> = match group.len() {
                 // no group of zero notes
                 0 => todo!("Should not happen"),
@@ -64,6 +66,10 @@ impl StemItemUtils {
                     let note = group.get(0).unwrap();
                     position = note.position;
                     duration = note.duration as usize;
+
+                    // Store the stem item id for the note
+                    cx.map_noteid_stemitemid.borrow_mut().insert(note.id, stem_item_id);
+
                     match note.ntype {
                         note::NoteType::Heads(ref heads) => match note.has_stem() {
                             //
@@ -102,6 +108,9 @@ impl StemItemUtils {
                     position = group.first().unwrap().position;
 
                     for note in group.iter() {
+                        // Store the stem item id for the note
+                        cx.map_noteid_stemitemid.borrow_mut().insert(note.id, stem_item_id);
+
                         match note.ntype {
                             note::NoteType::Heads(ref heads) => {
                                 let info = StemNoteItem {
@@ -126,16 +135,15 @@ impl StemItemUtils {
             };
             let t = t?;
 
-            let id = cx.stemitems.borrow().len() as StemItemId;
             let item = StemItem {
-                id,
+                id: stem_item_id,
                 stype: t,
                 direction: None,
                 position,
                 duration,
             };
             cx.stemitems.borrow_mut().push(item);
-            ids.push(id);
+            ids.push(stem_item_id);
         }
         Ok(ids)
     }

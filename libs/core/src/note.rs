@@ -22,6 +22,14 @@ pub struct NoteItem {
     // pub direction: Option<DirectionUD>,
 }
 
+#[derive(Debug, Clone)]
+pub enum NoteConfiguration {
+    SingleUpper,
+    SingleLower,
+    DoubleUpper,
+    DoubleLower,
+}
+
 impl NoteItem {
     pub fn is_beamable(&self) -> bool {
         match self.ntype {
