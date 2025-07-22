@@ -2,7 +2,7 @@ use crate::{
     constants::STEM_DEFAULT_LENGTH,
     context::CoreContext,
     direction::DirectionUD,
-    duration::{NoteDuration, SumDuration},
+    duration::{durations_smallest_base_value, NoteDuration, SumDuration},
     note::{self, NoteId, NoteItem},
 };
 
@@ -270,13 +270,15 @@ fn calc_stemlengths_single(cx: &CoreContext, item: &StemNoteItem, direction: &Di
     let mut top_level = item.top_level as f32;
     let mut bottom_level = item.bottom_level as f32;
     let note_id = item.note.id;
+    let smallest_duration = item.note.duration.get_base_value();
+    dbg!(smallest_duration);
 
     match direction {
         DirectionUD::Up => {
             if top_level < -2.0 {
                 top_level += 1.0; // Ensure the top level does not go below -5
             }
-            stemitemlevels.insert(note_id, (direction.clone(), top_level, bottom_level));
+            stemitemlevels.insert(note_id, (direction.clone(), (top_level - STEM_DEFAULT_LENGTH).min(0.0), bottom_level));
         }
         DirectionUD::Down => {
             if bottom_level > 2.0 {
@@ -301,6 +303,9 @@ fn calc_stemlengths_beamed(cx: &CoreContext, items: &[StemNoteItem], direction: 
     let mut last_top_level: f32 = items.last().map_or(0.0, |item| item.top_level as f32);
     let last_note_id: NoteId = items.last().map_or(0, |item| item.note.id);
 
+    let smallest_base_value = durations_smallest_base_value(&items.iter().map(|i| i.note.duration).collect::<Vec<_>>());
+    dbg!(smallest_base_value);
+
     match items.len() {
         0 => return Ok(()), // No items to process
         1 => return Ok(()), // No items to process
@@ -309,6 +314,7 @@ fn calc_stemlengths_beamed(cx: &CoreContext, items: &[StemNoteItem], direction: 
 
             match direction {
                 DirectionUD::Up => {
+                    // max angle = +-1
                     let top_diff = first_top_level - last_top_level;
                     match top_diff {
                         _ if top_diff > 1.0 => {
@@ -320,9 +326,24 @@ fn calc_stemlengths_beamed(cx: &CoreContext, items: &[StemNoteItem], direction: 
                         _ => {}
                     }
 
+                    // compensate for 16ths and 32nds
+                    match smallest_base_value {
+                        16 => {
+                            first_top_level = first_top_level - 1.0;
+                            last_top_level = last_top_level - 1.0;
+                        }
+                        32 => {
+                            first_top_level = first_top_level - 2.0;
+                            last_top_level = last_top_level - 2.0;
+                        }
+                        _ => {}
+                    }
+
+                    // Ensure the top level does not go below 0
                     first_top_level = (first_top_level - STEM_DEFAULT_LENGTH).min(0.0);
                     last_top_level = (last_top_level - STEM_DEFAULT_LENGTH).min(0.0);
 
+                    // if 3 or more notes, adjust the top levels
                     if items.len() > 2 {
                         let lowest_top_level = first_top_level.max(last_top_level);
 
@@ -351,6 +372,19 @@ fn calc_stemlengths_beamed(cx: &CoreContext, items: &[StemNoteItem], direction: 
                         _ => {}
                     }
 
+                    // compensate for 16ths and 32nds
+                    match smallest_base_value {
+                        16 => {
+                            first_top_level = first_top_level + 1.0;
+                            last_top_level = last_top_level + 1.0;
+                        }
+                        32 => {
+                            first_top_level = first_top_level + 2.0;
+                            last_top_level = last_top_level + 2.0;
+                        }
+                        _ => {}
+                    }
+
                     first_bottom_level = (first_bottom_level + STEM_DEFAULT_LENGTH).max(0.0);
                     last_bottom_level = (last_bottom_level + STEM_DEFAULT_LENGTH).max(0.0);
 
@@ -369,7 +403,6 @@ fn calc_stemlengths_beamed(cx: &CoreContext, items: &[StemNoteItem], direction: 
                     }
 
                     stemitemlevels.insert(first_note_id, (direction.clone(), first_top_level, first_bottom_level));
-
                     stemitemlevels.insert(last_note_id, (direction.clone(), last_top_level, last_bottom_level));
                 }
             }

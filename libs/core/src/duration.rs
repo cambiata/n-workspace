@@ -131,6 +131,17 @@ impl NoteDuration {
             _ => todo!(),
         }
     }
+
+    pub fn get_base_value(self) -> i8 {
+        match self {
+            NoteDuration::D1Dot | NoteDuration::D1 => 1,
+            NoteDuration::D2Dot | NoteDuration::D2 | NoteDuration::D2Tri => 2,
+            NoteDuration::D4Dot | NoteDuration::D4Tri | NoteDuration::D4 => 4,
+            NoteDuration::D8Dot | NoteDuration::D8Tri | NoteDuration::D8 => 8,
+            NoteDuration::D16Dot | NoteDuration::D16Tri | NoteDuration::D16 => 16,
+            NoteDuration::D32 => 32,
+        }
+    }
 }
 
 impl Default for NoteDuration {
@@ -139,15 +150,10 @@ impl Default for NoteDuration {
     }
 }
 
-pub fn durations_contain_small_values(durations: &[NoteDuration]) -> i8 {
+pub fn durations_smallest_base_value(durations: &[NoteDuration]) -> i8 {
     let mut smallest = 0;
     for duration in durations {
-        match duration {
-            NoteDuration::D8 | NoteDuration::D8Dot | NoteDuration::D8Tri => smallest = smallest.max(8),
-            NoteDuration::D16 | NoteDuration::D16Dot | NoteDuration::D16Tri => smallest = smallest.max(16),
-            NoteDuration::D32 => smallest = smallest.max(32),
-            _ => smallest = smallest.max(0), //
-        }
+        smallest = smallest.max(duration.get_base_value() as i8);
     }
     smallest
 }
