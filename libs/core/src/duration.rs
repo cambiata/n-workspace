@@ -139,6 +139,19 @@ impl Default for NoteDuration {
     }
 }
 
+pub fn durations_contain_small_values(durations: &[NoteDuration]) -> i8 {
+    let mut smallest = 0;
+    for duration in durations {
+        match duration {
+            NoteDuration::D8 | NoteDuration::D8Dot | NoteDuration::D8Tri => smallest = smallest.max(8),
+            NoteDuration::D16 | NoteDuration::D16Dot | NoteDuration::D16Tri => smallest = smallest.max(16),
+            NoteDuration::D32 => smallest = smallest.max(32),
+            _ => smallest = smallest.max(0), //
+        }
+    }
+    smallest
+}
+
 // pub fn duration_from(v: usize) -> Result<Duration> {
 //     match v {
 //         NV1DOT | NV1 | NV2DOT | NV2 | NV4DOT | NV2TRI | NV4 | NV8DOT | NV4TRI | NV8 | NV16DOT | NV8TRI | NV16 | NV16TRI | NV32 => Ok(v),

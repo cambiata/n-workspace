@@ -10,7 +10,7 @@ use std::collections::BTreeMap;
 use utils::f32_ext::{half::F32ExtHalf, round::F32ExtRound2};
 
 use crate::{
-    constants::{ACCIDENTAL_HEIGHT, ACCIDENTAL_WIDTH_NARROW, ACCIDENTAL_WIDTH_WIDE, HEAD_WIDTH_BLACK, HEAD_WIDTH_WHITE, HEAD_WIDTH_WHOLE, REST_WIDTH, SPACE, SPACE2, SPACE_HALF},
+    constants::*,
     glyphitem::{GlyphItem, GlyphRectangle},
 };
 

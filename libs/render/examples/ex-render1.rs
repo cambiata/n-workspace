@@ -9,10 +9,11 @@ use std::fs;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cx = CoreContext::new();
-    let _ = Parse2::sysitemlist2(cx, "D8 2 0 r 1 r -1 ", false).unwrap();
+    let _ = Parse2::sysitemlist2(cx, "clef G | D8 2 2 ", false).unwrap();
+    // let _ = Parse2::sysitemlist2(cx, "|clef G |0 -1 -2 -3 -4 -5 -6 -7  5 4 3 2 1 0 -1 -2 -3 -4 -5 % 1 1 2 3 4 5 6 7 ", false).unwrap();
+
     let scx = ScoreContext::new();
     BuildScore::build(&scx, &cx)?;
-    dbg!(&cx.stemitems.borrow());
 
     //-------------------------------------------------
     // Turn 180 degrees...

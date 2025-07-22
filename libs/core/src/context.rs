@@ -33,6 +33,7 @@ pub struct CoreContext {
     pub map_noteid_direction: RefCell<BTreeMap<NoteId, DirectionUD>>,
     pub map_noteid_headoffsetx: RefCell<BTreeMap<NoteId, f32>>,
     pub map_noteid_stemitemid: RefCell<BTreeMap<NoteId, usize>>,
+    pub map_noteid_stemitemlevels: RefCell<BTreeMap<NoteId, (DirectionUD, f32, f32)>>,
 
     pub map_noteid_tiesto: RefCell<BTreeMap<NoteId, Vec<TieTo>>>,
     pub map_noteid_tiesfrom: RefCell<BTreeMap<NoteId, Vec<TieFrom>>>,
@@ -64,6 +65,7 @@ impl CoreContext {
             map_noteid_configuration: RefCell::new(BTreeMap::new()),
             map_noteid_headoffsetx: RefCell::new(BTreeMap::new()),
             map_noteid_stemitemid: RefCell::new(BTreeMap::new()),
+            map_noteid_stemitemlevels: RefCell::new(BTreeMap::new()),
 
             map_noteid_tiesto: RefCell::new(BTreeMap::new()),
             map_noteid_tiesfrom: RefCell::new(BTreeMap::new()),

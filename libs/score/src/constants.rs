@@ -7,7 +7,7 @@ pub const SPACE6: f32 = SPACE * 6.0;
 pub const SPACE_HALF: f32 = SPACE / 2.0;
 pub const SPACE_QUARTER: f32 = SPACE / 4.0;
 
-pub const SPACE_BEFORE_FIRST_NOTE_IN_BAR: f32 = SPACE * 0.5;
+pub const SPACE_BEFORE_FIRST_NOTE_IN_BAR: f32 = SPACE * 0.8;
 
 pub const HEAD_WIDTH_BLACK: f32 = SPACE * 1.3;
 pub const HEAD_WIDTH_WHITE: f32 = SPACE * 1.35;
@@ -20,3 +20,6 @@ pub const CLEF_WIDTH: f32 = SPACE3;
 pub const BARLINE_WIDTH: f32 = SPACE * 0.5;
 pub const BARLINE_DOUBLE_WIDTH: f32 = SPACE;
 pub const BARLINE_FINAL_WIDTH: f32 = SPACE * 1.5;
+pub const STEM_WIDTH: f32 = SPACE / 7.0;
+pub const FLAG_WIDTH: f32 = SPACE;
+pub const FLAG_HEIGHT: f32 = SPACE2;

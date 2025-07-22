@@ -44,7 +44,7 @@ impl NoteItem {
         match self.ntype {
             NoteType::Heads(_) => {
                 //
-                true
+                self.duration.has_stem()
             }
             _ => false,
         }

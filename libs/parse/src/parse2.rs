@@ -38,6 +38,7 @@ impl Parse2 {
         Parse2Utils::create_columns_of_parts2(cx, &mut bpvmap, parts_count)?;
         Parse2Utils::create_rows_from_columns(cx)?;
         Parse2Utils::set_stemitems_directions(cx)?;
+        Parse2Utils::set_stemitems_stemlengths(cx)?;
         Parse2Utils::calculate_head_positions(cx)?;
         Parse2Utils::map_notes_by_voices(cx)?;
         Parse2Utils::resolve_ties_from(cx)?;
@@ -94,7 +95,7 @@ impl Parse2 {
             let (note_ids, duration) = parse_notes(cx, value)?;
 
             let pattern_values = vec![NoteDuration::D4];
-            let stemitem_ids = StemItemUtils::create_stem_items_from_notes(cx, &note_ids, duration, pattern_values).unwrap();
+            let stemitem_ids = StemItemUtils::create_stem_items_from_notes(cx, &note_ids, duration, pattern_values)?;
             VoiceType2::NoteIds { note_ids, duration, stemitem_ids }
         };
 

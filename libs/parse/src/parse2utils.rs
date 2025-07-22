@@ -6,7 +6,7 @@ use core::{
     direction::DirectionUD,
     hpart::{HPartAttributes, HPartItem, HPartItemsColumn, HPartItemsColumnType, HPartItemsRow, HPartMusicType, HPartType, VoiceType2},
     key::KeySignature,
-    stems::{headpositions::HeadPositionUtils, stemdirections::StemDirectionUtils},
+    stems::{headpositions::HeadPositionUtils, stemdirections::StemDirectionUtils, stemitems::StemItemUtils},
     sysitem::SysItemTypeId,
     ties::{CheckedTieFrom, CheckedTieTo, TieFrom},
     time::{TimeDenominator, TimeNominator, TimeSignature},
@@ -569,6 +569,14 @@ impl Parse2Utils {
                 }
             }
         }
+
+        Ok(())
+    }
+
+    pub(crate) fn set_stemitems_stemlengths(cx: &CoreContext) -> Result<(), Box<dyn std::error::Error>> {
+        cx.stemitems.borrow().iter().for_each(|stemitem| {
+            let _ = StemItemUtils::calculate_stem_lengths_for_notes(cx, stemitem);
+        });
 
         Ok(())
     }
