@@ -304,7 +304,6 @@ fn calc_stemlengths_beamed(cx: &CoreContext, items: &[StemNoteItem], direction: 
     let last_note_id: NoteId = items.last().map_or(0, |item| item.note.id);
 
     let smallest_base_value = durations_smallest_base_value(&items.iter().map(|i| i.note.duration).collect::<Vec<_>>());
-    dbg!(smallest_base_value);
 
     match items.len() {
         0 => return Ok(()), // No items to process
@@ -349,10 +348,13 @@ fn calc_stemlengths_beamed(cx: &CoreContext, items: &[StemNoteItem], direction: 
 
                         for miditem in items.iter().skip(1).take(items.len() - 2) {
                             let mid_top_level = miditem.top_level as f32;
+                            let mid_bottom_level = miditem.bottom_level as f32;
                             if mid_top_level - lowest_top_level < 5.0 {
                                 first_top_level = mid_top_level - 4.0;
                                 last_top_level = mid_top_level - 4.0;
                             }
+
+                            stemitemlevels.insert(miditem.note.id, (direction.clone(), mid_top_level, mid_bottom_level));
                         }
                     }
 
@@ -375,12 +377,12 @@ fn calc_stemlengths_beamed(cx: &CoreContext, items: &[StemNoteItem], direction: 
                     // compensate for 16ths and 32nds
                     match smallest_base_value {
                         16 => {
-                            first_top_level = first_top_level + 1.0;
-                            last_top_level = last_top_level + 1.0;
+                            first_bottom_level = first_bottom_level + 1.0;
+                            last_bottom_level = last_bottom_level + 1.0;
                         }
                         32 => {
-                            first_top_level = first_top_level + 2.0;
-                            last_top_level = last_top_level + 2.0;
+                            first_bottom_level = first_bottom_level + 2.0;
+                            last_bottom_level = last_bottom_level + 2.0;
                         }
                         _ => {}
                     }
@@ -392,6 +394,7 @@ fn calc_stemlengths_beamed(cx: &CoreContext, items: &[StemNoteItem], direction: 
                         let lowest_bottom_level = first_bottom_level.max(last_bottom_level);
 
                         for miditem in items.iter().skip(1).take(items.len() - 2) {
+                            let mid_top_level = miditem.top_level as f32;
                             let mid_bottom_level = miditem.bottom_level as f32;
                             dbg!(lowest_bottom_level, mid_bottom_level);
 
@@ -399,6 +402,7 @@ fn calc_stemlengths_beamed(cx: &CoreContext, items: &[StemNoteItem], direction: 
                                 first_bottom_level = mid_bottom_level + 4.0;
                                 last_bottom_level = mid_bottom_level + 4.0;
                             }
+                            stemitemlevels.insert(miditem.note.id, (direction.clone(), mid_top_level, mid_bottom_level));
                         }
                     }
 
