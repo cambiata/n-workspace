@@ -35,7 +35,7 @@ impl Render {
         graphic_items
     }
 
-    pub fn render_gridcontext_with_glyphitem(gcx: &'static GridContext<GlyphItem>) -> GraphicItems {
+    pub fn render_music_glyphitems(gcx: &'static GridContext<GlyphItem>) -> GraphicItems {
         let mut graphic_items = GraphicItems::new();
         let cx_rows = &gcx.rows.borrow();
         let cx_cols_overlaps = &gcx.cols_widths.borrow();

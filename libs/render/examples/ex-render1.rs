@@ -40,7 +40,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut graphic_items = GraphicItems::new();
     let notelines = Render::render_notelines(&gcx);
     graphic_items.extend(notelines);
-    let glyphitems = Render::render_gridcontext_with_glyphitem(&gcx);
+    let glyphitems = Render::render_music_glyphitems(&gcx);
     graphic_items.extend(glyphitems);
 
     let svg = SvgBuilder::new();
