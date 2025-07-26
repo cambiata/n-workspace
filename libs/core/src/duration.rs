@@ -132,7 +132,7 @@ impl NoteDuration {
         }
     }
 
-    pub fn get_base_value(self) -> i8 {
+    pub fn get_base_value(self) -> u8 {
         match self {
             NoteDuration::D1Dot | NoteDuration::D1 => 1,
             NoteDuration::D2Dot | NoteDuration::D2 | NoteDuration::D2Tri => 2,
@@ -150,12 +150,19 @@ impl Default for NoteDuration {
     }
 }
 
-pub fn durations_smallest_base_value(durations: &[NoteDuration]) -> i8 {
-    let mut smallest = 0;
-    for duration in durations {
-        smallest = smallest.max(duration.get_base_value() as i8);
+pub struct DurationUtils;
+impl DurationUtils {
+    pub fn durations_smallest_base_value(durations: &[NoteDuration]) -> i8 {
+        let mut smallest = 0;
+        for duration in durations {
+            smallest = smallest.max(duration.get_base_value() as i8);
+        }
+        smallest
     }
-    smallest
+
+    pub fn get_base_values(durations: &[NoteDuration]) -> Vec<i8> {
+        durations.iter().map(|d| d.get_base_value() as i8).collect()
+    }
 }
 
 // pub fn duration_from(v: usize) -> Result<Duration> {

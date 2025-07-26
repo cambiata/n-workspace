@@ -62,15 +62,16 @@ pub fn get_graphic_items_from_glyph(movex: f32, movey: f32, rect: &Rectangle, gl
         }
 
         GlyphItem::Clef(_ctype) => {
-            graphic_items.push(GraphicItem::Rect(rect.0 + movex, rect.1 + movey, rect.2, rect.3, Stroke::None, Fill::Solid(Color::LightGray), None));
-            graphic_items.push(GraphicItem::Path(
-                GLYPH_FIVELINES.to_vec(),
-                rect.0 + movex,
-                rect.1 + movey + y_zero,
-                Stroke::None,
-                Fill::Solid(Color::Red),
-                None,
-            ));
+            // graphic_items.push(GraphicItem::Rect(rect.0 + movex, rect.1 + movey, rect.2, rect.3, Stroke::None, Fill::Solid(Color::LightGray), None));
+
+            // graphic_items.push(GraphicItem::Path(
+            //     GLYPH_FIVELINES.to_vec(),
+            //     rect.0 + movex,
+            //     rect.1 + movey + y_zero,
+            //     Stroke::None,
+            //     Fill::Solid(Color::Red),
+            //     None,
+            // ));
 
             let curve = match _ctype {
                 ClefSignature::Treble => GLYPH_CLEF_TREBLE,

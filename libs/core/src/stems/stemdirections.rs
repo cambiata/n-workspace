@@ -18,7 +18,7 @@ impl StemDirectionUtils {
                 stemitem.direction = Some(direction.clone());
                 cx.map_noteid_direction.borrow_mut().insert(item.note.id, direction.clone());
             }
-            StemType::NotesBeamed(ref mut items) => {
+            StemType::NotesBeamed(ref mut items, _) => {
                 let top_level = items.iter().map(|item| item.top_level).min().unwrap();
                 let bottom_level = items.iter().map(|item| item.bottom_level).max().unwrap();
                 let direction = DirectionUAD::from_level(bottom_level + top_level);
@@ -40,7 +40,7 @@ impl StemDirectionUtils {
             StemType::NoteWithStem(ref mut item) => {
                 cx.map_noteid_direction.borrow_mut().insert(item.note.id, force_direction.clone());
             }
-            StemType::NotesBeamed(ref mut items) => {
+            StemType::NotesBeamed(ref mut items, _) => {
                 for item in items.iter_mut() {
                     cx.map_noteid_direction.borrow_mut().insert(item.note.id, force_direction.clone());
                 }
@@ -63,7 +63,7 @@ pub fn calculate_stemitem_directions(cx: &CoreContext, ptype: &PartType) -> Resu
                             let direction = DirectionUAD::from_level(item.bottom_level + item.top_level);
                             stemitem.direction = Some(direction);
                         }
-                        StemType::NotesBeamed(ref items) => {
+                        StemType::NotesBeamed(ref items, _) => {
                             let top_level = items.iter().map(|item| item.top_level).min().unwrap();
                             let bottom_level = items.iter().map(|item| item.bottom_level).max().unwrap();
                             let direction = DirectionUAD::from_level(bottom_level + top_level);
@@ -86,7 +86,7 @@ pub fn calculate_stemitem_directions(cx: &CoreContext, ptype: &PartType) -> Resu
                                 let direction = DirectionUAD::from_level(item.bottom_level + item.top_level);
                                 stemitem.direction = Some(direction);
                             }
-                            StemType::NotesBeamed(ref items) => {
+                            StemType::NotesBeamed(ref items, _) => {
                                 let top_level = items.iter().map(|item| item.top_level).min().unwrap();
                                 let bottom_level = items.iter().map(|item| item.bottom_level).max().unwrap();
                                 let direction = DirectionUAD::from_level(bottom_level + top_level);
@@ -107,7 +107,7 @@ pub fn calculate_stemitem_directions(cx: &CoreContext, ptype: &PartType) -> Resu
                                 let direction = DirectionUAD::from_level(item.bottom_level + item.top_level);
                                 stemitem.direction = Some(direction);
                             }
-                            StemType::NotesBeamed(ref items) => {
+                            StemType::NotesBeamed(ref items, _) => {
                                 let top_level = items.iter().map(|item| item.top_level).min().unwrap();
                                 let bottom_level = items.iter().map(|item| item.bottom_level).max().unwrap();
                                 let direction = DirectionUAD::from_level(bottom_level + top_level);

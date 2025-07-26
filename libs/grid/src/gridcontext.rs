@@ -96,16 +96,13 @@ where
         // dbg!(&minimal_width);
         // dbg!(&minimal_spacing);
 
-        let alloted_spacing = self.calculate_alloted_col_spacing(allotments, 1.9)?;
+        let alloted_spacing = self.calculate_alloted_col_spacing(allotments, 2.2)?;
         // dbg!(&alloted_spacing);
 
         let final_spacing = self.calculate_final_col_spacing(&minimal_spacing, &alloted_spacing)?;
         let final_width = final_spacing.iter().sum::<f32>();
-        // dbg!(&final_width);
-        // dbg!(&final_spacing);
 
         self.set_cols_widths(final_spacing)?;
-
         Ok(())
     }
 

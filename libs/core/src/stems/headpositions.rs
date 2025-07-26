@@ -31,7 +31,7 @@ impl HeadPositionUtils {
                     // positions_map.push((stemitem.id, positions));
                     // item.head_positions = Some(positions);
                 }
-                StemType::NotesBeamed(ref items) => {
+                StemType::NotesBeamed(ref items, _) => {
                     // Handle beamed notes similarly
                     for item in items.iter() {
                         let head_ids_levels = item.note.get_head_ids_and_levels().unwrap();

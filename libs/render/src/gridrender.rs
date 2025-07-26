@@ -6,22 +6,46 @@ use graphics::{
     stroke::Stroke,
 };
 use grid::{gridcontext::GridContext, griditem::GridItemType};
-use score::{constants::SPACE6, glyphitem::GlyphItem};
+use score::{
+    constants::{SPACE, SPACE6},
+    glyphitem::GlyphItem,
+};
 use svg::svg_renderer::SvgBuilder;
 
 pub struct Render;
 impl Render {
-    pub fn render_gridcontext_with_glyphitem(cx: &'static GridContext<GlyphItem>) -> String {
+    pub fn render_notelines(gcx: &'static GridContext<GlyphItem>) -> GraphicItems {
         let mut graphic_items = GraphicItems::new();
-        let cx_rows = &cx.rows.borrow();
-        let cx_cols_overlaps = &cx.cols_widths.borrow();
+        let cx_rows = &gcx.rows.borrow();
+        let cols_widths = &gcx.cols_widths.borrow();
+        let mut move_y = 0.0;
+        for row in cx_rows.iter() {
+            let mut left_x = cols_widths[0];
+            for (colidx, widths) in cols_widths.windows(2).enumerate() {
+                let width = widths[1];
+                for i in -2..=2 {
+                    let line_y = move_y + SPACE * i as f32;
+                    graphic_items.push(GraphicItem::Line(left_x, line_y, left_x + width, line_y, Stroke::Solid(1.0, Color::Black), None));
+                }
+                left_x += width;
+            }
+
+            move_y += SPACE6;
+        }
+        graphic_items
+    }
+
+    pub fn render_gridcontext_with_glyphitem(gcx: &'static GridContext<GlyphItem>) -> GraphicItems {
+        let mut graphic_items = GraphicItems::new();
+        let cx_rows = &gcx.rows.borrow();
+        let cx_cols_overlaps = &gcx.cols_widths.borrow();
         let mut move_y = 0.0;
 
         for row in cx_rows.iter() {
             let mut move_x = 0.0;
             for (colidx, item_id) in row.item_ids.iter().enumerate() {
                 move_x += cx_cols_overlaps[colidx];
-                let item = &cx.items.borrow()[*item_id];
+                let item = &gcx.items.borrow()[*item_id];
                 match item.gitype {
                     GridItemType::Rectangles(ref glyph_items) => {
                         for (rect, glyph_item) in glyph_items.iter() {
@@ -36,23 +60,19 @@ impl Render {
             move_y += SPACE6;
         }
 
-        let mut move_x = 0.0;
-        for (_colidx, overlap) in cx_cols_overlaps.iter().enumerate() {
-            move_x = move_x + *overlap;
-            graphic_items.push(GraphicItem::Line(move_x - 0.1, 0.0, move_x, move_y, Stroke::Solid(0.2, Color::RGBA(0, 0, 0, 0.2)), None));
-        }
-
-        let svg = SvgBuilder::new();
-        let svg_string = svg.build(graphic_items, None);
-
-        svg_string
+        // let mut move_x = 0.0;
+        // for (_colidx, overlap) in cx_cols_overlaps.iter().enumerate() {
+        //     move_x = move_x + *overlap;
+        //     graphic_items.push(GraphicItem::Line(move_x - 0.1, 0.0, move_x, move_y, Stroke::Solid(0.2, Color::RGBA(0, 0, 0, 0.2)), None));
+        // }
+        graphic_items
     }
 
     #[allow(dead_code)]
-    pub fn render_gridcontext_with_color(cx: &'static GridContext<Color>) -> String {
+    pub fn render_gridcontext_with_color(gcx: &'static GridContext<Color>) -> String {
         let mut graphic_items = GraphicItems::new();
-        let cx_rows = &cx.rows.borrow();
-        let cx_cols_overlaps = &cx.cols_widths.borrow();
+        let cx_rows = &gcx.rows.borrow();
+        let cx_cols_overlaps = &gcx.cols_widths.borrow();
 
         let mut move_y = 0.0;
 
@@ -60,7 +80,7 @@ impl Render {
             let mut move_x = 0.0;
             for (colidx, item_id) in row.item_ids.iter().enumerate() {
                 move_x += cx_cols_overlaps[colidx];
-                let item = &cx.items.borrow()[*item_id];
+                let item = &gcx.items.borrow()[*item_id];
                 match item.gitype {
                     GridItemType::Rectangles(ref items) => {
                         for (rect, color) in items.iter() {

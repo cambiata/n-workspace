@@ -2,7 +2,7 @@ use crate::{
     constants::STEM_DEFAULT_LENGTH,
     context::CoreContext,
     direction::DirectionUD,
-    duration::{durations_smallest_base_value, NoteDuration, SumDuration},
+    duration::{DurationUtils, NoteDuration, SumDuration},
     note::{self, NoteId, NoteItem},
 };
 
@@ -22,7 +22,7 @@ pub enum StemType {
     NotNote(StemNoteItem),
     NoteWithoutStem(StemNoteItem),
     NoteWithStem(StemNoteItem),
-    NotesBeamed(Vec<StemNoteItem>),
+    NotesBeamed(Vec<StemNoteItem>, Vec<u8>),
 }
 
 #[derive(Debug, Clone)]
@@ -57,7 +57,6 @@ impl StemItemUtils {
         let mut duration: usize = 0;
         for group in groups.iter() {
             let stem_item_id = cx.stemitems.borrow().len() as StemItemId;
-
             let t: Result<StemType, Box<dyn std::error::Error>> = match group.len() {
                 // no group of zero notes
                 0 => todo!("Should not happen"),
@@ -105,8 +104,9 @@ impl StemItemUtils {
                 // group of two or more notes
                 _ => {
                     let mut infos: Vec<StemNoteItem> = Vec::new();
-
                     position = group.first().unwrap().position;
+
+                    let base_values = group.iter().map(|n| n.duration.get_base_value()).collect::<Vec<_>>();
 
                     for note in group.iter() {
                         // Store the stem item id for the note
@@ -131,7 +131,7 @@ impl StemItemUtils {
                         }
                         duration += note.duration as usize;
                     }
-                    Ok(StemType::NotesBeamed(infos))
+                    Ok(StemType::NotesBeamed(infos, base_values))
                 }
             };
             let t = t?;
@@ -247,7 +247,7 @@ impl StemItemUtils {
                 StemType::NoteWithStem(item) => {
                     let _ = calc_stemlengths_single(cx, item, direction)?;
                 }
-                StemType::NotesBeamed(items) => {
+                StemType::NotesBeamed(items, _) => {
                     calc_stemlengths_beamed(cx, items, direction)?;
                 }
                 _ => {}
@@ -303,7 +303,7 @@ fn calc_stemlengths_beamed(cx: &CoreContext, items: &[StemNoteItem], direction: 
     let mut last_top_level: f32 = items.last().map_or(0.0, |item| item.top_level as f32);
     let last_note_id: NoteId = items.last().map_or(0, |item| item.note.id);
 
-    let smallest_base_value = durations_smallest_base_value(&items.iter().map(|i| i.note.duration).collect::<Vec<_>>());
+    let smallest_base_value = DurationUtils::durations_smallest_base_value(&items.iter().map(|i| i.note.duration).collect::<Vec<_>>());
 
     match items.len() {
         0 => return Ok(()), // No items to process
