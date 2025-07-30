@@ -14,6 +14,7 @@ where
     pub cols: RefCell<Vec<GridColumn>>,
     pub cols_widths: RefCell<Vec<f32>>,
     pub rows: RefCell<Vec<GridRow>>,
+    pub rows_heights: RefCell<Vec<f32>>,
 }
 
 #[allow(unused_variables)]
@@ -28,6 +29,7 @@ where
             cols_widths: RefCell::new(Vec::new()),
 
             rows: RefCell::new(Vec::new()),
+            rows_heights: RefCell::new(Vec::new()),
         };
         Box::leak(Box::new(cx))
     }
@@ -216,6 +218,24 @@ where
     fn calculate_final_col_spacing(&self, minimal_spacing: &[f32], alloted_spacing: &[f32]) -> Result<Vec<f32>, Box<dyn std::error::Error>> {
         let final_spacing = minimal_spacing.iter().zip(alloted_spacing.iter()).map(|(minimal, alloted)| minimal.max(*alloted)).collect::<Vec<f32>>();
         Ok(final_spacing)
+    }
+
+    pub fn handle_row_heights(&self) -> Result<(), Box<dyn std::error::Error>> {
+        let rows = self.rows.borrow().len();
+        let mut heights = self.rows_heights.borrow_mut();
+
+        //------------------------------------------------
+        // set default row heights
+        heights.push(0.0);
+        if rows > 0 {
+            for r_idx in 1..rows {
+                heights.push(80.0);
+            }
+        }
+
+        dbg!(&heights);
+
+        Ok(())
     }
 }
 

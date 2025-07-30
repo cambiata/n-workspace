@@ -18,10 +18,13 @@ impl Render {
         let mut graphic_items = GraphicItems::new();
         let cx_rows = &gcx.rows.borrow();
         let cols_widths = &gcx.cols_widths.borrow();
+        let row_heights = &gcx.rows_heights.borrow();
+
         let mut move_y = 0.0;
-        for row in cx_rows.iter() {
+        for (row_idx, _row) in cx_rows.iter().enumerate() {
+            move_y += row_heights[row_idx];
             let mut left_x = cols_widths[0];
-            for (colidx, widths) in cols_widths.windows(2).enumerate() {
+            for (_colidx, widths) in cols_widths.windows(2).enumerate() {
                 let width = widths[1];
                 for i in -2..=2 {
                     let line_y = move_y + SPACE * i as f32;
@@ -29,8 +32,6 @@ impl Render {
                 }
                 left_x += width;
             }
-
-            move_y += SPACE6;
         }
         graphic_items
     }
@@ -39,9 +40,13 @@ impl Render {
         let mut graphic_items = GraphicItems::new();
         let cx_rows = &gcx.rows.borrow();
         let cx_cols_overlaps = &gcx.cols_widths.borrow();
+        let row_heights = &gcx.rows_heights.borrow();
+
         let mut move_y = 0.0;
 
-        for row in cx_rows.iter() {
+        for (row_idx, row) in cx_rows.iter().enumerate() {
+            move_y += row_heights[row_idx];
+
             let mut move_x = 0.0;
             for (colidx, item_id) in row.item_ids.iter().enumerate() {
                 move_x += cx_cols_overlaps[colidx];
@@ -57,7 +62,6 @@ impl Render {
                     }
                 }
             }
-            move_y += SPACE6;
         }
 
         // let mut move_x = 0.0;

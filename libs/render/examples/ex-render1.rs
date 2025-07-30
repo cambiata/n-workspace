@@ -11,13 +11,12 @@ use svg::svg_renderer::SvgBuilder;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cx = CoreContext::new();
-    let _ = Parse2::sysitemlist2(cx, "clef G F | D8 -3 n-1 #4 3 r -2 -2 -3 / 0 ", false).unwrap();
+    // let _ = Parse2::sysitemlist2(cx, "clef G F | D8 -3 n-1 #4 3 r -2 -2 -3 / 0 ", false).unwrap();
+    let _ = Parse2::sysitemlist2(cx, "clef G | D8 0 1 2 r / 0", false).unwrap();
     // let _ = Parse2::sysitemlist2(cx, "|clef G |0 -1 -2 -3 -4 -5 -6 -7  5 4 3 2 1 0 -1 -2 -3 -4 -5 % 1 1 2 3 4 5 6 7 ", false).unwrap();
 
     let scx = ScoreContext::new();
     BuildScore::build(&scx, &cx)?;
-
-    dbg!(&cx.map_noteid_stemitemlevels);
 
     //-------------------------------------------------
     // Turn 180 degrees...
@@ -36,6 +35,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     gcx.add_items(items2)?;
     let allotments: Vec<f32> = scx.grid_column_allotment.borrow().to_vec();
     gcx.handle_column_spacing(&allotments)?;
+
+    gcx.handle_row_heights()?;
 
     let mut graphic_items = GraphicItems::new();
     let notelines = Render::render_notelines(&gcx);
