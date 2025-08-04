@@ -6,10 +6,7 @@ use graphics::{
     stroke::Stroke,
 };
 use grid::{gridcontext::GridContext, griditem::GridItemType};
-use score::{
-    constants::{SPACE, SPACE6},
-    glyphitem::GlyphItem,
-};
+use score::{constants::SPACE, glyphitem::GlyphItem};
 use svg::svg_renderer::SvgBuilder;
 
 pub struct Render;

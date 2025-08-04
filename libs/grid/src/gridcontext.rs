@@ -92,13 +92,13 @@ where
 
     //----------------------------------------------------------
 
-    pub fn handle_column_spacing(&self, allotments: &Vec<f32>) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn handle_column_spacing(&self, allotments: &Vec<f32>, spacing_factor: f32) -> Result<(), Box<dyn std::error::Error>> {
         let minimal_spacing = self.calculate_minimal_col_spacing()?;
         let minimal_width = minimal_spacing.iter().sum::<f32>();
         // dbg!(&minimal_width);
         // dbg!(&minimal_spacing);
 
-        let alloted_spacing = self.calculate_alloted_col_spacing(allotments, 2.2)?;
+        let alloted_spacing = self.calculate_alloted_col_spacing(allotments, spacing_factor)?;
         // dbg!(&alloted_spacing);
 
         let final_spacing = self.calculate_final_col_spacing(&minimal_spacing, &alloted_spacing)?;
@@ -233,7 +233,7 @@ where
             }
         }
 
-        dbg!(&heights);
+        // dbg!(&heights);
 
         Ok(())
     }

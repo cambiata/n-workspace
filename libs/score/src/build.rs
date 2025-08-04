@@ -154,6 +154,7 @@ impl BuildScore {
                     rects.push(create_space_rectangle_for_first_note_in_bar(leftmost_accidental_x.min(leftmost_head_x)));
                 }
             }
+
             ComplexType::UpperAndLower(upper, lower, _) => {
                 // get values to avoid collisions with rests
                 let upper_bottom_y = get_upper_bottom_level(upper) * SPACE_HALF;
@@ -355,6 +356,7 @@ impl BuildScore {
 
     fn build_stem_root(cx: &CoreContext, note: &NoteItem, _part_idx: usize, _position: usize, _cplx_config: ComplexConfiguration) -> Result<Vec<(Rectangle, GlyphItem)>, Box<dyn std::error::Error>> {
         let stemitems = cx.stemitems.borrow();
+        let noteid_stemitemid = cx.map_noteid_stemitemid.borrow();
         let stemitemlevels = cx.map_noteid_stemitemlevels.borrow();
 
         let mut rects: Vec<(Rectangle, GlyphItem)> = Vec::new();
@@ -367,11 +369,15 @@ impl BuildScore {
         //----------------------------------------------
         // Build stem rectangle
         let stemitem_levels = stemitemlevels.get(&note.id);
+
         if let Some((direction, upper_level, lower_level)) = stemitem_levels {
             // dbg!(&direction, &upper_level, &mid_level, &lower_level);
             let stem_y = upper_level * SPACE_HALF;
             let stem_length = (lower_level - upper_level) * SPACE_HALF;
             let stem_x = head_offset_x + if *direction == DirectionUD::Up { head_width - stem_width } else { 0.0 };
+
+            // dbg!(&stem_x, &stem_length, &stemitem_levels);
+
             match *direction {
                 DirectionUD::Up => {
                     let rect: Rectangle = (stem_x, stem_y, stem_width, stem_length);
@@ -388,7 +394,9 @@ impl BuildScore {
             //---------------
             // Flag rectangles
             if note.duration.has_flag() {
-                if let Some(stemitem) = stemitems.get(note.id) {
+                let stemitem_id = noteid_stemitemid.get(&note.id).expect("Stem item ID not found for note");
+                if let Some(stemitem) = stemitems.get(*stemitem_id) {
+                    // dbg!(&stemitem.stype, note.id);
                     match &stemitem.stype {
                         StemType::NoteWithStem(ref _note) => match direction {
                             DirectionUD::Up => {

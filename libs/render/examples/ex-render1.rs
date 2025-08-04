@@ -12,8 +12,11 @@ use svg::svg_renderer::SvgBuilder;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cx = CoreContext::new();
     // let _ = Parse2::sysitemlist2(cx, "clef G F | D8 -3 n-1 #4 3 r -2 -2 -3 / 0 ", false).unwrap();
-    let _ = Parse2::sysitemlist2(cx, "clef G | D8 0 1 2 r / 0", false).unwrap();
+    let _ = Parse2::sysitemlist2(cx, "D16 0 0 0 4 0 0 b0 -3#", false).unwrap();
+
     // let _ = Parse2::sysitemlist2(cx, "|clef G |0 -1 -2 -3 -4 -5 -6 -7  5 4 3 2 1 0 -1 -2 -3 -4 -5 % 1 1 2 3 4 5 6 7 ", false).unwrap();
+
+    // dbg!(&cx.stemitems.borrow());
 
     let scx = ScoreContext::new();
     BuildScore::build(&scx, &cx)?;
@@ -33,19 +36,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     //-------------------------------------------------
     let gcx = GridContext::<GlyphItem>::new();
     gcx.add_items(items2)?;
-    let allotments: Vec<f32> = scx.grid_column_allotment.borrow().to_vec();
-    gcx.handle_column_spacing(&allotments)?;
 
+    // calculate distances
+    let allotments: Vec<f32> = scx.grid_column_allotment.borrow().to_vec();
+    gcx.handle_column_spacing(&allotments, 2.3)?;
     gcx.handle_row_heights()?;
 
+    // create graphic items
     let mut graphic_items = GraphicItems::new();
     let notelines = Render::render_notelines(&gcx);
     graphic_items.extend(notelines);
     let glyphitems = Render::render_music_glyphitems(&gcx);
     graphic_items.extend(glyphitems);
 
-    let svg = SvgBuilder::new();
-    let svg_string = svg.build(graphic_items, None);
+    // save to svg
+    let svg_string = SvgBuilder::new().build(graphic_items, None);
     fs::write("libs/render/examples/ex-render1.svg", svg_string)?;
 
     Ok(())

@@ -261,17 +261,13 @@ impl StemItemUtils {
 }
 
 fn calc_stemlengths_single(cx: &CoreContext, item: &StemNoteItem, direction: &DirectionUD) -> Result<(), Box<dyn std::error::Error>> {
-    // Implement logic for calculating stem lengths for beamed notes in the down direction
+    // Implement logic for calculating stem lengths for single notes
     let mut stemitemlevels = cx.map_noteid_stemitemlevels.borrow_mut();
-    // let note_configs = cx.map_noteid_configuration.borrow();
-    // let note_config = note_configs.get(&item.note.id).unwrap();
-    // dbg!(note_config);
 
     let mut top_level = item.top_level as f32;
     let mut bottom_level = item.bottom_level as f32;
     let note_id = item.note.id;
-    let smallest_duration = item.note.duration.get_base_value();
-    dbg!(smallest_duration);
+    let _smallest_duration = item.note.duration.get_base_value();
 
     match direction {
         DirectionUD::Up => {
@@ -292,7 +288,7 @@ fn calc_stemlengths_single(cx: &CoreContext, item: &StemNoteItem, direction: &Di
 }
 
 fn calc_stemlengths_beamed(cx: &CoreContext, items: &[StemNoteItem], direction: &DirectionUD) -> Result<(), Box<dyn std::error::Error>> {
-    // Implement logic for calculating stem lengths for beamed notes in the down direction
+    // Implement logic for calculating stem lengths for beamed notes
     let mut stemitemlevels = cx.map_noteid_stemitemlevels.borrow_mut();
 
     let mut first_top_level: f32 = items.first().map_or(0.0, |item| item.top_level as f32);
@@ -303,7 +299,7 @@ fn calc_stemlengths_beamed(cx: &CoreContext, items: &[StemNoteItem], direction: 
     let mut last_top_level: f32 = items.last().map_or(0.0, |item| item.top_level as f32);
     let last_note_id: NoteId = items.last().map_or(0, |item| item.note.id);
 
-    let smallest_base_value = DurationUtils::durations_smallest_base_value(&items.iter().map(|i| i.note.duration).collect::<Vec<_>>());
+    let _smallest_base_value = DurationUtils::durations_smallest_base_value(&items.iter().map(|i| i.note.duration).collect::<Vec<_>>());
 
     match items.len() {
         0 => return Ok(()), // No items to process
@@ -326,22 +322,23 @@ fn calc_stemlengths_beamed(cx: &CoreContext, items: &[StemNoteItem], direction: 
                     }
 
                     // compensate for 16ths and 32nds
-                    match smallest_base_value {
-                        16 => {
-                            first_top_level = first_top_level - 1.0;
-                            last_top_level = last_top_level - 1.0;
-                        }
-                        32 => {
-                            first_top_level = first_top_level - 2.0;
-                            last_top_level = last_top_level - 2.0;
-                        }
-                        _ => {}
-                    }
+                    // match smallest_base_value {
+                    //     16 => {
+                    //         first_top_level = first_top_level - 1.0;
+                    //         last_top_level = last_top_level - 1.0;
+                    //     }
+                    //     32 => {
+                    //         first_top_level = first_top_level - 2.0;
+                    //         last_top_level = last_top_level - 2.0;
+                    //     }
+                    //     _ => {}
+                    // }
 
                     // Ensure the top level does not go below 0
                     first_top_level = (first_top_level - STEM_DEFAULT_LENGTH).min(0.0);
                     last_top_level = (last_top_level - STEM_DEFAULT_LENGTH).min(0.0);
 
+                    //---------------------------------------------------------------
                     // if 3 or more notes, adjust the top levels
                     if items.len() > 2 {
                         let lowest_top_level = first_top_level.max(last_top_level);
@@ -361,42 +358,44 @@ fn calc_stemlengths_beamed(cx: &CoreContext, items: &[StemNoteItem], direction: 
                     stemitemlevels.insert(first_note_id, (direction.clone(), first_top_level, first_bottom_level));
                     stemitemlevels.insert(last_note_id, (direction.clone(), last_top_level, last_bottom_level));
                 }
+
                 DirectionUD::Down => {
                     // For downward stem, the bottom level is the lowermost note
                     let bottom_diff = first_bottom_level - last_bottom_level;
                     match bottom_diff {
-                        _ if bottom_diff < 1.0 => {
-                            first_bottom_level = last_bottom_level - 1.0;
-                        }
-                        _ if bottom_diff > -1.0 => {
+                        _ if bottom_diff > 1.0 => {
                             last_bottom_level = first_bottom_level - 1.0;
+                        }
+                        _ if bottom_diff < -1.0 => {
+                            first_bottom_level = last_bottom_level - 1.0;
                         }
                         _ => {}
                     }
 
                     // compensate for 16ths and 32nds
-                    match smallest_base_value {
-                        16 => {
-                            first_bottom_level = first_bottom_level + 1.0;
-                            last_bottom_level = last_bottom_level + 1.0;
-                        }
-                        32 => {
-                            first_bottom_level = first_bottom_level + 2.0;
-                            last_bottom_level = last_bottom_level + 2.0;
-                        }
-                        _ => {}
-                    }
+                    // match smallest_base_value {
+                    //     16 => {
+                    //         first_bottom_level = first_bottom_level + 1.0;
+                    //         last_bottom_level = last_bottom_level + 1.0;
+                    //     }
+                    //     32 => {
+                    //         first_bottom_level = first_bottom_level + 2.0;
+                    //         last_bottom_level = last_bottom_level + 2.0;
+                    //     }
+                    //     _ => {}
+                    // }
 
                     first_bottom_level = (first_bottom_level + STEM_DEFAULT_LENGTH).max(0.0);
                     last_bottom_level = (last_bottom_level + STEM_DEFAULT_LENGTH).max(0.0);
 
+                    //---------------------------------------------------------------
+                    // if 3 or more notes, adjust the bottom levels
                     if items.len() > 2 {
                         let lowest_bottom_level = first_bottom_level.max(last_bottom_level);
 
                         for miditem in items.iter().skip(1).take(items.len() - 2) {
                             let mid_top_level = miditem.top_level as f32;
                             let mid_bottom_level = miditem.bottom_level as f32;
-                            dbg!(lowest_bottom_level, mid_bottom_level);
 
                             if lowest_bottom_level - mid_bottom_level < 5.0 {
                                 first_bottom_level = mid_bottom_level + 4.0;
