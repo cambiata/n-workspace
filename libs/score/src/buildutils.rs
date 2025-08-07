@@ -22,7 +22,7 @@ impl BuildUtils {
         let mut map_ids: BTreeMap<(usize, usize), usize> = BTreeMap::new();
 
         hparts.iter().enumerate().for_each(|(part_idx, hpart)| {
-            if let HPartType::Music { complexes, .. } = &hpart.hptype {
+            if let HPartType::Music { complexes, mtype, .. } = &hpart.hptype {
                 // map.insert(part_idx, Vec::new());
                 for complex_id in complexes {
                     let complex = cx_complexes.get(*complex_id).unwrap();

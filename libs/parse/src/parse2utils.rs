@@ -58,6 +58,7 @@ impl Parse2Utils {
                     };
                     _cx.columns.borrow_mut().push(column);
                 }
+
                 SysItemTypeId::Barlines(_segments) => {
                     let mut items_ids: Vec<usize> = vec![];
                     for part_idx in 0..parts_count {
@@ -89,7 +90,6 @@ impl Parse2Utils {
 
                 SysItemTypeId::Parts(parts) => {
                     let mut column_duration: usize = 0;
-
                     let mut item_types: Vec<HPartType> = vec![];
 
                     for part_idx in 0..parts_count {
@@ -104,7 +104,8 @@ impl Parse2Utils {
                         let default_duration = TimeSignature::get_duration(&attr.time);
                         let htype = match item.len() {
                             1 => {
-                                let voicetype = Parse2::voicetype(_cx, &item[0], default_duration)?;
+                                let voicetype: VoiceType2 = Parse2::voicetype(_cx, &item[0], default_duration)?;
+
                                 let complexes = match &voicetype {
                                     VoiceType2::NoteIds { note_ids, duration, stemitem_ids: _ } => {
                                         column_duration = column_duration.max(*duration);

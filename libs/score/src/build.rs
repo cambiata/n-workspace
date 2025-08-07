@@ -7,7 +7,7 @@ use core::{
     direction::DirectionUD,
     duration::NoteDuration,
     head::{HeadItem, HeadType, HeadVariant},
-    hpart::{HPartItemsColumnType, HPartType},
+    hpart::{HPartItemsColumnType, HPartMusicType, HPartType, VoiceType2},
     note::{NoteItem, NoteType},
     stems::stemitems::{StemHeadPosition, StemType},
     ties::CheckedTieTo,
@@ -41,7 +41,7 @@ impl BuildScore {
                     Self::build_barlines(scx, cx, ids.clone())?;
                 }
                 HPartItemsColumnType::Musics(ref ids) => {
-                    Self::build_musics(scx, cx, ids.clone(), item.position, item.duration)?;
+                    Self::build_music_parts(scx, cx, ids.clone(), item.position, item.duration)?;
                 }
             }
         }
@@ -100,12 +100,45 @@ impl BuildScore {
         Ok(())
     }
 
-    fn build_musics(scx: &ScoreContext, cx: &CoreContext, ids: Vec<usize>, _position: usize, duration: usize) -> Result<(), Box<dyn std::error::Error>> {
+    fn build_music_parts(scx: &ScoreContext, cx: &CoreContext, ids: Vec<usize>, _position: usize, duration: usize) -> Result<(), Box<dyn std::error::Error>> {
         let cx_hparts = cx.hparts.borrow();
         let cx_complexes = cx.complexes.borrow();
         let hparts = ids.iter().map(|id| &cx_hparts[*id]).collect::<Vec<_>>();
         let parts_count = hparts.len();
         let (positions, _durations, allotments, map_ids) = BuildUtils::get_complexes_positions_allotments(cx, &hparts, duration)?;
+
+        //-----------------------------------------
+        for (hpartidx, hpart) in hparts.iter().enumerate() {
+            match &hpart.hptype {
+                HPartType::Music { complexes, mtype, attr } => {
+                    dbg!(&mtype);
+                    match &mtype {
+                        HPartMusicType::TwoVoices { upper, lower } => {
+                            match &upper {
+                                VoiceType2::NoteIds { .. } => {}
+                                VoiceType2::Barpause(duration) => {
+                                    // Handle barpause
+                                }
+                            }
+                            match &lower {
+                                VoiceType2::NoteIds { .. } => {}
+                                VoiceType2::Barpause(_duration) => {
+                                    // Handle barpause
+                                }
+                            }
+                        }
+                        HPartMusicType::OneVoice { voice } => {
+                            // Harmony part, handle as needed
+                        }
+                    }
+                }
+                _ => panic!("Expected HPartType::Music, found {:?}", hpart.hptype),
+            }
+        }
+
+        //------------------------------------------------------
+
+        //------------------------------------------------------
 
         for (idx, position) in positions.iter().enumerate() {
             // each position corresponds to a column in the grid
@@ -122,6 +155,7 @@ impl BuildScore {
                     }
                 } else {
                     column_griditems.push(GridItemType::Empty);
+                    // column_griditems.push(GridItemType::Rectangles(vec![((0.0, 0.0, 20.0, 10.0), GlyphItem::XRect(Color::Red))]));
                 }
             }
             scx.grid_columns.borrow_mut().push(column_griditems);
