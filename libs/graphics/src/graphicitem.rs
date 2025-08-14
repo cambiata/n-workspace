@@ -1,11 +1,11 @@
 use crate::fill::Fill;
-use crate::path::{path_bounding_box, path_move, PathSegment};
+use crate::path::{PathSegment, PathUtils};
 use crate::stroke::Stroke;
 
 #[derive(Debug, Clone)]
 pub enum PathCache {
-    None,
-    Cached,
+    NoCache,
+    UseCache,
 }
 
 #[derive(Debug, Clone)]
@@ -52,7 +52,7 @@ pub fn items_move(items: GraphicItems, move_x: f32, move_y: f32) -> GraphicItems
             GraphicItem::Rect(x, y, w, h, stroke, fill, id) => GraphicItem::Rect(x + move_x, y + move_y, *w, *h, stroke.clone(), fill.clone(), id.clone()),
             GraphicItem::Ellipse(x, y, w, h, stroke, fill, id) => GraphicItem::Ellipse(x + move_x, y + move_y, *w, *h, stroke.clone(), fill.clone(), id.clone()),
             GraphicItem::Path(segments, x, y, stroke, fill, id) => {
-                let new_segments = path_move(segments.clone(), move_x, move_y);
+                let new_segments = PathUtils::path_move(segments.clone(), move_x, move_y);
                 GraphicItem::Path(new_segments, *x, *y, stroke.clone(), fill.clone(), id.clone())
             }
             GraphicItem::Text(x, y, text, id) => GraphicItem::Text(x + move_x, y + move_y, text.clone(), id.clone()),
@@ -86,7 +86,7 @@ pub fn items_bounding_box(items: &GraphicItems) -> (f32, f32, f32, f32) {
             max_y = max_y.max(*y + h);
         }
         GraphicItem::Path(segments, x, y, _, _, _) => {
-            let (min_x_, min_y_, max_x_, max_y_) = path_bounding_box(segments.clone());
+            let (min_x_, min_y_, max_x_, max_y_) = PathUtils::path_bounding_box(segments.clone());
             // dbg!(min_x_, min_y_, max_x_, max_y_, x, y);
 
             min_x = min_x.min(min_x_ + x);

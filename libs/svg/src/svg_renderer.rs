@@ -1,9 +1,9 @@
 use std::collections::HashSet;
-use std::path::Path;
 
 use graphics::fill::Fill;
 use graphics::graphicitem::{items_bounding_box, items_move, GraphicItem, GraphicItems, PathCache};
-use graphics::path::{path_to_string, path_to_string_move};
+
+use graphics::path::PathUtils;
 use graphics::stroke::Stroke;
 
 #[derive(Debug)]
@@ -32,7 +32,6 @@ impl SvgBuilder {
         if let Some(code) = code {
             svg.write_attribute("code", code.as_str());
         }
-
         // white background
         svg.start_element("rect");
         svg.write_attribute("x", "0");
@@ -76,13 +75,11 @@ impl SvgBuilder {
                     svg.end_element();
                 }
 
-                GraphicItem::Path(segments, x, y, stroke, fill, id) => {
-                    dbg!(id);
-                    match &id {
-                        PathCache::Cached => {
+                GraphicItem::Path(segments, x, y, stroke, fill, cache) => {
+                    match &cache {
+                        PathCache::UseCache => {
                             let s = format!("{:?}", segments);
                             let md5: String = format!("{:?}", md5::compute(s));
-                            dbg!(&md5);
                             if self.use_cache.contains(&md5) {
                                 // just add a use element
                                 svg.start_element("use");
@@ -100,7 +97,7 @@ impl SvgBuilder {
 
                                 svg.start_element("path");
                                 svg.write_attribute("id", md5.as_str());
-                                svg.write_attribute("d", path_to_string(segments.to_vec()).as_str());
+                                svg.write_attribute("d", PathUtils::path_to_string(segments.to_vec()).as_str());
                                 if let Stroke::Solid(w, color) = stroke {
                                     svg.write_attribute("stroke", color);
                                     svg.write_attribute("stroke-width", w);
@@ -122,9 +119,9 @@ impl SvgBuilder {
                             }
                         }
 
-                        PathCache::None => {
+                        PathCache::NoCache => {
                             svg.start_element("path");
-                            svg.write_attribute("d", path_to_string_move(segments.to_vec(), *x, *y).as_str());
+                            svg.write_attribute("d", PathUtils::path_to_string_move(segments.to_vec(), *x, *y).as_str());
                             if let Stroke::Solid(w, color) = stroke {
                                 svg.write_attribute("stroke", color);
                                 svg.write_attribute("stroke-width", w);

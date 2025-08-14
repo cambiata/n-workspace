@@ -46,7 +46,7 @@ pub fn get_graphic_items_from_glyph(movex: f32, movey: f32, rect: &Rectangle, gl
                 rect.1 + movey + y_zero - SPACE3 - SPACE_HALF,
                 Stroke::None,
                 Fill::Solid(Color::Black),
-                PathCache::Cached,
+                PathCache::UseCache,
             ));
         }
         GlyphItem::Accidental(_atype) => {
@@ -64,7 +64,7 @@ pub fn get_graphic_items_from_glyph(movex: f32, movey: f32, rect: &Rectangle, gl
                 rect.1 + movey + y_zero - SPACE2 - SPACE_HALF,
                 Stroke::None,
                 Fill::Solid(Color::Black),
-                PathCache::Cached,
+                PathCache::UseCache,
             ));
         }
 
@@ -97,7 +97,7 @@ pub fn get_graphic_items_from_glyph(movex: f32, movey: f32, rect: &Rectangle, gl
                 rect.1 + movey + y_zero + y,
                 Stroke::None,
                 Fill::Solid(Color::Black),
-                PathCache::Cached,
+                PathCache::UseCache,
             ));
         }
         GlyphItem::Rest(rtype) => {
@@ -116,7 +116,7 @@ pub fn get_graphic_items_from_glyph(movex: f32, movey: f32, rect: &Rectangle, gl
                 rect.1 + movey + y_zero - SPACE3,
                 Stroke::None,
                 Fill::Solid(Color::Black),
-                PathCache::None,
+                PathCache::NoCache,
             ));
         }
         _ => {
