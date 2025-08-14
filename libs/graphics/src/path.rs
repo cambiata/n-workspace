@@ -36,7 +36,22 @@ pub fn path_scale(segments: PathSegments, scale_x: f32, scale_y: f32) -> PathSeg
         .collect()
 }
 
-pub fn path_to_string(segments: PathSegments, move_x: f32, move_y: f32) -> String {
+pub fn path_to_string(segments: PathSegments) -> String {
+    use std::fmt::Write;
+    let mut path_buf = String::from("");
+    for segment in segments {
+        match segment {
+            PathSegment::M(x, y) => write!(path_buf, "M {} {} ", x, y).unwrap(),
+            PathSegment::L(x, y) => write!(path_buf, "L {} {} ", x, y).unwrap(),
+            PathSegment::Q(x1, y1, x2, y2) => write!(path_buf, "Q {} {} {} {} ", x1, y1, x2, y2).unwrap(),
+            PathSegment::C(x1, y1, x2, y2, x3, y3) => write!(path_buf, "C {} {} {} {} {} {} ", x1, y1, x2, y2, x3, y3).unwrap(),
+            PathSegment::Z => path_buf.push_str("Z "),
+        }
+    }
+    path_buf
+}
+
+pub fn path_to_string_move(segments: PathSegments, move_x: f32, move_y: f32) -> String {
     use std::fmt::Write;
     let mut path_buf = String::from("");
     for segment in segments {

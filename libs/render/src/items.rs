@@ -1,6 +1,12 @@
 use core::{accidental::Accidental, clef::ClefSignature, head::HeadType, rest::RestType};
 
-use graphics::{color::Color, fill::Fill, graphicitem::GraphicItem, rectangle::Rectangle, stroke::Stroke};
+use graphics::{
+    color::Color,
+    fill::Fill,
+    graphicitem::{GraphicItem, PathCache},
+    rectangle::Rectangle,
+    stroke::Stroke,
+};
 use score::{
     constants::{SPACE, SPACE2, SPACE3, SPACE_HALF},
     glyphitem::GlyphItem,
@@ -40,7 +46,7 @@ pub fn get_graphic_items_from_glyph(movex: f32, movey: f32, rect: &Rectangle, gl
                 rect.1 + movey + y_zero - SPACE3 - SPACE_HALF,
                 Stroke::None,
                 Fill::Solid(Color::Black),
-                None,
+                PathCache::Cached,
             ));
         }
         GlyphItem::Accidental(_atype) => {
@@ -58,7 +64,7 @@ pub fn get_graphic_items_from_glyph(movex: f32, movey: f32, rect: &Rectangle, gl
                 rect.1 + movey + y_zero - SPACE2 - SPACE_HALF,
                 Stroke::None,
                 Fill::Solid(Color::Black),
-                None,
+                PathCache::Cached,
             ));
         }
 
@@ -91,7 +97,7 @@ pub fn get_graphic_items_from_glyph(movex: f32, movey: f32, rect: &Rectangle, gl
                 rect.1 + movey + y_zero + y,
                 Stroke::None,
                 Fill::Solid(Color::Black),
-                None,
+                PathCache::Cached,
             ));
         }
         GlyphItem::Rest(rtype) => {
@@ -110,10 +116,9 @@ pub fn get_graphic_items_from_glyph(movex: f32, movey: f32, rect: &Rectangle, gl
                 rect.1 + movey + y_zero - SPACE3,
                 Stroke::None,
                 Fill::Solid(Color::Black),
-                None,
+                PathCache::None,
             ));
         }
-
         _ => {
             graphic_items.push(GraphicItem::Rect(rect.0 + movex, rect.1 + movey, rect.2, rect.3, Stroke::None, Fill::Solid(Color::LightGray), None));
         }

@@ -1,17 +1,22 @@
+use std::collections::HashSet;
+use std::path::Path;
+
 use graphics::fill::Fill;
-use graphics::graphicitem::{items_bounding_box, items_move, GraphicItem, GraphicItems};
-use graphics::path::path_to_string;
+use graphics::graphicitem::{items_bounding_box, items_move, GraphicItem, GraphicItems, PathCache};
+use graphics::path::{path_to_string, path_to_string_move};
 use graphics::stroke::Stroke;
 
 #[derive(Debug)]
-pub struct SvgBuilder {}
+pub struct SvgBuilder {
+    use_cache: HashSet<String>,
+}
 
 impl SvgBuilder {
     pub fn new() -> SvgBuilder {
-        SvgBuilder {}
+        SvgBuilder { use_cache: HashSet::new() }
     }
 
-    pub fn build(&self, mut items: GraphicItems, code: Option<String>) -> String {
+    pub fn build(&mut self, mut items: GraphicItems, code: Option<String>) -> String {
         let bbox = items_bounding_box(&items);
         items = items_move(items, -bbox.0, -bbox.1);
 
@@ -71,19 +76,67 @@ impl SvgBuilder {
                     svg.end_element();
                 }
 
-                GraphicItem::Path(segments, x, y, stroke, fill, __id) => {
-                    svg.start_element("path");
-                    svg.write_attribute("d", path_to_string(segments.to_vec(), *x, *y).as_str());
-                    if let Stroke::Solid(w, color) = stroke {
-                        svg.write_attribute("stroke", color);
-                        svg.write_attribute("stroke-width", w);
+                GraphicItem::Path(segments, x, y, stroke, fill, id) => {
+                    dbg!(id);
+                    match &id {
+                        PathCache::Cached => {
+                            let s = format!("{:?}", segments);
+                            let md5: String = format!("{:?}", md5::compute(s));
+                            dbg!(&md5);
+                            if self.use_cache.contains(&md5) {
+                                // just add a use element
+                                svg.start_element("use");
+                                svg.write_attribute("href", format!("#{}", md5.as_str()).as_str());
+                                svg.write_attribute("x", format!("{}", x).as_str());
+                                svg.write_attribute("y", format!("{}", y).as_str());
+                                svg.end_element();
+                            } else {
+                                // store the hashed path in a g wrapper element
+                                self.use_cache.insert(md5.clone());
+
+                                svg.start_element("g");
+                                svg.write_attribute("transform", format!("translate({}, {})", x, y).as_str());
+                                svg.write_attribute("visibility", "hidden".to_string().as_str());
+
+                                svg.start_element("path");
+                                svg.write_attribute("id", md5.as_str());
+                                svg.write_attribute("d", path_to_string(segments.to_vec()).as_str());
+                                if let Stroke::Solid(w, color) = stroke {
+                                    svg.write_attribute("stroke", color);
+                                    svg.write_attribute("stroke-width", w);
+                                }
+                                if let Fill::Solid(color) = fill {
+                                    svg.write_attribute("fill", color);
+                                } else {
+                                    svg.write_attribute("fill", "none");
+                                }
+                                svg.end_element();
+                                svg.end_element();
+
+                                // Store the use data
+                                svg.start_element("use");
+                                svg.write_attribute("href", format!("#{}", md5.as_str()).as_str());
+                                svg.write_attribute("x", format!("{}", x).as_str());
+                                svg.write_attribute("y", format!("{}", y).as_str());
+                                svg.end_element();
+                            }
+                        }
+
+                        PathCache::None => {
+                            svg.start_element("path");
+                            svg.write_attribute("d", path_to_string_move(segments.to_vec(), *x, *y).as_str());
+                            if let Stroke::Solid(w, color) = stroke {
+                                svg.write_attribute("stroke", color);
+                                svg.write_attribute("stroke-width", w);
+                            }
+                            if let Fill::Solid(color) = fill {
+                                svg.write_attribute("fill", color);
+                            } else {
+                                svg.write_attribute("fill", "none");
+                            }
+                            svg.end_element();
+                        }
                     }
-                    if let Fill::Solid(color) = fill {
-                        svg.write_attribute("fill", color);
-                    } else {
-                        svg.write_attribute("fill", "none");
-                    }
-                    svg.end_element();
                 }
 
                 GraphicItem::Text(x, y, text, _xtra) => {

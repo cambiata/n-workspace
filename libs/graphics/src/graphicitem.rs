@@ -3,11 +3,17 @@ use crate::path::{path_bounding_box, path_move, PathSegment};
 use crate::stroke::Stroke;
 
 #[derive(Debug, Clone)]
+pub enum PathCache {
+    None,
+    Cached,
+}
+
+#[derive(Debug, Clone)]
 pub enum GraphicItem {
     Line(f32, f32, f32, f32, Stroke, Option<String>),
     Rect(f32, f32, f32, f32, Stroke, Fill, Option<String>),
     Ellipse(f32, f32, f32, f32, Stroke, Fill, Option<String>),
-    Path(Vec<PathSegment>, f32, f32, Stroke, Fill, Option<String>),
+    Path(Vec<PathSegment>, f32, f32, Stroke, Fill, PathCache),
     Text(f32, f32, String, Option<String>),
 }
 

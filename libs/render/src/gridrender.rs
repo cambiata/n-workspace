@@ -105,7 +105,7 @@ impl Render {
 
         // let graphic_items = items_scale(graphic_items, 3.0, 3.0);
 
-        let svg = SvgBuilder::new();
+        let mut svg = SvgBuilder::new();
         let svg_string = svg.build(graphic_items, None);
 
         svg_string

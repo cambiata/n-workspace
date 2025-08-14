@@ -108,15 +108,14 @@ impl BuildScore {
         let (positions, _durations, allotments, map_ids) = BuildUtils::get_complexes_positions_allotments(cx, &hparts, duration)?;
 
         //-----------------------------------------
-        for (hpartidx, hpart) in hparts.iter().enumerate() {
+        for (_hpartidx, hpart) in hparts.iter().enumerate() {
             match &hpart.hptype {
-                HPartType::Music { complexes, mtype, attr } => {
-                    dbg!(&mtype);
+                HPartType::Music { complexes: _, mtype, attr: _ } => {
                     match &mtype {
                         HPartMusicType::TwoVoices { upper, lower } => {
                             match &upper {
                                 VoiceType2::NoteIds { .. } => {}
-                                VoiceType2::Barpause(duration) => {
+                                VoiceType2::Barpause(_duration) => {
                                     // Handle barpause
                                 }
                             }
@@ -127,7 +126,7 @@ impl BuildScore {
                                 }
                             }
                         }
-                        HPartMusicType::OneVoice { voice } => {
+                        HPartMusicType::OneVoice { voice: _ } => {
                             // Harmony part, handle as needed
                         }
                     }
