@@ -55,7 +55,7 @@ pub fn parse_head(_cx: &CoreContext, value: &str, _note_id: usize) -> Result<Hea
 pub fn parse_heads(cx: &CoreContext, value: &str, note_id: usize) -> Result<Vec<HeadItem>, Box<dyn Error>> {
     let str_and_level = value.split(',').map(|s| (s.trim(), level_from_str(s))).collect::<Vec<_>>();
 
-    let mut str_and_level = str_and_level.into_iter().map(|(str, level)| (str, level.unwrap())).collect::<Vec<_>>();
+    let mut str_and_level = str_and_level.into_iter().map(|(str, level)| (str, level.unwrap_or(0))).collect::<Vec<_>>();
 
     str_and_level.sort_by_key(|item| item.1); // sort by level
 

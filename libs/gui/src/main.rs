@@ -30,13 +30,12 @@ impl App {
             // Called whenever text input changes
             AppMessage::InputChanged(value) => {
                 self.input_text = value;
-                dbg!("Input changed to: {}", &self.input_text);
 
                 // If abort_handler is set, abort it
                 self.abort_handler.as_ref().map(|abort_handler| abort_handler.abort());
 
                 // Create a handler for the async task
-                let handler = Task::perform(tokio::time::sleep(Duration::from_millis(800)), |_| AppMessage::SetDebouncedValue);
+                let handler = Task::perform(tokio::time::sleep(Duration::from_millis(1000)), |_| AppMessage::SetDebouncedValue);
 
                 // Split handler into task_handler and abort_handler
                 let (task_handler, abort_handler) = handler.abortable();
@@ -72,12 +71,12 @@ impl App {
     fn new() -> (Self, Task<AppMessage>) {
         (
             Self {
-                input_text: "0 1".to_string(),
-                debounced_text: "0 1".to_string(),
+                input_text: "clef G | 0,1".to_string(),
+                debounced_text: "clef G | 0,1".to_string(),
                 abort_handler: None,
                 svg_string: SVG_BLUE.to_string(),
             },
-            Task::none(),
+            Task::perform(tokio::time::sleep(Duration::from_millis(0)), |_| AppMessage::SetDebouncedValue),
         )
     }
 }
