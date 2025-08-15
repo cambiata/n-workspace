@@ -9,4 +9,5 @@ members = [
     "libs/utils",
     "libs/grid",
     "libs/score",
+    "libs/gui",
 ]

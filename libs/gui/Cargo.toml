@@ -1,0 +1,11 @@
+[package]
+name = "gui"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+iced = { version = "0.13.1", features = ["tokio", "svg"] }
+tokio = { version = "1.44.2" }
+
+graphics = { path = "../graphics" }
+utils = { path = "../utils" }
