@@ -1386,10 +1386,15 @@ dependencies = [
 name = "gui"
 version = "0.1.0"
 dependencies = [
+ "core",
  "graphics",
+ "grid",
  "iced",
+ "parse",
+ "render",
+ "score",
+ "svg",
  "tokio",
- "utils",
 ]
 
 [[package]]
