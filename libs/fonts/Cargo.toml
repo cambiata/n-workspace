@@ -7,4 +7,4 @@ edition = "2021"
 rusttype = "0.9.3"
 graphics = { path = "../graphics" }
 svg = { path = "../svg" }
-image = { version = "0.24", default-features = false, features = ["png"] }
+image = { version = "*", default-features = false, features = ["png"] }

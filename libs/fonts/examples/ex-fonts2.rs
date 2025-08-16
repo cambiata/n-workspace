@@ -72,7 +72,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
                 bb.min.y as f32,
                 Stroke::Solid(0.1, Color::Black),
                 Fill::Solid(Color::DodgerBlue),
-                None,
+                graphics::graphicitem::PathCache::NoCache,
             ));
         }
     }

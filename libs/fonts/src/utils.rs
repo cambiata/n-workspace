@@ -30,7 +30,7 @@ pub fn get_items(font: &Font, scale: f32, text: &str) -> Vec<GraphicItem> {
     let segments = get_segments(font, scale, text);
     let mut items = Vec::new();
     for segment in segments {
-        items.push(GraphicItem::Path(segment, 0.0, 0.0, Stroke::None, Fill::Solid(Color::Red), None));
+        items.push(GraphicItem::Path(segment, 0.0, 0.0, Stroke::None, Fill::Solid(Color::Red), graphics::graphicitem::PathCache::NoCache));
     }
     items
 }

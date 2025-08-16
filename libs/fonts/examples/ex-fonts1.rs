@@ -62,7 +62,14 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut items: GraphicItems = Vec::new();
     for segments in all_segments {
-        items.push(GraphicItem::Path(segments, 0., 0., Stroke::Solid(0.1, Color::Black), Fill::Solid(Color::Tomato), None));
+        items.push(GraphicItem::Path(
+            segments,
+            0.,
+            0.,
+            Stroke::Solid(0.1, Color::Black),
+            Fill::Solid(Color::Tomato),
+            graphics::graphicitem::PathCache::NoCache,
+        ));
     }
 
     let svg = SvgBuilder::new().build(items, None);

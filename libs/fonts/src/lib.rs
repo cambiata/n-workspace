@@ -5,8 +5,7 @@ pub mod utils;
 
 #[cfg(test)]
 mod tests {
-    use std::fs;
-
+    use crate::{fontcontext::FontContext, pathbuilder::PathBuilder};
     use graphics::{
         color::Color,
         fill::Fill,
@@ -14,9 +13,8 @@ mod tests {
         stroke::Stroke,
     };
     use rusttype::{point, Font, Point, Rect, Scale};
+    use std::fs;
     use svg::builder::SvgBuilder;
-
-    use crate::{fontcontext::FontContext, pathbuilder::PathBuilder};
 
     #[test]
     fn test_font_context() {
