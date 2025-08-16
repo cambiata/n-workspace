@@ -7,7 +7,7 @@ use graphics::{
 };
 use grid::{gridcontext::GridContext, griditem::GridItemType};
 use score::{constants::SPACE, glyphitem::GlyphItem};
-use svg::svg_renderer::SvgBuilder;
+use svg::builder::SvgBuilder;
 
 pub struct Render;
 impl Render {

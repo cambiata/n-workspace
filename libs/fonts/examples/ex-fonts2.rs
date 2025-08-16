@@ -4,7 +4,7 @@ use fonts::pathbuilder::PathBuilder;
 use graphics::{color::Color, fill::Fill, graphicitem::GraphicItem, stroke::Stroke};
 use image::{DynamicImage, Rgba};
 use rusttype::{point, Font, Scale};
-use svg::svg_renderer::SvgBuilder;
+use svg::builder::SvgBuilder;
 
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     let font_data = include_bytes!("../assets/OpenSans-Regular.ttf");

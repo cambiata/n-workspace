@@ -14,7 +14,7 @@ mod tests {
         stroke::Stroke,
     };
     use rusttype::{point, Font, Point, Rect, Scale};
-    use svg::svg_renderer::SvgBuilder;
+    use svg::builder::SvgBuilder;
 
     use crate::{fontcontext::FontContext, pathbuilder::PathBuilder};
 

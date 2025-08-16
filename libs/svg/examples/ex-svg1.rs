@@ -5,7 +5,7 @@ use graphics::{
     stroke::Stroke,
 };
 use std::fs;
-use svg::svg_renderer::SvgBuilder;
+use svg::builder::SvgBuilder;
 
 fn main() {
     let mut items = GraphicItems::new();

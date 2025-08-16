@@ -4,12 +4,19 @@ use core::context::CoreContext;
 use graphics::graphicitem::GraphicItems;
 use grid::{gridcontext::GridContext, griditem::GridItemType};
 use parse::parse2::Parse2;
-use render::gridrender::Render;
+use render::{gridrender::Render, output::Generate};
 use score::{build::BuildScore, glyphitem::GlyphItem, scorecontext::ScoreContext};
 use std::fs;
-use svg::svg_renderer::SvgBuilder;
+use svg::builder::SvgBuilder;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let code = "clef G | 0,#1";
+
+    let svg_string = Generate::svg_string(code)?;
+    fs::write("libs/render/examples/ex-render1.svg", svg_string)?;
+    Ok(())
+}
+fn mainx() -> Result<(), Box<dyn std::error::Error>> {
     let cx = CoreContext::new();
     // let _ = Parse2::sysitemlist2(cx, "clef G F | D8 -3 n-1 #4 3 r -2 -2 -3 / 0 ", false).unwrap();
     let _ = Parse2::sysitemlist2(cx, "clef G G | 2 3 4 5 6 7 ", false).unwrap();

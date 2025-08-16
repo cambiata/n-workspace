@@ -6,7 +6,7 @@ use std::{
 
 use fonts::fontcontext::FontContext;
 use rusttype::{GlyphId, IntoGlyphId, Scale};
-use svg::svg_renderer::SvgBuilder;
+use svg::builder::SvgBuilder;
 
 pub fn main() {
     let mut data: HashMap<u32, String> = HashMap::from([

@@ -1,4 +1,4 @@
-pub mod svg_renderer;
+pub mod builder;
 
 #[cfg(test)]
 mod tests {
@@ -10,7 +10,7 @@ mod tests {
     };
     use std::fs;
 
-    use crate::svg_renderer::SvgBuilder;
+    use crate::builder::SvgBuilder;
 
     #[test]
     fn test_svg() {

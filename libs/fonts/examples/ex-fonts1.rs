@@ -8,7 +8,7 @@ use graphics::{
     stroke::Stroke,
 };
 use rusttype::{point, Font, Point, Rect, Scale};
-use svg::svg_renderer::SvgBuilder;
+use svg::builder::SvgBuilder;
 
 // cargo watch -q -c --ignore '**/*.svg' -x "run -q --example ex-fonts1"
 pub fn main() -> Result<(), Box<dyn std::error::Error>> {

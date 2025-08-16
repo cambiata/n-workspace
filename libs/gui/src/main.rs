@@ -91,7 +91,7 @@ mod app_svg {
     use parse::parse2::Parse2;
     use render::gridrender::Render;
     use score::{build::BuildScore, glyphitem::GlyphItem, scorecontext::ScoreContext};
-    use svg::svg_renderer::SvgBuilder;
+    use svg::builder::SvgBuilder;
 
     pub fn generate(input: &str) -> Result<String, Box<dyn std::error::Error>> {
         // Placeholder for score generation logic
