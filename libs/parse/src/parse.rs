@@ -94,11 +94,12 @@ pub fn parse_notes(cx: &CoreContext, value: &str) -> Result<(Vec<usize>, SumDura
     let mut sum_duration: SumDuration = 0;
     let mut duration: NoteDuration = NoteDuration::D4;
     let mut ids: Vec<usize> = Vec::new();
+
     value.split(" ").filter(|s| !s.is_empty()).for_each(|s| {
         if s.starts_with("D") || s.starts_with("d") {
-            duration = NoteDuration::parse(s).unwrap();
+            duration = NoteDuration::parse(s).expect(format!("Invalid duration {:?}", s).as_str());
         } else {
-            let id = parse_note(cx, s, sum_duration, duration.clone()).unwrap();
+            let id = parse_note(cx, s, sum_duration, duration.clone()).expect(format!("Note data not complete {:?}", s).as_str());
             sum_duration += duration.clone() as usize;
             ids.push(id);
         }
