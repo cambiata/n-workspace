@@ -77,7 +77,7 @@ impl SvgBuilder {
 
                 GraphicItem::Path(segments, x, y, stroke, fill, cache) => {
                     match &cache {
-                        PathCache::UseCache => {
+                        Some(PathCache::UseCache) => {
                             let s = format!("{:?}", segments);
                             let md5: String = format!("{:?}", md5::compute(s));
                             if self.use_cache.contains(&md5) {
@@ -122,7 +122,7 @@ impl SvgBuilder {
                             }
                         }
 
-                        PathCache::NoCache => {
+                        None => {
                             svg.start_element("path");
                             svg.write_attribute("d", PathUtils::path_to_string_move(segments.to_vec(), *x, *y).as_str());
                             if let Stroke::Solid(w, color) = stroke {

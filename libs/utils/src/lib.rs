@@ -35,4 +35,22 @@ mod tests {
         change_string(&mut s);
         dbg!(s);
     }
+
+    #[test]
+    fn test_error() -> Result<(), Box<dyn std::error::Error>> {
+        fn testerror() -> Result<usize, String> {
+            Ok(123)
+        }
+
+        let v = vec![1, 2, 3];
+        v.iter()
+            .map(|x| {
+                let t = testerror()?;
+                dbg!(x + t);
+                Ok(x + t)
+            })
+            .collect::<Result<Vec<usize>, String>>()?;
+
+        Ok(())
+    }
 }

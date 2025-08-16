@@ -13,7 +13,7 @@ impl Generate {
         // Placeholder for score generation logic
         let cx = CoreContext::new();
         // let _ = Parse2::sysitemlist2(cx, "clef G F | D8 -3 n-1 #4 3 r -2 -2 -3 / 0 ", false).unwrap();
-        let _ = Parse2::sysitemlist2(cx, input, false).unwrap();
+        let _ = Parse2::sysitemlist2(cx, input, false)?;
 
         // let _ = Parse2::sysitemlist2(cx, "|clef G |0 -1 -2 -3 -4 -5 -6 -7  5 4 3 2 1 0 -1 -2 -3 -4 -5 % 1 1 2 3 4 5 6 7 ", false).unwrap();
 

@@ -84,7 +84,7 @@ impl NoteDuration {
     pub fn parse(s: &str) -> Result<NoteDuration, Box<dyn std::error::Error>> {
         let s = s.trim();
         if !(s.starts_with('D') || s.starts_with("d")) {
-            return Err("MustStartWithD".into());
+            return Err("Duration string must start with letter 'd'".into());
         }
 
         let value2 = &s[1..];

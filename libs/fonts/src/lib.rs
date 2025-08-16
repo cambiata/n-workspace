@@ -62,14 +62,7 @@ mod tests {
 
         let mut items: GraphicItems = Vec::new();
         for segments in all_segments {
-            items.push(GraphicItem::Path(
-                segments,
-                0.,
-                0.,
-                Stroke::Solid(0.1, Color::Black),
-                Fill::Solid(Color::Tomato),
-                graphics::graphicitem::PathCache::NoCache,
-            ));
+            items.push(GraphicItem::Path(segments, 0., 0., Stroke::Solid(0.1, Color::Black), Fill::Solid(Color::Tomato), None));
         }
 
         let svg = SvgBuilder::new().build(items, None);
@@ -124,14 +117,7 @@ mod tests {
 
         let mut items: GraphicItems = Vec::new();
         for segments in all_segments {
-            items.push(GraphicItem::Path(
-                segments,
-                0.,
-                0.,
-                Stroke::Solid(0.1, Color::Black),
-                Fill::Solid(Color::Tomato),
-                graphics::graphicitem::PathCache::NoCache,
-            ));
+            items.push(GraphicItem::Path(segments, 0., 0., Stroke::Solid(0.1, Color::Black), Fill::Solid(Color::Tomato), None));
         }
 
         let svg = SvgBuilder::new().build(items, None);

@@ -4,7 +4,6 @@ use crate::stroke::Stroke;
 
 #[derive(Debug, Clone)]
 pub enum PathCache {
-    NoCache,
     UseCache,
 }
 
@@ -13,7 +12,7 @@ pub enum GraphicItem {
     Line(f32, f32, f32, f32, Stroke, Option<String>),
     Rect(f32, f32, f32, f32, Stroke, Fill, Option<String>),
     Ellipse(f32, f32, f32, f32, Stroke, Fill, Option<String>),
-    Path(Vec<PathSegment>, f32, f32, Stroke, Fill, PathCache),
+    Path(Vec<PathSegment>, f32, f32, Stroke, Fill, Option<PathCache>),
     Text(f32, f32, String, Option<String>),
 }
 

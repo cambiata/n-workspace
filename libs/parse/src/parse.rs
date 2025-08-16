@@ -28,8 +28,19 @@ use crate::utils::create_part_notes_vecs;
 
 pub fn parse_head(_cx: &CoreContext, value: &str, _note_id: usize) -> Result<HeadItem, Box<dyn Error>> {
     let value = value.trim();
-    let level: i8 = value.chars().filter(|c| c.is_numeric() || *c == '-').collect::<String>().parse()?;
 
+    //-------------------------------------------
+    // head level
+    // filter numeric and minus characters
+    let s = value.chars().filter(|c| c.is_numeric() || *c == '-').collect::<String>();
+
+    // parse level
+    let level: i8 = match s.parse() {
+        Ok(v) => v,
+        Err(_) => return Err(Box::new(std::io::Error::new(std::io::ErrorKind::InvalidInput, format!("Invalid level in head: {}", value)))),
+    };
+
+    //------------------------------------------
     // store ties
     let _tie_to: Option<TieTo> = TieTo::find(value, level);
     let _tie_from: Option<TieFrom> = TieFrom::find(value, level);
@@ -40,8 +51,12 @@ pub fn parse_head(_cx: &CoreContext, value: &str, _note_id: usize) -> Result<Hea
         _cx.map_noteid_tiesfrom.borrow_mut().entry(_note_id).or_default().push(_tie_from.unwrap());
     }
 
+    //------------------------------------------
     // accidentals
     let accidental: Accidental = Accidental::find(value);
+
+    //------------------------------------------
+    // create head item
     let id = _cx.heads.borrow().len();
     let info: HeadItem = HeadItem {
         id,
@@ -95,15 +110,16 @@ pub fn parse_notes(cx: &CoreContext, value: &str) -> Result<(Vec<usize>, SumDura
     let mut duration: NoteDuration = NoteDuration::D4;
     let mut ids: Vec<usize> = Vec::new();
 
-    value.split(" ").filter(|s| !s.is_empty()).for_each(|s| {
-        if s.starts_with("D") || s.starts_with("d") {
-            duration = NoteDuration::parse(s).expect(format!("Invalid duration {:?}", s).as_str());
+    let values = value.split(" ").filter(|s| !s.is_empty());
+    for v in values {
+        if v.starts_with("D") || v.starts_with("d") {
+            duration = NoteDuration::parse(v)?
         } else {
-            let id = parse_note(cx, s, sum_duration, duration.clone()).expect(format!("Note data not complete {:?}", s).as_str());
+            let id = parse_note(cx, v, sum_duration, duration.clone())?;
             sum_duration += duration.clone() as usize;
             ids.push(id);
         }
-    });
+    }
 
     Ok((ids, sum_duration))
 }
