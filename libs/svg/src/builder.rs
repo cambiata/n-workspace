@@ -86,6 +86,17 @@ impl SvgBuilder {
                                 svg.write_attribute("href", format!("#{}", md5.as_str()).as_str());
                                 svg.write_attribute("x", format!("{}", x).as_str());
                                 svg.write_attribute("y", format!("{}", y).as_str());
+
+                                if let Stroke::Solid(w, color) = stroke {
+                                    svg.write_attribute("stroke", color);
+                                    svg.write_attribute("stroke-width", w);
+                                }
+                                if let Fill::Solid(color) = fill {
+                                    svg.write_attribute("fill", color);
+                                } else {
+                                    svg.write_attribute("fill", "none");
+                                }
+
                                 svg.end_element();
                             } else {
                                 // store the hashed path in a g wrapper element
@@ -98,15 +109,7 @@ impl SvgBuilder {
                                 svg.start_element("path");
                                 svg.write_attribute("id", md5.as_str());
                                 svg.write_attribute("d", PathUtils::path_to_string(segments.to_vec()).as_str());
-                                if let Stroke::Solid(w, color) = stroke {
-                                    svg.write_attribute("stroke", color);
-                                    svg.write_attribute("stroke-width", w);
-                                }
-                                if let Fill::Solid(color) = fill {
-                                    svg.write_attribute("fill", color);
-                                } else {
-                                    svg.write_attribute("fill", "none");
-                                }
+
                                 svg.end_element();
                                 svg.end_element();
 
