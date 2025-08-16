@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{fmt::Error, time::Duration};
 
 use iced::{
     alignment::Horizontal::Left,
@@ -23,6 +23,7 @@ struct App {
     debounced_text: String,
     abort_handler: Option<iced::task::Handle>,
     svg_string: String,
+    error_message: String,
 }
 
 impl App {
@@ -49,11 +50,14 @@ impl App {
 
             AppMessage::SetDebouncedValue => {
                 self.debounced_text = self.input_text.clone();
-                self.svg_string = match Generate::svg_string(&self.debounced_text) {
-                    Ok(svg) => svg,
+                match Generate::svg_string(&self.debounced_text) {
+                    Ok(svg) => {
+                        self.svg_string = svg;
+                        self.error_message.clear();
+                    }
                     Err(err) => {
-                        eprintln!("Error generating SVG: {}", err);
-                        String::from("0 1 2")
+                        eprintln!("Error generating SVG: {}", &err);
+                        self.error_message = err.to_string();
                     }
                 };
             }
@@ -62,11 +66,12 @@ impl App {
     }
 
     fn view(&self) -> Element<'_, AppMessage> {
+        let error: Text = text(self.error_message.as_str()).size(20).color(iced::Color::from_rgb(1.0, 0.0, 0.0));
         let input: TextInput<'_, AppMessage> = text_input("", self.input_text.as_str()).on_input(AppMessage::InputChanged).padding(15).size(30).align_x(Left);
         let text: Text = text(self.debounced_text.as_str()).size(30);
 
         let svg: Svg = svg(svg::Handle::from_memory(self.svg_string.clone().into_bytes()));
-        center(column![input, text, svg]).into()
+        center(column![error, input, text, svg]).into()
     }
 
     fn new() -> (Self, Task<AppMessage>) {
@@ -76,6 +81,7 @@ impl App {
                 debounced_text: "clef G | 0,1".to_string(),
                 abort_handler: None,
                 svg_string: SVG_BLUE.to_string(),
+                error_message: String::new(),
             },
             Task::perform(tokio::time::sleep(Duration::from_millis(0)), |_| AppMessage::SetDebouncedValue),
         )
