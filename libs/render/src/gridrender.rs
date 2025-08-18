@@ -69,14 +69,43 @@ impl Render {
         graphic_items
     }
 
+    pub fn render_music_stembeams(gcx: &'static GridContext<GlyphItem>) -> GraphicItems {
+        let mut graphic_items = GraphicItems::new();
+        let cx_rows = &gcx.rows.borrow();
+        let cx_cols_overlaps = &gcx.cols_widths.borrow();
+        let row_heights = &gcx.rows_heights.borrow();
+
+        let mut move_y = 0.0;
+
+        for (row_idx, row) in cx_rows.iter().enumerate() {
+            move_y += row_heights[row_idx];
+
+            let mut move_x = 0.0;
+            for (colidx, item_id) in row.item_ids.iter().enumerate() {
+                move_x += cx_cols_overlaps[colidx];
+                let item = &gcx.items.borrow()[*item_id];
+                match item.gitype {
+                    GridItemType::Rectangles(ref glyph_items) => {
+                        for (rect, glyph_item) in glyph_items.iter() {
+                            graphic_items.extend(get_graphic_items_from_glyph(move_x, move_y, &rect, &glyph_item));
+                        }
+                    }
+                    GridItemType::Empty => {
+                        graphic_items.push(GraphicItem::Rect(move_x, move_y, 1., 1., Stroke::None, Fill::Solid(Color::Orange), None));
+                    }
+                }
+            }
+        }
+
+        graphic_items
+    }
+
     #[allow(dead_code)]
     pub fn render_gridcontext_with_color(gcx: &'static GridContext<Color>) -> String {
         let mut graphic_items = GraphicItems::new();
         let cx_rows = &gcx.rows.borrow();
         let cx_cols_overlaps = &gcx.cols_widths.borrow();
-
         let mut move_y = 0.0;
-
         for row in cx_rows.iter() {
             let mut move_x = 0.0;
             for (colidx, item_id) in row.item_ids.iter().enumerate() {

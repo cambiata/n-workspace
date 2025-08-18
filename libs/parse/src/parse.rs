@@ -240,7 +240,12 @@ pub fn parse_sysitemtype(_cx: &CoreContext, value: &str) -> Result<(SysItemType,
         let parts_count = segments.len();
         (SysItemType::Clefs(segments), parts_count)
     } else if value.starts_with("bl") {
-        (SysItemType::Barline(BarlineType::Single), 1 as usize)
+        if value.starts_with("bld") {
+            dbg!(11111);
+            (SysItemType::Barline(BarlineType::Double), 1 as usize)
+        } else {
+            (SysItemType::Barline(BarlineType::Single), 1 as usize)
+        }
     } else {
         let parts_ids = parse_parts(_cx, value)?;
 

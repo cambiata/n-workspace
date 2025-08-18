@@ -134,14 +134,7 @@ pub fn get_graphic_items_from_glyph(movex: f32, movey: f32, rect: &Rectangle, gl
 
         GlyphItem::FlagEightUp => {
             let path = GLYPH_FLAG_8TH_UP;
-            graphic_items.push(GraphicItem::Path(
-                path.to_vec(),
-                rect.0 + movex,
-                rect.1 + movey + y_zero - SPACE,
-                Stroke::None,
-                Fill::Solid(Color::Black),
-                None,
-            ));
+            graphic_items.push(GraphicItem::Path(path.to_vec(), rect.0 + movex, rect.1 + movey + y_zero, Stroke::None, Fill::Solid(Color::Black), None));
         }
 
         _ => {
