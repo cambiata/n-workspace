@@ -71,7 +71,7 @@ impl App {
         let text: Text = text(self.debounced_text.as_str()).size(30);
 
         let svg: Svg = svg(svg::Handle::from_memory(self.svg_string.clone().into_bytes()));
-        center(column![error, input, text, svg]).into()
+        column![error, input, /*text,*/ svg].into()
     }
 
     fn new() -> (Self, Task<AppMessage>) {

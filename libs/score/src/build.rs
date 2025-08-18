@@ -434,12 +434,15 @@ impl BuildScore {
                         StemType::NoteWithStem(ref _note) => match direction {
                             DirectionUD::Up => {
                                 let rect: Rectangle = (stem_x, stem_y, FLAG_WIDTH, FLAG_HEIGHT);
-                                let item: GlyphItem = GlyphItem::XRect(Color::Orange);
+                                let item: GlyphItem = GlyphItem::FlagEightDown;
+                                // let item = GlyphItem::XRect(Color::Orange);
                                 rects.push((rect, item));
                             }
                             DirectionUD::Down => {
                                 let rect: Rectangle = (stem_x, stem_y + stem_length - FLAG_HEIGHT, FLAG_WIDTH, FLAG_HEIGHT);
-                                let item: GlyphItem = GlyphItem::XRect(Color::Lime);
+                                let item: GlyphItem = GlyphItem::FlagEightUp;
+                                // let item = GlyphItem::XRect(Color::Lime);
+
                                 rects.push((rect, item));
                             }
                         },
@@ -571,5 +574,8 @@ pub fn rectangles_overlap_left(lefts: &[(Rectangle, GlyphItem)], right: &Rectang
 }
 
 fn create_space_rectangle_for_first_note_in_bar(left_x: f32) -> ((f32, f32, f32, f32), GlyphItem) {
-    ((left_x - SPACE_BEFORE_FIRST_NOTE_IN_BAR, -SPACE, SPACE_BEFORE_FIRST_NOTE_IN_BAR, SPACE2), GlyphItem::XRect(Color::Gray))
+    (
+        (left_x - SPACE_BEFORE_FIRST_NOTE_IN_BAR, -SPACE, SPACE_BEFORE_FIRST_NOTE_IN_BAR, SPACE2),
+        GlyphItem::XRect(Color::RGBA(0, 0, 0, 0.1)),
+    )
 }

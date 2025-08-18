@@ -8,15 +8,15 @@ use graphics::{
     stroke::Stroke,
 };
 use score::{
-    constants::{SPACE, SPACE2, SPACE3, SPACE_HALF},
+    constants::{SPACE, SPACE2, SPACE3, SPACE4, SPACE_HALF},
     glyphitem::GlyphItem,
 };
 
-use crate::music_glyphs::GLYPH_NOTEHEAD_BLACK;
 use crate::music_glyphs::{
-    GLYPH_ACCIDENTAL_FLAT, GLYPH_ACCIDENTAL_NATURAL, GLYPH_ACCIDENTAL_SHARP, GLYPH_CLEF_BASS, GLYPH_CLEF_TREBLE, GLYPH_NOTEHEAD_WHITE, GLYPH_NOTEHEAD_WHOLE, GLYPH_REST_EIGHTH, GLYPH_REST_HALF,
-    GLYPH_REST_QUARTER, GLYPH_REST_SIXTEENTH,
+    GLYPH_ACCIDENTAL_FLAT, GLYPH_ACCIDENTAL_NATURAL, GLYPH_ACCIDENTAL_SHARP, GLYPH_CLEF_BASS, GLYPH_CLEF_TREBLE, GLYPH_FLAG_8TH_UP, GLYPH_NOTEHEAD_WHITE, GLYPH_NOTEHEAD_WHOLE, GLYPH_REST_EIGHTH,
+    GLYPH_REST_HALF, GLYPH_REST_QUARTER, GLYPH_REST_SIXTEENTH,
 };
+use crate::music_glyphs::{GLYPH_FLAG_8TH_DOWN, GLYPH_NOTEHEAD_BLACK};
 
 pub fn get_graphic_items_from_glyph(movex: f32, movey: f32, rect: &Rectangle, glyph: &GlyphItem) -> Vec<GraphicItem> {
     let y_zero = -SPACE2 * 1.0;
@@ -119,6 +119,31 @@ pub fn get_graphic_items_from_glyph(movex: f32, movey: f32, rect: &Rectangle, gl
                 None,
             ));
         }
+
+        GlyphItem::FlagEightDown => {
+            let path = GLYPH_FLAG_8TH_DOWN;
+            graphic_items.push(GraphicItem::Path(
+                path.to_vec(),
+                rect.0 + movex,
+                rect.1 + movey + y_zero - SPACE4,
+                Stroke::None,
+                Fill::Solid(Color::Black),
+                None,
+            ));
+        }
+
+        GlyphItem::FlagEightUp => {
+            let path = GLYPH_FLAG_8TH_UP;
+            graphic_items.push(GraphicItem::Path(
+                path.to_vec(),
+                rect.0 + movex,
+                rect.1 + movey + y_zero - SPACE,
+                Stroke::None,
+                Fill::Solid(Color::Black),
+                None,
+            ));
+        }
+
         _ => {
             graphic_items.push(GraphicItem::Rect(rect.0 + movex, rect.1 + movey, rect.2, rect.3, Stroke::None, Fill::Solid(Color::LightGray), None));
         }

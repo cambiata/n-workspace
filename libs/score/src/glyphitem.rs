@@ -23,6 +23,9 @@ pub enum GlyphItem {
     RestQuarter,
     RestEighth,
     RestSixteenth,
+    //
+    FlagEightUp,
+    FlagEightDown,
 
     Accidental(Accidental),
     Clef(ClefSignature),

@@ -24,6 +24,8 @@ pub fn main() {
         (61637, "REST_SIXTEENTH".to_string()),
         (61623, "REST_HALF".to_string()),
         (61, "FIVELINES".to_string()),
+        (236, "FLAG_8TH_UP".to_string()),
+        (106, "FLAG_8TH_DOWN".to_string()),
     ]);
 
     const SCALE: f32 = 99.0;

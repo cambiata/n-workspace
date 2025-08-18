@@ -8,20 +8,21 @@ use graphics::stroke::Stroke;
 
 #[derive(Debug)]
 pub struct SvgBuilder {
-    use_cache: HashSet<String>,
+    path_cache: HashSet<String>,
 }
+const SVG_BORDER_MARGIN: f32 = 3.0;
 
 impl SvgBuilder {
     pub fn new() -> SvgBuilder {
-        SvgBuilder { use_cache: HashSet::new() }
+        SvgBuilder { path_cache: HashSet::new() }
     }
 
     pub fn build(&mut self, mut items: GraphicItems, code: Option<String>) -> String {
         let bbox = items_bounding_box(&items);
-        items = items_move(items, -bbox.0, -bbox.1);
+        items = items_move(items, SVG_BORDER_MARGIN + -bbox.0, SVG_BORDER_MARGIN + -bbox.1);
 
-        let svg_width_value = bbox.2 + (-bbox.0);
-        let svg_height_value = bbox.3 + (-bbox.1);
+        let svg_width_value = bbox.2 + (-bbox.0) + (2.0 * SVG_BORDER_MARGIN);
+        let svg_height_value = bbox.3 + (-bbox.1) + (2.0 * SVG_BORDER_MARGIN);
         let mut svg = xmlwriter::XmlWriter::new(xmlwriter::Options::default());
         svg.start_element("svg");
         svg.write_attribute("xmlns", "http://www.w3.org/2000/svg");
@@ -80,7 +81,7 @@ impl SvgBuilder {
                         Some(PathCache::UseCache) => {
                             let s = format!("{:?}", segments);
                             let md5: String = format!("{:?}", md5::compute(s));
-                            if self.use_cache.contains(&md5) {
+                            if self.path_cache.contains(&md5) {
                                 // just add a use element
                                 svg.start_element("use");
                                 svg.write_attribute("href", format!("#{}", md5.as_str()).as_str());
@@ -100,7 +101,7 @@ impl SvgBuilder {
                                 svg.end_element();
                             } else {
                                 // store the hashed path in a g wrapper element
-                                self.use_cache.insert(md5.clone());
+                                self.path_cache.insert(md5.clone());
 
                                 svg.start_element("g");
                                 svg.write_attribute("transform", format!("translate({}, {})", x, y).as_str());
