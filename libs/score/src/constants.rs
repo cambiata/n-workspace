@@ -22,5 +22,5 @@ pub const BARLINE_DOUBLE_WIDTH: f32 = SPACE;
 pub const BARLINE_FINAL_WIDTH: f32 = SPACE * 1.5;
 
 pub const STEM_WIDTH: f32 = SPACE / 7.0;
-pub const FLAG_WIDTH: f32 = SPACE * 1.7;
-pub const FLAG_HEIGHT: f32 = SPACE3;
+pub const FLAG_WIDTH: f32 = SPACE * 1.6;
+pub const FLAG_HEIGHT: f32 = SPACE4;
