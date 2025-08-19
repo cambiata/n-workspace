@@ -242,18 +242,22 @@ impl BuildScore {
         let mut rects: Vec<(Rectangle, GlyphItem)> = Vec::new();
 
         match note.ntype {
-            core::note::NoteType::Heads(ref heads) => {
+            NoteType::Heads(ref heads) => {
                 let rs = BuildScore::build_heads(cx, note, heads, part_idx, position, cplx_config.clone())?;
                 rects.extend(rs);
                 let rs = BuildScore::build_stem_root(cx, note, part_idx, position, cplx_config)?;
                 rects.extend(rs);
             }
-            core::note::NoteType::Rest => {
+            NoteType::Rest => {
                 let rs = BuildScore::build_rest(cx, note, part_idx, position, y_rest_offset)?;
                 rects.extend(rs);
             }
-            core::note::NoteType::LyricItem => {
-                println!("Note is LyricItem");
+            NoteType::Space => {
+                let rs = BuildScore::build_space(cx, note, part_idx, position)?;
+                rects.extend(rs);
+            }
+            NoteType::LyricItem => {
+                todo!("Note is LyricItem");
             }
         }
 
@@ -273,6 +277,43 @@ impl BuildScore {
             let rs = BuildScore::build_head(cx, note, head, heads, part_idx, position, cplx_config.clone())?;
             rects.extend(rs);
         }
+
+        //-------------------------------------------------
+        // helper lines
+
+        let head_width = get_head_width(&note.duration);
+
+        let cx_map_head_position = cx.map_head_position.borrow();
+        let heads_above = heads
+            .iter()
+            .filter(|h| h.level <= -6)
+            .map(|head| {
+                //
+                let mut head_x: f32 = if !cx_map_head_position.contains_key(&head.id) {
+                    0.
+                } else {
+                    match cx_map_head_position.get(&head.id).cloned().unwrap_or(StemHeadPosition::Center) {
+                        StemHeadPosition::Center => 0.,
+                        StemHeadPosition::Left => -head_width,
+                        StemHeadPosition::Right => head_width,
+                    }
+                };
+                let note_x = cx.map_noteid_headoffsetx.borrow().get(&note.id).cloned().unwrap_or(0.0);
+
+                (head, head_x, note_x, head_width)
+            })
+            .collect::<Vec<_>>();
+
+        let heads_above_min_x = heads_above.iter().map(|(head, head_x, note_x, head_width)| head_x).fold(f32::INFINITY, |a, &b| a.min(b));
+
+        let heads_above_max_x = heads_above.iter().map(|(head, head_x, note_x, head_width)| head_x).fold(f32::NEG_INFINITY, |a, b| a.max(*b)) + head_width;
+
+        dbg!(&heads_above_min_x, &heads_above_max_x);
+
+        // let heads_below = heads.iter().filter(|h| h.level >= 6).collect::<Vec<_>>();
+
+        dbg!(&heads_above);
+
         Ok(rects)
     }
 
@@ -299,6 +340,10 @@ impl BuildScore {
     ) -> Result<Vec<(Rectangle, GlyphItem)>, Box<dyn std::error::Error>> {
         let mut rects: Vec<(Rectangle, GlyphItem)> = Vec::new();
 
+        // let stemitemlevels = cx.map_noteid_stemitemlevels.borrow();
+        // let (directionUD, a, b) = stemitemlevels.get(&note.id).cloned().unwrap_or((DirectionUD::Up, 0., 0.));
+        // dbg!(&directionUD);
+
         //--------------------------------------------
         // The head itself
         let cx_map_head_position = cx.map_head_position.borrow();
@@ -322,6 +367,9 @@ impl BuildScore {
         let rect: Rectangle = (head_x, -SPACE_HALF + head_y, head_width, SPACE);
         let item: GlyphItem = GlyphItem::Notehead(note.duration.get_head_type(), HeadVariant::Normal);
         rects.push((rect, item));
+
+        //-------------------------------------------
+        // helper lines
 
         //---------------------------------------
         // dotted durations
@@ -451,6 +499,15 @@ impl BuildScore {
                 }
             }
         }
+
+        Ok(rects)
+    }
+
+    fn build_space(cx: &CoreContext, note: &NoteItem, part_idx: usize, position: usize) -> Result<Vec<(Rectangle, GlyphItem)>, Box<dyn std::error::Error>> {
+        let mut rects: Vec<(Rectangle, GlyphItem)> = Vec::new();
+        let rect: Rectangle = (0., -SPACE_HALF, SPACE, SPACE);
+        let item: GlyphItem = GlyphItem::XRect(Color::RGBA(0, 0, 0, 0.1));
+        rects.push((rect, item));
 
         Ok(rects)
     }

@@ -87,6 +87,7 @@ pub fn parse_notetype(_cx: &CoreContext, value: &str, note_id: usize) -> Result<
     let value = value.trim();
     let ntype = match value {
         "r" => NoteType::Rest,
+        "s" => NoteType::Space,
         _ => {
             let head_infos = parse_heads(_cx, value, note_id)?;
             NoteType::Heads(head_infos)

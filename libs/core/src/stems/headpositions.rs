@@ -96,10 +96,7 @@ impl HeadPositionUtils {
 
     #[allow(unused_variables)]
     fn calc_head_positions_down(head_ids_levels: Vec<HeadIdLevel>, map_head_position: &mut std::collections::BTreeMap<usize, StemHeadPosition>) {
-        // println!("calc_head_positions_down: {:?}", head_ids_levels);
-
-        let mut ids_levels = head_ids_levels.clone();
-        ids_levels.reverse();
+        let ids_levels = head_ids_levels.clone();
 
         let mut positions: Vec<(usize, StemHeadPosition)> = vec![(ids_levels[0].0, StemHeadPosition::Center)];
 
@@ -107,7 +104,6 @@ impl HeadPositionUtils {
             let diff = head_id_level[0].1 - head_id_level[1].1;
             let id = head_id_level[1].0;
 
-            // dbg!(&head_id_level, &diff);
             match &positions.last().unwrap().1 {
                 StemHeadPosition::Center => {
                     if diff <= 1 {
@@ -116,9 +112,11 @@ impl HeadPositionUtils {
                         positions.push((id, StemHeadPosition::Center));
                     }
                 }
+
                 StemHeadPosition::Left => {
                     positions.push((id, StemHeadPosition::Center));
                 }
+
                 _ => {
                     println!("Unexpected position: {:?}", positions.last().unwrap());
                 }

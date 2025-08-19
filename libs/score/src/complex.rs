@@ -104,8 +104,11 @@ pub fn create_glyphsrectangles_note(_note: &NoteItem, map_head_position: &BTreeM
         NoteType::Rest => {
             rectangles.push(create_glyphrectangle_rest(&_note.duration));
         }
+        NoteType::Space => {
+            todo!("Note is Space type");
+        }
         NoteType::LyricItem => {
-            println!("Note is LyricItem");
+            todo!("Note is LyricItem");
         }
     }
     leftmost_x

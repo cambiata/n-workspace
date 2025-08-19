@@ -10,6 +10,7 @@ pub enum NoteType {
     Heads(Vec<HeadItem>),
     // Heads(Vec<usize>, Vec<i8>),
     Rest,
+    Space,
     LyricItem,
 }
 
