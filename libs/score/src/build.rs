@@ -289,7 +289,7 @@ impl BuildScore {
             .filter(|h| h.level <= -6)
             .map(|head| {
                 //
-                let mut head_x: f32 = if !cx_map_head_position.contains_key(&head.id) {
+                let head_x: f32 = if !cx_map_head_position.contains_key(&head.id) {
                     0.
                 } else {
                     match cx_map_head_position.get(&head.id).cloned().unwrap_or(StemHeadPosition::Center) {
@@ -304,9 +304,9 @@ impl BuildScore {
             })
             .collect::<Vec<_>>();
 
-        let heads_above_min_x = heads_above.iter().map(|(head, head_x, note_x, head_width)| head_x).fold(f32::INFINITY, |a, &b| a.min(b));
+        let heads_above_min_x = heads_above.iter().map(|(_head, head_x, _note_x, _head_width)| head_x).fold(f32::INFINITY, |a, &b| a.min(b));
 
-        let heads_above_max_x = heads_above.iter().map(|(head, head_x, note_x, head_width)| head_x).fold(f32::NEG_INFINITY, |a, b| a.max(*b)) + head_width;
+        let heads_above_max_x = heads_above.iter().map(|(_head, head_x, _note_x, _head_width)| head_x).fold(f32::NEG_INFINITY, |a, b| a.max(*b)) + head_width;
 
         dbg!(&heads_above_min_x, &heads_above_max_x);
 
@@ -503,7 +503,7 @@ impl BuildScore {
         Ok(rects)
     }
 
-    fn build_space(cx: &CoreContext, note: &NoteItem, part_idx: usize, position: usize) -> Result<Vec<(Rectangle, GlyphItem)>, Box<dyn std::error::Error>> {
+    fn build_space(_cx: &CoreContext, _note: &NoteItem, _part_idx: usize, _position: usize) -> Result<Vec<(Rectangle, GlyphItem)>, Box<dyn std::error::Error>> {
         let mut rects: Vec<(Rectangle, GlyphItem)> = Vec::new();
         let rect: Rectangle = (0., -SPACE_HALF, SPACE, SPACE);
         let item: GlyphItem = GlyphItem::XRect(Color::RGBA(0, 0, 0, 0.1));
