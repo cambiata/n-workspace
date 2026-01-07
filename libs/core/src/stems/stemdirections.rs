@@ -54,7 +54,7 @@ pub fn calculate_stemitem_directions(cx: &CoreContext, ptype: &PartType) -> Resu
     let mut stemitems = cx.stemitems.borrow_mut();
 
     match ptype {
-        PartType::OneVoice(ref voice_item) => match &voice_item.vtype {
+        PartType::OneVoice(voice_item) => match &voice_item.vtype {
             VoiceType::NoteIds(_, _, stemitem_ids) => {
                 for stemitem_id in stemitem_ids {
                     let stemitem = stemitems.get_mut(*stemitem_id).unwrap();
@@ -75,7 +75,7 @@ pub fn calculate_stemitem_directions(cx: &CoreContext, ptype: &PartType) -> Resu
             }
             _ => {}
         },
-        PartType::TwoVoice(ref voice_item_upper, ref voice_item_lower) => match (&voice_item_upper.vtype, &voice_item_lower.vtype) {
+        PartType::TwoVoice(voice_item_upper, voice_item_lower) => match (&voice_item_upper.vtype, &voice_item_lower.vtype) {
             (VoiceType::NoteIds(_, duration_upper, stemitem_ids_upper), VoiceType::NoteIds(_, duration_lower, stemitem_ids_lower)) => {
                 let duration_shorter = *duration_upper.min(duration_lower);
                 for stemitem_id in stemitem_ids_upper {

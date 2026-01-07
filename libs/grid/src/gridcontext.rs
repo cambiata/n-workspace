@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::fmt::Debug;
 
 use crate::griditem::{GridColumn, GridItem, GridItemType, GridRow};
-use graphics::rectangle::{rectangles_overlap_x, Rectangle};
+use graphics::rectangle::{Rectangle, rectangles_overlap_x};
 use utils::f32_ext::round::F32ExtRound2;
 
 #[derive(Debug)]
@@ -142,7 +142,7 @@ where
                 let left_item = &self_items[row.item_ids[left_colidx]];
                 let right_item = &self_items[row.item_ids[right_colidx]];
                 match (&left_item.gitype, &right_item.gitype) {
-                    (GridItemType::Rectangles(ref left_items), GridItemType::Rectangles(ref right_items)) => {
+                    (GridItemType::Rectangles(left_items), GridItemType::Rectangles(right_items)) => {
                         // println!("- Both items are Rectangles");
                         let left_rects = &left_items.iter().map(|(r, _)| *r).collect::<Vec<Rectangle>>();
                         let right_rects = &right_items.iter().map(|(r, _)| *r).collect::<Vec<Rectangle>>();
@@ -155,7 +155,7 @@ where
                         // Store the right rectangles for later use
                         prev_rect_data[rowidx] = Some((right_colidx, right_rects.clone()));
                     }
-                    (GridItemType::Empty, GridItemType::Rectangles(ref right_items)) => {
+                    (GridItemType::Empty, GridItemType::Rectangles(right_items)) => {
                         let right_rects = &right_items.iter().map(|(r, _)| *r).collect::<Vec<Rectangle>>();
                         // println!("- (Empty, Rectangles) - Right item is Rectangles");
                         if let Some((prev_colidx, prev_rects)) = &prev_rect_data[rowidx] {
@@ -171,7 +171,7 @@ where
                             // println!("- No previous rectangles to compare with");
                         }
                     }
-                    (GridItemType::Rectangles(ref left_items), GridItemType::Empty) => {
+                    (GridItemType::Rectangles(left_items), GridItemType::Empty) => {
                         let left_rects = &left_items.iter().map(|(r, _)| *r).collect::<Vec<Rectangle>>();
                         // println!("- (Rectangles, Empty) - Left item is Rectangles");
                         // println!("- Store left_rects for later use");
@@ -194,7 +194,7 @@ where
             let item = &self_items[*item_id];
 
             match &item.gitype {
-                GridItemType::Rectangles(ref items) => {
+                GridItemType::Rectangles(items) => {
                     let rects = &items.iter().map(|(r, _)| *r).collect::<Vec<Rectangle>>();
                     // dbg!(rects);
                     for rect in rects.iter() {

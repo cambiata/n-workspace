@@ -295,14 +295,14 @@ impl Parse2Utils {
         for item in bpvmap.iter_mut() {
             //
             match item {
-                SysItemTypeId::Clefs(ref mut clef_segments) => {
+                SysItemTypeId::Clefs(clef_segments) => {
                     // dbg!(&clef_segments);
                     while *&clef_segments.len() < parts_count {
                         clef_segments.push("G-added".to_string()); // Default clef
                     }
                     // dbg!(&clef_segments);
                 }
-                SysItemTypeId::Barlines(ref mut barline_segments) => {
+                SysItemTypeId::Barlines(barline_segments) => {
                     while *&barline_segments.len() < parts_count {
                         barline_segments.push("Single-added".to_string()); // Default barline
                     }
@@ -333,7 +333,7 @@ impl Parse2Utils {
 
             for item in bpvmap.iter_mut() {
                 match item {
-                    SysItemTypeId::Parts(ref mut parts) => {
+                    SysItemTypeId::Parts(parts) => {
                         let part = &mut parts.get_mut(item_idx);
                         // dbg!(part);
                         match part {

@@ -1,9 +1,9 @@
 use std::{fmt::Error, time::Duration};
 
 use iced::{
-    alignment::Horizontal::Left,
-    widget::{center, column, svg, text, text_input, Svg, Text, TextInput},
     Element, Task,
+    alignment::Horizontal::Left,
+    widget::{Svg, Text, TextInput, center, column, svg, text, text_input},
 };
 use render::output::Generate;
 

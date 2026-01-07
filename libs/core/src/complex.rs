@@ -50,7 +50,7 @@ impl ComplexUtils {
         match ptype {
             PartType::OtherPart => Vec::new(),
             // PartType::Barpause => Vec::new(),
-            PartType::OneVoice(ref voice_item) => {
+            PartType::OneVoice(voice_item) => {
                 //
                 match voice_item.vtype {
                     VoiceType::NoteIds(ref note_ids, duration, _) => ComplexUtils::create_complexes_for_one_voice(cx, note_ids, duration, true, part_id, 0),
@@ -60,17 +60,17 @@ impl ComplexUtils {
                     }
                 }
             }
-            PartType::TwoVoice(ref voice_item_upper, ref voice_item_lower) => {
+            PartType::TwoVoice(voice_item_upper, voice_item_lower) => {
                 //
                 match (&voice_item_upper.vtype, &voice_item_lower.vtype) {
                     //----------------------------------------------
                     // for both upper and lower music voices
-                    (VoiceType::NoteIds(ref note_ids_upper, duration_upper, _), VoiceType::NoteIds(ref note_ids_lower, duration_lower, _)) => {
+                    (VoiceType::NoteIds(note_ids_upper, duration_upper, _), VoiceType::NoteIds(note_ids_lower, duration_lower, _)) => {
                         ComplexUtils::create_complexes_for_two_voices(cx, note_ids_upper, note_ids_lower, *duration_upper.max(duration_lower), part_id, 0)
                     }
-                    (VoiceType::Barpause, VoiceType::NoteIds(ref note_ids_lower, duration, _)) => ComplexUtils::create_complexes_for_one_voice(cx, note_ids_lower, *duration, false, part_id, 0),
+                    (VoiceType::Barpause, VoiceType::NoteIds(note_ids_lower, duration, _)) => ComplexUtils::create_complexes_for_one_voice(cx, note_ids_lower, *duration, false, part_id, 0),
 
-                    (VoiceType::NoteIds(ref note_ids_upper, duration, _), VoiceType::Barpause) => ComplexUtils::create_complexes_for_one_voice(cx, note_ids_upper, *duration, true, part_id, 0),
+                    (VoiceType::NoteIds(note_ids_upper, duration, _), VoiceType::Barpause) => ComplexUtils::create_complexes_for_one_voice(cx, note_ids_upper, *duration, true, part_id, 0),
 
                     _ => todo!("Invalid voice type"),
                 }

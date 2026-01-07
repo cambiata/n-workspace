@@ -15,7 +15,7 @@ use core::{
 
 use graphics::{
     color::Color,
-    rectangle::{rectangle_overlap_x, Rectangle},
+    rectangle::{Rectangle, rectangle_overlap_x},
 };
 
 use grid::griditem::GridItemType;
@@ -479,7 +479,7 @@ impl BuildScore {
                 if let Some(stemitem) = stemitems.get(*stemitem_id) {
                     // dbg!(&stemitem.stype, note.id);
                     match &stemitem.stype {
-                        StemType::NoteWithStem(ref _note) => match direction {
+                        StemType::NoteWithStem(_note) => match direction {
                             DirectionUD::Up => {
                                 let rect: Rectangle = (stem_x, stem_y, FLAG_WIDTH, FLAG_HEIGHT);
                                 let item: GlyphItem = GlyphItem::FlagEightDown;
