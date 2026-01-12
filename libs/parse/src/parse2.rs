@@ -56,6 +56,10 @@ impl Parse2 {
         if value.starts_with("clef") {
             // Clefs
             let clef_segments = value.split(" ").skip(1).filter(|s| !s.is_empty()).map(|s| s.to_string()).collect::<Vec<_>>();
+            if clef_segments.is_empty() {
+                return Err("No clef specified".into());
+            }
+
             bpvmap.push(SysItemTypeId::Clefs(clef_segments));
         } else if value.starts_with("bl") {
             // Barlines
@@ -100,5 +104,22 @@ impl Parse2 {
         };
 
         Ok(vtype)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn test_clef() {
+        let cx = CoreContext::new();
+        // let _ = parse_sysitemtype(cx, "other-part").unwrap();
+        let mut bpvmap: Vec<SysItemTypeId> = Vec::new();
+
+        let _ = Parse2::sysitemtype2(cx, "clef ", &mut bpvmap).unwrap();
+        // let _ = parse_sysitemtype(cx, "0").unwrap();
+        dbg!(&cx);
     }
 }

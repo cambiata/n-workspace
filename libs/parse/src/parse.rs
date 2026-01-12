@@ -238,6 +238,7 @@ pub fn parse_sysitemtype(_cx: &CoreContext, value: &str) -> Result<(SysItemType,
 
     let (t, parts_count) = if value.starts_with("clef") {
         let segments = value.split(" ").filter(|s| !s.is_empty()).skip(1).map(|s| ClefSignature::find(s)).collect::<Vec<_>>();
+        dbg!(&segments);
         let parts_count = segments.len();
         (SysItemType::Clefs(segments), parts_count)
     } else if value.starts_with("bl") {
@@ -428,12 +429,20 @@ mod tests {
         // let _ = parse_sysitemtype(cx, "0").unwrap();
         dbg!(&cx);
     }
+    #[test]
+    fn test_clef() {
+        let cx = CoreContext::new();
+        // let _ = parse_sysitemtype(cx, "other-part").unwrap();
+        let _ = parse_sysitemtype(cx, "clef G").unwrap();
+        // let _ = parse_sysitemtype(cx, "0").unwrap();
+        dbg!(&cx);
+    }
 
     #[test]
     fn test_maj03() {
         let cx = CoreContext::new();
         // let _ = parse_sysitemlist(cx, "|clef G | D4. -2,-3 D8 -4 % D16 2 3 4 5 D8 3 4 / D2. 0  |bl | 0 / 1").unwrap();
-        let _ = parse_sysitemlist(cx, "|clef G |other-part").unwrap();
+        let _ = parse_sysitemlist(cx, "|clef ").unwrap();
 
         // let _ = parse_sysitems(cx, "0 % 0").unwrap();
         // let _check = check_sysitems_parts_integrity(cx, ids);

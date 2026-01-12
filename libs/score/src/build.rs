@@ -304,15 +304,15 @@ impl BuildScore {
             })
             .collect::<Vec<_>>();
 
-        let heads_above_min_x = heads_above.iter().map(|(_head, head_x, _note_x, _head_width)| head_x).fold(f32::INFINITY, |a, &b| a.min(b));
+        let _heads_above_min_x = heads_above.iter().map(|(_head, head_x, _note_x, _head_width)| head_x).fold(f32::INFINITY, |a, &b| a.min(b));
 
-        let heads_above_max_x = heads_above.iter().map(|(_head, head_x, _note_x, _head_width)| head_x).fold(f32::NEG_INFINITY, |a, b| a.max(*b)) + head_width;
+        let _heads_above_max_x = heads_above.iter().map(|(_head, head_x, _note_x, _head_width)| head_x).fold(f32::NEG_INFINITY, |a, b| a.max(*b)) + head_width;
 
-        dbg!(&heads_above_min_x, &heads_above_max_x);
+        // dbg!(&heads_above_min_x, &heads_above_max_x);
 
         // let heads_below = heads.iter().filter(|h| h.level >= 6).collect::<Vec<_>>();
 
-        dbg!(&heads_above);
+        // dbg!(&heads_above);
 
         Ok(rects)
     }

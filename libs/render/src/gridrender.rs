@@ -69,7 +69,8 @@ impl Render {
         graphic_items
     }
 
-    pub fn render_music_stembeams(gcx: &'static GridContext<GlyphItem>) -> GraphicItems {
+    /*
+    pub fn xrender_music_stembeams(gcx: &'static GridContext<GlyphItem>) -> GraphicItems {
         let mut graphic_items = GraphicItems::new();
         let cx_rows = &gcx.rows.borrow();
         let cx_cols_overlaps = &gcx.cols_widths.borrow();
@@ -99,6 +100,7 @@ impl Render {
 
         graphic_items
     }
+    */
 
     #[allow(dead_code)]
     pub fn render_gridcontext_with_color(gcx: &'static GridContext<Color>) -> String {
