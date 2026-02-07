@@ -34,6 +34,7 @@ impl Generate {
             }
             items2.push(rowitems);
         }
+
         //-------------------------------------------------
         let gcx = GridContext::<GlyphItem>::new();
         gcx.add_items(items2)?;
